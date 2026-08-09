@@ -1,0 +1,39 @@
+{
+  "name": "كتكوت Pro - إدارة مزارع الدواجن",
+  "short_name": "كتكوت Pro",
+  "description": "تطبيق شامل لإدارة مزارع دواجن التسمين: تسجيل يومي، متابعة الأداء والتحصينات، إدارة المخزون والمالية، وتقارير احترافية.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#2F4538",
+  "theme_color": "#2F4538",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "./",
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ]
+}
