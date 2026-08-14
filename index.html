@@ -2281,6 +2281,60 @@
             };
         }
 
+        // ============ نسبة مئوية Percentile + شارة ثقة موحّدة — تُستخدم فى كل كروت الترتيب والتحليلات (v3.86) ============
+        // بيحسب كام % من مجموعة القيم التاريخية "أسوأ" من القيمة الحالية (كل ما زاد % كان الأداء الحالي أفضل نسبيًا)
+        function percentileBeats(value, historyArr, higherIsBetter) {
+            const vals = (historyArr || []).filter(v => v != null && !isNaN(v));
+            if (value == null || isNaN(value) || vals.length < 2) return null;
+            const worseCount = vals.filter(v => higherIsBetter ? (value > v) : (value < v)).length;
+            const tieCount = vals.filter(v => v === value).length;
+            return Math.round(((worseCount + tieCount * 0.5) / vals.length) * 100);
+        }
+        // شارة ثقة موحّدة حسب حجم العينة (عدد الدورات/النقاط المبني عليها التحليل)
+        function confBadge(n, opts) {
+            opts = opts || {};
+            const lowT = opts.low != null ? opts.low : 3, midT = opts.mid != null ? opts.mid : 6;
+            if (n == null || n < lowT) return { level: 'low', icon: '⚪', label: `ثقة منخفضة (${n||0} عينة)` };
+            if (n < midT) return { level: 'mid', icon: '🟡', label: `ثقة متوسطة (${n} عينة)` };
+            return { level: 'green', icon: '🟢', label: `ثقة عالية (${n} عينة)` };
+        }
+        function confBadgeHtml(n, opts) {
+            const c = confBadge(n, opts);
+            const color = c.level === 'green' ? 'var(--green)' : (c.level === 'mid' ? '#c9a227' : 'var(--muted)');
+            return `<span style="display:inline-block;font-size:10px;font-weight:700;color:${color};background:${c.level==='green'?'rgba(52,168,83,.1)':(c.level==='mid'?'rgba(201,162,39,.12)':'rgba(0,0,0,.05)')};border-radius:8px;padding:1px 7px;">${c.icon} ${c.label}</span>`;
+        }
+        // ============ مؤشر أداء الدورة الموحّد (0-100) + الترتيب (Rank) بين كل دوراتك المؤرشفة لنفس النوع ============
+        // بيجمع 4 مؤشرات نهائية (EPEF/FCR/نفوق/تكلفة الكيلو) فى نسبة مئوية واحدة مقارنة بتاريخ مزرعتك نفسها،
+        // بدل ما المستخدم يقرأ فقرات متفرقة — رقم واحد + ترتيب واحد يلخّص "الدورة دي واقفة فين من أدائك المعتاد"
+        function computeFarmPerformanceRank(b, m, fin) {
+            const archived = state.batches.filter(x => x.id !== b.id && x.species === b.species
+                && x.status === 'مؤرشفة' && x.records && x.records.length >= 3);
+            const rows = archived.map(x => {
+                const xm = computeMetrics(x);
+                const xfin = computeFinance(x, xm);
+                return { epef: xm.epef, fcr: xm.fcr, mortRate: xm.mortRate, costPerKg: xfin.costPerKg };
+            }).filter(r => r.epef != null);
+            if (rows.length < 2) return null;
+            const metrics = [
+                { key: 'epef', label: 'EPEF', value: m.epef, higherIsBetter: true },
+                { key: 'fcr', label: 'معدل التحويل FCR', value: m.fcr, higherIsBetter: false },
+                { key: 'mortRate', label: 'نسبة النفوق', value: m.mortRate, higherIsBetter: false },
+                { key: 'costPerKg', label: 'تكلفة الكيلو', value: fin ? fin.costPerKg : null, higherIsBetter: false },
+            ];
+            const breakdown = metrics.map(mt => {
+                const hist = rows.map(r => r[mt.key]).filter(v => v != null);
+                const pct = hist.length >= 2 ? percentileBeats(mt.value, hist, mt.higherIsBetter) : null;
+                return { ...mt, pct, sample: hist.length };
+            }).filter(x => x.pct != null);
+            if (!breakdown.length) return null;
+            const score = Math.round(breakdown.reduce((s, x) => s + x.pct, 0) / breakdown.length);
+            const epefRows = rows.map(r => r.epef).filter(v => v != null);
+            const betterCount = epefRows.filter(v => (m.epef || 0) > v).length;
+            const rankPos = epefRows.length - betterCount; // 1 = الأفضل
+            return { score, breakdown, rank: { position: Math.max(1, rankPos), total: epefRows.length + 1 },
+                sampleSize: rows.length, conf: confBadge(rows.length) };
+        }
+
         // ============ تقييم أداء العمال (Worker Performance) ============
         // مبني على enteredBy/enteredAt المُسجَّلة تلقائيًا مع كل سجل يومي (بداية من تفعيل هذه الميزة —
         // السجلات القديمة قبلها هتظهر كـ"غير محدد" لعدم توفر بيانات تاريخية عنها)، بالإضافة لسجل
@@ -4428,11 +4482,41 @@
         }
 
         function simpleHash(str) {
-            // تجزئة بسيطة لتفادي تخزين كلمة المرور كنص صريح (ليست تشفيرًا قويًا، لكنها كافية لحماية محلية على جهاز مشترك)
+            // ⚠️ تجزئة قديمة (DJB2) — غير آمنة تشفيريًا (بدون ملح، سريعة الكسر بجداول Rainbow/Brute-force).
+            // محتفظ بها فقط للتوافق الرجعي مع حسابات قديمة لسه ما تمتش ترقيتها لـ secureHash (شوف verifyPassword تحت).
+            // ما ينفعش تتستخدم لحسابات جديدة أبدًا.
             str = String(str);
             let h = 5381;
             for (let i = 0; i < str.length; i++) { h = ((h << 5) + h) + str.charCodeAt(i); h = h & h; }
             return 'h' + Math.abs(h).toString(36) + str.length;
+        }
+
+        // ============ 🔒 تحصين أمني: تجزئة قوية (SHA-256 + ملح عشوائي لكل حساب) لكل كلمات المرور الجديدة ============
+        // صادق: التطبيق عميل بالكامل (client-side) بدون سيرفر خاص — لو حد عنده وصول فعلي لنفس الجهاز
+        // ومفتوح DevTools، يقدر يقرأ متغيرات الجافاسكريبت أو ينادي أي دالة مباشرة من الـ Console بغض
+        // النظر عن قوة التجزئة. الفايدة الحقيقية من SHA-256+Salt هنا: حماية كلمة المرور نفسها لو
+        // localStorage / نسخة احتياطية اتسربت (جهاز مشترك، نسخة مشاركة عبر واتساب، إلخ) — مش بديل عن
+        // قواعد حماية فايرستور (Security Rules) اللي هي خط الدفاع الحقيقي للبيانات المشتركة على السحابة.
+        function genSalt() {
+            try { return Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join(''); }
+            catch (e) { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+        }
+        async function secureHash(str, salt) {
+            salt = salt || genSalt();
+            try {
+                if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+                    const enc = new TextEncoder().encode(salt + ':' + String(str));
+                    const buf = await crypto.subtle.digest('SHA-256', enc);
+                    const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+                    return { hash: hex, salt };
+                }
+            } catch (e) {}
+            return { hash: simpleHash(salt + ':' + str), salt }; // بيئة قديمة بدون SubtleCrypto (مثلاً WebView قديم) — رجوع لتجزئة بسيطة كخط دفاع أخير
+        }
+        async function verifyPassword(str, salt, hash) {
+            if (!salt) return simpleHash(str) === hash; // حساب قديم قبل الترقية — للتوافق الرجعي فقط
+            const r = await secureHash(str, salt);
+            return r.hash === hash;
         }
 
         function getAuth() {
@@ -4458,34 +4542,64 @@
             document.getElementById(r === 'worker' ? 'loginUsername' : 'loginPass').focus();
         }
 
-        function doSetup() {
+        let _setupInFlight = false; // 🔒 تحصين: يمنع نداء متزامن مزدوج أثناء انتظار secureHash غير المتزامنة
+        async function doSetup() {
+            if (_setupInFlight) return;
+            _setupInFlight = true;
+            try { await _doSetupInner(); } finally { _setupInFlight = false; }
+        }
+        async function _doSetupInner() {
             const p1 = document.getElementById('setupOwnerPass').value;
             const p2 = document.getElementById('setupOwnerPass2').value;
             const err = document.getElementById('setupErr');
             if (p1.length < 4) { err.textContent = 'كلمة مرور المالك يجب ألا تقل عن 4 أحرف'; return; }
             if (p1 !== p2) { err.textContent = 'كلمتا المرور غير متطابقتين'; return; }
-            saveAuth({ ownerHash: simpleHash(p1), workers: [] });
+            const { hash, salt } = await secureHash(p1); // 🔒 SHA-256+Salt بدل التجزئة البسيطة القديمة
+            saveAuth({ ownerHash: hash, ownerSalt: salt, workers: [] });
             document.getElementById('setupOverlay').style.display = 'none';
             document.getElementById('loginOverlay').style.display = 'flex';
         }
 
-        function doLogin() {
+        // 🔒 تحصين أمني: لا يوجد Rate-Limiting حقيقي ممكن على تطبيق عميل بالكامل (المهاجم يقدر ينادي verifyPassword
+        // مباشرة بأي عدد محاولات من الـ Console)، لكن نضيف تأخير بسيط + عداد محاولات فاشلة كخط دفاع أول ضد
+        // الاستخدام العرضي (شخص بيجرب كلمات سر من الشاشة العادية)، مش ضد مهاجم متمرّس.
+        let _loginFailCount = 0, _loginLockUntil = 0;
+        let _loginInFlight = false; // 🔒 تحصين: يمنع نداء متزامن مزدوج (ضغط "دخول" مرتين بسرعة أثناء انتظار secureHash غير المتزامنة)
+        async function doLogin() {
+            if (_loginInFlight) return;
+            _loginInFlight = true;
+            try { await _doLoginInner(); } finally { _loginInFlight = false; }
+        }
+        async function _doLoginInner() {
             const auth = getAuth();
             const pass = document.getElementById('loginPass').value;
             const err = document.getElementById('loginErr');
             if (!auth) { err.textContent = 'لا توجد حسابات بعد.'; return; }
             if (!pass) { err.textContent = 'أدخل كلمة المرور'; return; }
+            if (Date.now() < _loginLockUntil) { err.textContent = `⏳ محاولات كتير غلط، استنى ${Math.ceil((_loginLockUntil - Date.now()) / 1000)} ثانية`; return; }
+            const registerFail = () => {
+                _loginFailCount++;
+                if (_loginFailCount >= 5) { _loginLockUntil = Date.now() + 30000; _loginFailCount = 0; }
+            };
             if (pickedRole === 'owner') {
-                if (simpleHash(pass) === auth.ownerHash) { startSession('owner', null); }
-                else { err.textContent = '❌ بيانات الدخول غير صحيحة'; }
+                const ok = await verifyPassword(pass, auth.ownerSalt, auth.ownerHash);
+                if (ok) {
+                    _loginFailCount = 0;
+                    if (!auth.ownerSalt) { const up = await secureHash(pass); auth.ownerHash = up.hash; auth.ownerSalt = up.salt; saveAuth(auth); } // ترقية تلقائية بصمت لحساب قديم عند أول دخول ناجح
+                    startSession('owner', null);
+                } else { registerFail(); err.textContent = '❌ بيانات الدخول غير صحيحة'; }
                 return;
             }
             // عامل
             const uname = (document.getElementById('loginUsername').value || '').trim().toLowerCase();
             if (!uname) { err.textContent = 'أدخل اسم المستخدم'; return; }
-            const worker = (auth.workers || []).find(w => w.username.toLowerCase() === uname && w.passHash === simpleHash(pass));
-            if (worker) { startSession('worker', worker); }
-            else { err.textContent = '❌ بيانات الدخول غير صحيحة'; }
+            const worker = (auth.workers || []).find(w => w.username.toLowerCase() === uname);
+            const ok = worker && await verifyPassword(pass, worker.passSalt, worker.passHash);
+            if (ok) {
+                _loginFailCount = 0;
+                if (!worker.passSalt) { const up = await secureHash(pass); worker.passHash = up.hash; worker.passSalt = up.salt; saveAuth(auth); }
+                startSession('worker', worker);
+            } else { registerFail(); err.textContent = '❌ بيانات الدخول غير صحيحة'; }
         }
 
         function startSession(role, worker) {
@@ -4541,13 +4655,23 @@
             document.getElementById('accountsModalOverlay').classList.remove('show');
         }
 
-        function saveOwnerPassOnly() {
+        let _ownerPassSaveInFlight = false; // 🔒 تحصين: يمنع نداء متزامن مزدوج أثناء انتظار secureHash غير المتزامنة
+        async function saveOwnerPassOnly() {
+            if (_ownerPassSaveInFlight) return;
+            _ownerPassSaveInFlight = true;
+            try { await _saveOwnerPassOnlyInner(); } finally { _ownerPassSaveInFlight = false; }
+        }
+        async function _saveOwnerPassOnlyInner() {
+            // 🔒 تحصين دفاعي: تأكيد الدور جوه الدالة نفسها، مش بس عند فتح المودال — عشان لو اتنادت
+            // الدالة مباشرة (مثلاً من الـ Console) من غير ما تعدي على openAccountsModal لا تنفذ لغير المالك.
+            if (currentRole !== 'owner') { showToast('🚫 غير مصرح لك بهذا الإجراء'); return; }
             const op = document.getElementById('accOwnerPass').value;
             const err = document.getElementById('accErr');
             if (!op) { err.textContent = 'أدخل كلمة المرور الجديدة أولاً'; return; }
             if (op.length < 4) { err.textContent = 'كلمة المرور يجب ألا تقل عن 4 أحرف'; return; }
             const auth = getAuth() || { workers: [] };
-            auth.ownerHash = simpleHash(op);
+            const { hash, salt } = await secureHash(op);
+            auth.ownerHash = hash; auth.ownerSalt = salt;
             saveAuth(auth);
             document.getElementById('accOwnerPass').value = '';
             err.textContent = '';
@@ -4651,7 +4775,15 @@
             document.getElementById('accErr').textContent = '';
         }
 
-        function addOrUpdateWorker() {
+        let _workerSaveInFlight = false; // 🔒 تحصين: يمنع نداء متزامن مزدوج أثناء انتظار secureHash غير المتزامنة
+        async function addOrUpdateWorker() {
+            if (_workerSaveInFlight) return;
+            _workerSaveInFlight = true;
+            try { await _addOrUpdateWorkerInner(); } finally { _workerSaveInFlight = false; }
+        }
+        async function _addOrUpdateWorkerInner() {
+            // 🔒 تحصين دفاعي: نفس المبدأ — تأكيد الدور جوه الدالة نفسها (defense-in-depth)
+            if (currentRole !== 'owner') { showToast('🚫 غير مصرح لك بهذا الإجراء'); return; }
             const auth = getAuth() || { workers: [] };
             if (!auth.workers) auth.workers = [];
             const name = document.getElementById('wf_name').value.trim();
@@ -4670,11 +4802,15 @@
 
             if (editingWorkerId) {
                 const w = auth.workers.find(x => x.id === editingWorkerId);
-                if (w) { w.name = name; w.username = username; w.batchId = batchId; w.permissions = permissions; if (pass) w.passHash = simpleHash(pass); }
+                if (w) {
+                    w.name = name; w.username = username; w.batchId = batchId; w.permissions = permissions;
+                    if (pass) { const h = await secureHash(pass); w.passHash = h.hash; w.passSalt = h.salt; } // 🔒 SHA-256+Salt
+                }
                 showToast('✅ تم تحديث بيانات العامل');
                 if (currentWorker && currentWorker.id === editingWorkerId) currentWorker.permissions = permissions;
             } else {
-                auth.workers.push({ id: uid(), name, username, passHash: simpleHash(pass), batchId, permissions });
+                const h = await secureHash(pass); // 🔒 SHA-256+Salt بدل التجزئة البسيطة القديمة
+                auth.workers.push({ id: uid(), name, username, passHash: h.hash, passSalt: h.salt, batchId, permissions });
                 showToast('✅ تم إضافة العامل');
             }
             saveAuth(auth);
@@ -4683,6 +4819,8 @@
         }
 
         function deleteWorkerAccount(id) {
+            // 🔒 تحصين دفاعي: نفس المبدأ — تأكيد الدور جوه الدالة نفسها
+            if (currentRole !== 'owner') { showToast('🚫 غير مصرح لك بهذا الإجراء'); return; }
             const auth = getAuth();
             const w = (auth.workers || []).find(x => x.id === id);
             if (!w) return;
@@ -11610,6 +11748,36 @@
         function renderDashboard(b, m, fin, alerts) {
             const ins = computeInsights(b, m);
             const saleAdv = computeMarketSaleAdvice(b, m, fin);
+            // ============ كارت "مؤشر أداء الدورة" الموحّد — رقم واحد (0-100) + ترتيب (Rank) بين كل دوراتك المؤرشفة لنفس النوع ============
+            const perfRank = computeFarmPerformanceRank(b, m, fin);
+            const perfScoreCardHtml = (() => {
+                if (!perfRank) return `<div class="card" style="margin-bottom:10px;padding:12px;text-align:center;">
+                        <div style="font-size:12px;font-weight:800;">🏅 مؤشر أداء الدورة + الترتيب</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:4px;">يظهر تلقائيًا لما يكون عندك دورتين مؤرشفتين على الأقل لنفس النوع بعمر 20 يوم فأكثر — كل ما أرشفت دورات أكتر كل ما كان الترتيب أدق</div>
+                    </div>`;
+                const scoreColor = perfRank.score >= 70 ? 'var(--green)' : (perfRank.score >= 40 ? '#c9a227' : 'var(--red)');
+                const rankBadge = perfRank.rank.position === 1
+                    ? `🥇 أفضل دورة سجّلتها على الإطلاق (#1 من ${perfRank.rank.total})`
+                    : `#${perfRank.rank.position} من ${perfRank.rank.total} دورة`;
+                const rows = perfRank.breakdown.map(x => {
+                    const c = x.pct >= 70 ? 'var(--green)' : (x.pct >= 40 ? '#c9a227' : 'var(--red)');
+                    return `<div class="stat-line"><span class="k">${x.label}</span><span class="v" style="color:${c};font-weight:700;">${x.pct}%</span></div>`;
+                }).join('');
+                return `<div class="card" style="margin-bottom:10px;padding:12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                        <div>
+                            <div style="font-size:12px;font-weight:800;">🏅 مؤشر أداء الدورة (مقارنة بتاريخك الخاص)</div>
+                            <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${rankBadge}</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:26px;font-weight:900;color:${scoreColor};line-height:1;">${perfRank.score}<span style="font-size:12px;font-weight:700;">/100</span></div>
+                            <div style="margin-top:3px;">${confBadgeHtml(perfRank.sampleSize)}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px;">${rows}</div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:6px;">💡 النسبة بجانب كل مؤشر = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه. الرقم الكبير = متوسط الأربع نسب. مش مقياس عالمي مطلق، ده ترتيبك أنت مقابل نفسك.</div>
+                </div>`;
+            })();
             // ============ مؤشر كثافة التسجيل: تحذير أعلى التحليلات لو التغطية اليومية ضعيفة، عشان يعرف المستخدم أن دقة كل التحليلات التالية محدودة بجودة تسجيله ============
             const recComp = computeRecordingCompleteness(b, m);
             const dataConf = computeDataConfidence(b, m);
@@ -11627,7 +11795,7 @@
             const predTrackRecord = computePredictionTrackRecord(b.species);
             const predHtml = !ins.weightPrediction ? '' : `
                 <div class="check-row"><div class="txt">
-                    <div>🔮 وزن متوقع يوم ${ins.weightPrediction.targetAge}: <b>${fmt(ins.weightPrediction.predictedG,0)} جم</b> ${ins.weightPrediction.predictedGLow!=null?`<span style="color:var(--muted);font-weight:600;">(نطاق ${fmt(ins.weightPrediction.predictedGLow,0)}–${fmt(ins.weightPrediction.predictedGHigh,0)} جم)</span>`:''} ${ins.weightPrediction.stdAtTarget>0?`(المعياري ${fmt(ins.weightPrediction.stdAtTarget,0)} جم)`:''}</div>
+                    <div>🔮 وزن متوقع يوم ${ins.weightPrediction.targetAge}: <b>${fmt(ins.weightPrediction.predictedG,0)} جم</b> ${ins.weightPrediction.predictedGLow!=null?`<span style="color:var(--muted);font-weight:600;">(نطاق ${fmt(ins.weightPrediction.predictedGLow,0)}–${fmt(ins.weightPrediction.predictedGHigh,0)} جم)</span>`:''} ${ins.weightPrediction.stdAtTarget>0?`(المعياري ${fmt(ins.weightPrediction.stdAtTarget,0)} جم)`:''} ${confBadgeHtml(ins.weightPrediction.perfRatioSamples, {low:2, mid:4})}</div>
                     <div class="day">${ins.weightPrediction.perfRatio!=null?`مبني على نسبة أداء القطيع مقارنة بمنحنى نمو السلالة (${fmt(ins.weightPrediction.perfRatio*100,0)}% من معدل نمو السلالة${ins.weightPrediction.perfRatioLong!=null?`، مزيج بين آخر أيام (${fmt(ins.weightPrediction.perfRatioShort*100,0)}%) وأداء الدورة كاملة (${fmt(ins.weightPrediction.perfRatioLong*100,0)}%)`:''})`:`مبني على معدل النمو الفعلي الأخير (${fmt(ins.weightPrediction.recentDailyGain,1)} جم/يوم)`}${ins.weightPrediction.diffPct!=null?` — ${ins.weightPrediction.diffPct>=0?'أعلى':'أقل'} من المعياري بـ ${fmt(Math.abs(ins.weightPrediction.diffPct),1)}%`:''}</div>
                     ${ins.weightPrediction.predictedGLow==null?`<div class="day" style="color:var(--muted);">نطاق الثقة يحتاج 4 وزنات فعلية على الأقل موزّعة عبر الدورة عشان يظهر</div>`:''}
                     ${ins.weightPrediction.outlierWeightDaysExcluded?`<div class="day" style="color:var(--muted);">تم تجاهل ${ins.weightPrediction.outlierWeightDaysExcluded} قراءة وزن غير منطقية عند حساب هذا التوقع (راجعها فى السجل، غالبًا خطأ ميزان)</div>`:''}
@@ -11816,7 +11984,7 @@
                 };
                 const rowsHtml = bc.top.map((r, i) => `<div class="stat-line"><span class="k">${i+1}. ${esc(r.name)} (${r.startDate})</span><span class="v">EPEF ${fmt(r.epef,0)} · FCR ${fmt(r.fcr,2)} · نفوق ${fmt(r.mortRate,2)}%</span></div>`).join('');
                 return `<div class="check-row"><div class="txt">
-                        <div>🏆 مقارنة بأفضل ${bc.top.length} دورات سابقة (من أصل ${bc.sampleSize}، حسب EPEF)</div>
+                        <div>🏆 مقارنة بأفضل ${bc.top.length} دورات سابقة (من أصل ${bc.sampleSize}، حسب EPEF) ${confBadgeHtml(bc.sampleSize)}</div>
                         <div class="day" style="margin-top:4px;">
                             <div class="stat-line"><span class="k">EPEF الحالي مقابل متوسط الأفضل</span><span class="v">${fmt(m.epef,0)} مقابل ${fmt(bc.avg.epef,0)} ${cmp(m.epef, bc.avg.epef, true)}</span></div>
                             <div class="stat-line"><span class="k">FCR الحالي مقابل متوسط الأفضل</span><span class="v">${m.fcr?fmt(m.fcr,2):'—'} مقابل ${fmt(bc.avg.fcr,2)} ${m.fcr?cmp(m.fcr, bc.avg.fcr, false):''}</span></div>
@@ -11978,7 +12146,7 @@
             // ===== 4) تحليل موسمي =====
             const seasonal = computeSeasonalAnalysis(b.species);
             const seasonalHtml = !seasonal ? '' : `<div class="check-row"><div class="txt">
-                <div>🗓️ تحليل موسمي عبر دوراتك السابقة (${getSpeciesData(b.species).label})</div>
+                <div>🗓️ تحليل موسمي عبر دوراتك السابقة (${getSpeciesData(b.species).label}) ${confBadgeHtml(seasonal.reduce((s,x)=>s+x.count,0))}</div>
                 <div class="day">${seasonal.map(s => `${s.season}: FCR ${s.avgFcr?fmt(s.avgFcr,2):'—'} · نفوق ${s.avgMort?fmt(s.avgMort,2)+'%':'—'} (${s.count} دورة${s.lowConfidence?' — ⚠️ عينة صغيرة':''})`).join(' · ')}</div>
             </div></div>`;
             // ===== 5) أثر الإضافات =====
@@ -12049,6 +12217,7 @@
                 </details>`;
             const totalInsights = groupAttentionArr.length + groupForecastArr.length + groupPerformanceArr.length + groupBenchmarkArr.length;
             const insightsSection = !totalInsights ? '' : `<div class="section"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
+                ${perfScoreCardHtml}
                 <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">اضغط على أي مجموعة بالأسفل لعرض تفاصيلها — "يحتاج انتباه" مفتوحة افتراضيًا لأنها الأهم.</p>
                 <div class="card" style="padding:0;overflow:hidden;">
                     ${insightGroup('يحتاج انتباه الآن', '⚠️', 'مخاطر ومؤشرات تستاهل تتصرف فيها دلوقتي', groupAttentionArr, true)}
@@ -14983,10 +15152,10 @@
                 <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 يظهر هذا القسم تلقائيًا عند وجود دفعتين نشطتين أو أكثر — مفيد لو عندك أكثر من عنبر أو موقع فى نفس الوقت.</p>
             </div>` : '';
 
-            // ============ فئة 0: هوية المزرعة والتفضيلات الشخصية ============
+            // ============ فئة 0: هوية المزرعة ============
             const catIdentity = `
             <div class="section" style="margin-top:0;">
-                <div class="section-head"><h2>🏷️ هوية المزرعة والتفضيلات</h2></div>
+                <div class="section-head"><h2>🏷️ هوية المزرعة</h2></div>
                 <div class="card">
                     <div class="field full"><label>اسم المزرعة (يظهر أعلى التطبيق)</label>
                         <input id="set_farmName" value="${esc(state.farmName || '')}" placeholder="مثال: مزرعة العائلة - إيتاي البارود" oninput="document.getElementById('set_farmNamePreview').textContent = this.value.trim() || 'مزرعتي للتسمين';">
@@ -14994,14 +15163,20 @@
                     <p style="font-size:11px;color:var(--muted);margin:2px 2px 10px;">سيظهر باسم: <b id="set_farmNamePreview">${esc(state.farmName || 'مزرعتي للتسمين')}</b></p>
                     <button class="btn gold" onclick="saveFarmName()">💾 حفظ اسم المزرعة</button>
                 </div>
+            </div>`;
+
+            // ============ مقتطف: اهتزاز التطبيق (يُستخدم داخل فئة "النظام والتطبيق") ============
+            const snippetVibration = `
                 <div class="card" style="margin-top:10px;">
                     <label class="check-row" style="cursor:pointer;">
                         <input type="checkbox" id="set_vibration" ${state.vibrationEnabled !== false ? 'checked' : ''} onchange="toggleVibration(this.checked)">
                         <div class="txt"><div style="font-weight:800;">📳 اهتزاز عند الحفظ والتنبيهات المهمة</div>
                         <div class="day">اهتزاز خفيف عند حفظ سجل يومي، تنفيذ تحصين، أو ظهور تنبيه خطر</div></div>
                     </label>
-                </div>
-                ${isSourceDevice() ? `
+                </div>`;
+
+            // ============ مقتطف: طلبات الدخول وأجهزة التفعيل (يُستخدم داخل فئة "الوصول والحسابات") ============
+            const snippetDeviceAccess = isSourceDevice() ? `
                 <div class="card" style="margin-top:10px;">
                     <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:8px;">📋 طلبات الدخول ${accessRequestsCache.filter(r=>r.status==='pending').length ? `<span class="pill" style="font-size:10px;background:#fff3cd;color:#997404;">${accessRequestsCache.filter(r=>r.status==='pending').length} جديد</span>` : ''}</label>
                     ${accessRequestsCache.length ? accessRequestsCache.map(r => `
@@ -15036,8 +15211,7 @@
                         <div id="genActivationCodeOutput" style="font-size:20px;font-weight:900;letter-spacing:2px;color:var(--barn-dark);min-height:26px;"></div>
                     </div>
                     <button class="btn ghost sm" style="margin-top:8px;" onclick="copyGeneratedCode()">📋 نسخ كود التفعيل</button>
-                </div>` : ''}
-            </div>`;
+                </div>` : '';
 
             // ============ فئة 1: المزرعة والدفعات ============
             const catFarm = `
@@ -15110,8 +15284,7 @@
             <div class="section">
                 <div class="section-head"><h2>📇 جهات الاتصال السريعة</h2></div>
                 ${renderContactsSection()}
-            </div>
-            ${renderAdvancedSettingsSection()}`;
+            </div>`;
 
             // ============ فئة 2: الأدوات والحاسبات ============
             const catTools = `
@@ -15150,8 +15323,20 @@
                     <div id="preCycleResult" style="margin-top:8px;"></div>
                     <div class="day" style="margin-top:6px;color:var(--muted);">⚠️ مؤشر استرشادي مبني على دوراتك المؤرشفة السابقة فقط — كل ما راكمت دورات أكتر زادت دقته</div>
                 </div>
+            </div>`;
+
+            // ============ فئة جديدة: المعايير المرجعية (منحنى الوزن/العلف/البيئة + معايير الحسابات المتقدمة) ============
+            const catStandards = `
+            <div class="section" style="margin-top:0;">
+                <div class="section-head"><h2>📊 عن هذا القسم</h2></div>
+                <div class="card">
+                    <p style="font-size:12px;color:var(--muted);margin:0;line-height:1.7;">
+                        كل الأرقام هنا بتغذّي محرك الحسابات فى التطبيق (منحنى الأداء المرجعي، تقدير وقود التدفئة، مواعيد التنبيهات، ألوان تقييم الأداء، دراسة الجدوى). بتتعدل نادرًا — عدّلها براحتك على حسب ظروف مزرعتك الفعلية.
+                    </p>
+                </div>
             </div>
-            ${renderStdRefSection()}`;
+            ${renderStdRefSection()}
+            ${renderAdvancedSettingsSection()}`;
 
             // ============ فئة 3: إعدادات النظام ============
             const catSystem = `
@@ -15171,6 +15356,10 @@
                         💡 لو ظهرت رسالة "المتصفح لا يدعم" لتحديد الموقع أو الإشعارات: ده غالبًا لأن الملف مفتوح مباشرة (file://) بدل رابط https، وده يمنع بعض المتصفحات/الواجهات من هذه الميزات لأسباب أمنية. الحل: افتح التطبيق من متصفح حقيقي (Chrome/Safari) بعد رفعه على استضافة (حتى مجانية)، أو استخدم البحث بالاسم لتحديد الموقع، وصوت التنبيه البديل أعلاه بدل الإشعارات.
                     </div>
                 </div>
+            </div>
+            <div class="section">
+                <div class="section-head"><h2>📳 التنبيهات الاهتزازية</h2></div>
+                ${snippetVibration.replace('margin-top:10px;', '')}
             </div>
             <div class="section">
                 <div class="section-head"><h2>💱 العملة والوحدات</h2></div>
@@ -15264,40 +15453,6 @@
                             <button class="btn ghost" style="padding:6px 10px;font-size:12px;color:var(--red);" onclick="deleteLocalSnapshot('${s.id}')">حذف</button>
                         </div></div>`).join('') : '<div class="empty" style="padding:10px;">لا توجد لقطات محلية بعد.</div>'}
                 </div>
-            </div>`;
-
-            // ============ فئة 5: الحسابات والتقارير ============
-            const catAccounts = `
-            <div class="section" style="margin-top:0;">
-                <div class="section-head"><h2>👥 الحسابات وصلاحيات الوصول</h2></div>
-                <div class="card">
-                    <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;line-height:1.7;">
-                        غيّر كلمة مرور المالك، وأضف/عدّل حسابات العمّال، وحدّد لكل عامل أي أقسام من التطبيق يقدر يوصل لها.
-                    </p>
-                    <button class="btn gold block" onclick="openAccountsModal()">👥 إدارة الحسابات والصلاحيات</button>
-                </div>
-            </div>
-            <div class="section">
-                <div class="section-head"><h2>📊 أداء العمال</h2></div>
-                <div class="card" style="padding:0;">
-                    ${(() => {
-                        const wp = computeWorkerPerformance();
-                        if (!wp) return `<div class="empty" style="padding:14px;"><div class="ico">👷</div>لا توجد سجلات مرتبطة بعمّال بعد — المقياس بيبدأ يتجمّع من أول سجل يومي يُحفظ من الآن.</div>`;
-                        return wp.map(r => {
-                            const onTimeColor = r.onTimePct == null ? 'var(--muted)' : (r.onTimePct >= 80 ? 'var(--green)' : (r.onTimePct >= 50 ? '#c9a227' : 'var(--red)'));
-                            return `<div class="check-row"><div class="txt">
-                                <div style="font-weight:800;">${r.name === 'المالك' ? '👑' : '👷'} ${esc(r.name)}</div>
-                                <div class="day" style="margin-top:4px;">
-                                    <div class="stat-line"><span class="k">عدد السجلات المُدخَلة</span><span class="v">${fmt(r.recordsCount,0)}</span></div>
-                                    <div class="stat-line"><span class="k">الالتزام بالتوقيت (نفس اليوم)</span><span class="v" style="color:${onTimeColor};">${r.onTimePct!=null?fmt(r.onTimePct,0)+'%':'—'}${r.avgDelayDays?` (متوسط تأخير ${fmt(r.avgDelayDays,1)} يوم)`:''}</span></div>
-                                    <div class="stat-line"><span class="k">اكتمال البيانات المُدخَلة</span><span class="v">${r.completenessPct!=null?fmt(r.completenessPct,0)+'%':'—'}</span></div>
-                                    <div class="stat-line"><span class="k">تعديلات/حذف مسجَّلة</span><span class="v">${fmt(r.edits,0)}</span></div>
-                                </div>
-                            </div></div>`;
-                        }).join('');
-                    })()}
-                    <p style="font-size:10.5px;color:var(--muted);padding:10px;margin:0;">💡 "الالتزام بالتوقيت" = نسبة السجلات التى اتسجلت فى نفس يوم البيانات المُدخَلة. "اكتمال البيانات" = متوسط تعبئة الحقول الاختيارية المهمة (ماء/حرارة/وزن/تقييم صحي). المقياس تراكمي منذ تفعيله ولا يشمل سجلات قديمة.</p>
-                </div>
             </div>
             <div class="section">
                 <div class="section-head"><h2>🗑️ سلة المهملات (استرجاع ما تم حذفه)</h2></div>
@@ -15327,13 +15482,49 @@
                 </div>
             </div>`;
 
+            // ============ فئة 5: الوصول والحسابات (أجهزة + عمّال + صلاحيات) ============
+            const catAccess = `
+            <div class="section" style="margin-top:0;">
+                <div class="section-head"><h2>👥 الحسابات وصلاحيات الوصول</h2></div>
+                <div class="card">
+                    <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;line-height:1.7;">
+                        غيّر كلمة مرور المالك، وأضف/عدّل حسابات العمّال، وحدّد لكل عامل أي أقسام من التطبيق يقدر يوصل لها.
+                    </p>
+                    <button class="btn gold block" onclick="openAccountsModal()">👥 إدارة الحسابات والصلاحيات</button>
+                </div>
+                ${snippetDeviceAccess}
+            </div>
+            <div class="section">
+                <div class="section-head"><h2>📊 أداء العمال</h2></div>
+                <div class="card" style="padding:0;">
+                    ${(() => {
+                        const wp = computeWorkerPerformance();
+                        if (!wp) return `<div class="empty" style="padding:14px;"><div class="ico">👷</div>لا توجد سجلات مرتبطة بعمّال بعد — المقياس بيبدأ يتجمّع من أول سجل يومي يُحفظ من الآن.</div>`;
+                        return wp.map(r => {
+                            const onTimeColor = r.onTimePct == null ? 'var(--muted)' : (r.onTimePct >= 80 ? 'var(--green)' : (r.onTimePct >= 50 ? '#c9a227' : 'var(--red)'));
+                            return `<div class="check-row"><div class="txt">
+                                <div style="font-weight:800;">${r.name === 'المالك' ? '👑' : '👷'} ${esc(r.name)}</div>
+                                <div class="day" style="margin-top:4px;">
+                                    <div class="stat-line"><span class="k">عدد السجلات المُدخَلة</span><span class="v">${fmt(r.recordsCount,0)}</span></div>
+                                    <div class="stat-line"><span class="k">الالتزام بالتوقيت (نفس اليوم)</span><span class="v" style="color:${onTimeColor};">${r.onTimePct!=null?fmt(r.onTimePct,0)+'%':'—'}${r.avgDelayDays?` (متوسط تأخير ${fmt(r.avgDelayDays,1)} يوم)`:''}</span></div>
+                                    <div class="stat-line"><span class="k">اكتمال البيانات المُدخَلة</span><span class="v">${r.completenessPct!=null?fmt(r.completenessPct,0)+'%':'—'}</span></div>
+                                    <div class="stat-line"><span class="k">تعديلات/حذف مسجَّلة</span><span class="v">${fmt(r.edits,0)}</span></div>
+                                </div>
+                            </div></div>`;
+                        }).join('');
+                    })()}
+                    <p style="font-size:10.5px;color:var(--muted);padding:10px;margin:0;">💡 "الالتزام بالتوقيت" = نسبة السجلات التى اتسجلت فى نفس يوم البيانات المُدخَلة. "اكتمال البيانات" = متوسط تعبئة الحقول الاختيارية المهمة (ماء/حرارة/وزن/تقييم صحي). المقياس تراكمي منذ تفعيله ولا يشمل سجلات قديمة.</p>
+                </div>
+            </div>`;
+
             const cats = [
                 { id: 'identity', label: '🏷️ الهوية', content: catIdentity },
                 { id: 'farm', label: '🐔 المزرعة', content: catFarm },
+                { id: 'standards', label: '📊 المعايير المرجعية', content: catStandards },
                 { id: 'tools', label: '🧰 الأدوات', content: catTools },
                 { id: 'system', label: '⚙️ النظام', content: catSystem },
+                { id: 'access', label: '🔐 الوصول والحسابات', content: catAccess },
                 { id: 'data', label: '💾 البيانات', content: catData },
-                { id: 'accounts', label: '👥 الحسابات', content: catAccounts },
             ];
             const navHtml = `<div class="settings-subnav">${cats.map(c => `<button class="ssnav-btn ${settingsSubTab===c.id?'active':''}" onclick="setSettingsSubTab('${c.id}')">${c.label}</button>`).join('')}</div>`;
             const active = cats.find(c => c.id === settingsSubTab) || cats[0];
