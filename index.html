@@ -17,11 +17,16 @@
     <link rel="icon" type="image/png" sizes="512x512" href="./icon-512x512-any.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- ============ 🔒 تحصين أداء: defer على المكتبات الخارجية دي — بتخلي المتصفح يرسم الصفحة أثناء التحميل بدل ما يوقف التفسير لحد ما الملفات دي تخلص (ده كان سبب التقل فى بداية التطبيق) ============ -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- ============ SheetJS (xlsx) — تصدير سجل الدفعة بصيغة إكسل حقيقية (ورقة منسّقة) بدل CSV فقط ============ -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- ============ QRCode.js — توليد QR لمعرّف الجهاز، أسرع وأقل غلط من نسخ UID طويل يدويًا ============ -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- ============ Firebase (مزامنة سحابية بين المالك والعمال) ============ -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --barn: #2F4538;
@@ -47,6 +52,34 @@
             --info-bg: #E1EEF3;
             --info-text: #2E6E8E;
         }
+        /* ============ الوضع الليلي (Dark Mode) — تفعيل عبر data-theme="dark" على <html> ============ */
+        html[data-theme="dark"] {
+            --barn: #4A6B54;
+            --barn-dark: #101915;
+            --wheat: #E8C371;
+            --wheat-light: #F0C975;
+            --cream: #14181A;
+            --paper: #1E2426;
+            --brown: #B08A6A;
+            --red: #E06B62;
+            --green: #4FAE73;
+            --blue: #5FA8CC;
+            --ink: #EDEDE8;
+            --muted: #9A9A92;
+            --line: #33393B;
+            --success-bg: #1B3327;
+            --success-text: #6FCB92;
+            --danger-bg: #3A2222;
+            --danger-text: #F09088;
+            --warning-bg: #3A3018;
+            --warning-text: #EFC96B;
+            --info-bg: #1C2E36;
+            --info-text: #7FC3E3;
+        }
+        html[data-theme="dark"] body { background: var(--cream); color: var(--ink); }
+        html[data-theme="dark"] .card, html[data-theme="dark"] .modal, html[data-theme="dark"] input,
+        html[data-theme="dark"] select, html[data-theme="dark"] textarea { background: var(--paper); color: var(--ink); border-color: var(--line); }
+        html[data-theme="dark"] img, html[data-theme="dark"] .logo { filter: brightness(0.92); }
         * {
             box-sizing: border-box;
             margin: 0;
@@ -1275,6 +1308,15 @@
     </style>
 </head>
 <body>
+    <script>
+        // ============ تطبيق الوضع الليلي فورًا قبل أي رسم — يمنع "ومضة" الوضع الفاتح عند فتح التطبيق ============
+        (function(){
+            try {
+                var raw = localStorage.getItem('poultry_state_v3');
+                if (raw && JSON.parse(raw).darkMode) document.documentElement.setAttribute('data-theme', 'dark');
+            } catch(e) {}
+        })();
+    </script>
 
     <!-- ===== شاشة إذن التفعيل (لازم تظهر قبل أي حاجة تانية فى أول تشغيل على أي جهاز — محتواها بيتحدد ديناميكيًا حسب حالة الطلب) ===== -->
     <div class="auth-overlay" id="activationOverlay" style="display:none;">
@@ -4475,6 +4517,24 @@
             if (!uid) { showToast('⚠️ لسه مش متصل بالسيرفر، جرّب تاني بعد شوية'); return; }
             navigator.clipboard?.writeText(uid).then(() => showToast('✅ اتنسخ الـ UID')).catch(() => showToast(uid));
         }
+        // ============ QR لمعرّف الجهاز — يسهّل نقل الـUID لشخص تاني (يفتحه بكاميرا موبايله بدل ما يكتبه يدويًا) ============
+        let deviceUidQrShown = false;
+        function toggleDeviceUidQR() {
+            deviceUidQrShown = !deviceUidQrShown;
+            const box = document.getElementById('deviceUidQrBox');
+            if (!box) return;
+            box.style.display = deviceUidQrShown ? 'flex' : 'none';
+            if (deviceUidQrShown) renderDeviceUidQR();
+        }
+        function renderDeviceUidQR() {
+            const uid = getFbUid();
+            const holder = document.getElementById('deviceUidQrCanvas');
+            if (!holder) return;
+            holder.innerHTML = '';
+            if (!uid) { holder.textContent = '⚠️ الـ UID لسه مش جاهز'; return; }
+            if (typeof QRCode === 'undefined') { holder.textContent = '⚠️ مكتبة QR لسه بتتحمّل، جرّب تاني بعد ثانية'; return; }
+            new QRCode(holder, { text: uid, width: 160, height: 160, colorDark: '#1F2F26', colorLight: '#FFFFFF' });
+        }
         function copyGeneratedCode() {
             const code = document.getElementById('genActivationCodeOutput').textContent;
             if (!code) return;
@@ -5128,6 +5188,8 @@
             if (state.farmName === undefined) state.farmName = (typeof state.farmLocation === 'string' ? state.farmLocation : null); // ترحيل: قديمًا كان اسم المزرعة بيتخزن غلط جوه farmLocation
             if (typeof state.farmLocation === 'string') state.farmLocation = null; // farmLocation مخصص لإحداثيات الطقس فقط {lat,lon} — تصحيح خلط قديم
             if (state.vibrationEnabled === undefined) state.vibrationEnabled = true;
+            if (state.darkMode === undefined) state.darkMode = false;
+            applyTheme();
             if (!state.conflictRules) state.conflictRules = [];
             state.batches.forEach(migrateBatch);
             if (!state.activeId && activeBatches().length) state.activeId = activeBatches()[0].id;
@@ -9179,11 +9241,13 @@
             const projEpef = (projFcr > 0 && targetAge > 0 && projWeightKg > 0)
                 ? (projLiveCountPct * projWeightKg) / (projFcr * targetAge) * 100 : null;
             if (projEpef == null) return null;
-            // أفضل EPEF فعلي محقق سابقًا لنفس النوع (من الدورات المؤرشفة) للمقارنة
+            // أفضل EPEF فعلي محقق سابقًا لنفس النوع (من الدورات المؤرشفة) للمقارنة + نسبة مئوية مقارنة بكل تاريخك
             const archived = state.batches.filter(x => x.status === 'مؤرشفة' && x.species === b.species);
             let bestEpef = null;
-            archived.forEach(x => { const xm = computeMetrics(x); if (xm.epef != null && (bestEpef == null || xm.epef > bestEpef)) bestEpef = xm.epef; });
-            return { targetAge, remainingDays, projWeightKg, projLiveCountPct, projFcr, projEpef, bestEpef };
+            const archivedEpefVals = [];
+            archived.forEach(x => { const xm = computeMetrics(x); if (xm.epef != null) { archivedEpefVals.push(xm.epef); if (bestEpef == null || xm.epef > bestEpef) bestEpef = xm.epef; } });
+            const epefPercentile = archivedEpefVals.length >= 2 ? percentileBeats(projEpef, archivedEpefVals, true) : null;
+            return { targetAge, remainingDays, projWeightKg, projLiveCountPct, projFcr, projEpef, bestEpef, epefPercentile, sampleSize: archivedEpefVals.length };
         }
 
         // ============ 1) نقطة بداية الانحراف المستدام عن المعياري (وزن) ============
@@ -11795,7 +11859,7 @@
             const predTrackRecord = computePredictionTrackRecord(b.species);
             const predHtml = !ins.weightPrediction ? '' : `
                 <div class="check-row"><div class="txt">
-                    <div>🔮 وزن متوقع يوم ${ins.weightPrediction.targetAge}: <b>${fmt(ins.weightPrediction.predictedG,0)} جم</b> ${ins.weightPrediction.predictedGLow!=null?`<span style="color:var(--muted);font-weight:600;">(نطاق ${fmt(ins.weightPrediction.predictedGLow,0)}–${fmt(ins.weightPrediction.predictedGHigh,0)} جم)</span>`:''} ${ins.weightPrediction.stdAtTarget>0?`(المعياري ${fmt(ins.weightPrediction.stdAtTarget,0)} جم)`:''} ${confBadgeHtml(ins.weightPrediction.perfRatioSamples, {low:2, mid:4})}</div>
+                    <div>🔮 وزن متوقع يوم ${ins.weightPrediction.targetAge}: <b>${fmt(ins.weightPrediction.predictedG,0)} جم</b> ${ins.weightPrediction.predictedGLow!=null?`<span style="color:var(--muted);font-weight:600;">(نطاق ${fmt(ins.weightPrediction.predictedGLow,0)}–${fmt(ins.weightPrediction.predictedGHigh,0)} جم)</span>`:''} ${ins.weightPrediction.stdAtTarget>0?`(المعياري ${fmt(ins.weightPrediction.stdAtTarget,0)} جم)`:''} ${predTrackRecord ? confBadgeHtml(predTrackRecord.cycles) : ''}</div>
                     <div class="day">${ins.weightPrediction.perfRatio!=null?`مبني على نسبة أداء القطيع مقارنة بمنحنى نمو السلالة (${fmt(ins.weightPrediction.perfRatio*100,0)}% من معدل نمو السلالة${ins.weightPrediction.perfRatioLong!=null?`، مزيج بين آخر أيام (${fmt(ins.weightPrediction.perfRatioShort*100,0)}%) وأداء الدورة كاملة (${fmt(ins.weightPrediction.perfRatioLong*100,0)}%)`:''})`:`مبني على معدل النمو الفعلي الأخير (${fmt(ins.weightPrediction.recentDailyGain,1)} جم/يوم)`}${ins.weightPrediction.diffPct!=null?` — ${ins.weightPrediction.diffPct>=0?'أعلى':'أقل'} من المعياري بـ ${fmt(Math.abs(ins.weightPrediction.diffPct),1)}%`:''}</div>
                     ${ins.weightPrediction.predictedGLow==null?`<div class="day" style="color:var(--muted);">نطاق الثقة يحتاج 4 وزنات فعلية على الأقل موزّعة عبر الدورة عشان يظهر</div>`:''}
                     ${ins.weightPrediction.outlierWeightDaysExcluded?`<div class="day" style="color:var(--muted);">تم تجاهل ${ins.weightPrediction.outlierWeightDaysExcluded} قراءة وزن غير منطقية عند حساب هذا التوقع (راجعها فى السجل، غالبًا خطأ ميزان)</div>`:''}
@@ -11806,7 +11870,7 @@
                 const fp = ins.fcrPrediction;
                 const diffColor = fp.diffPct == null ? 'inherit' : (fp.diffPct <= 0 ? 'var(--green)' : (fp.diffPct <= 8 ? '#c9a227' : 'var(--red)'));
                 return `<div class="check-row"><div class="txt">
-                    <div>🔮 FCR متوقَّع يوم ${fp.targetAge} (نهاية الدورة): <b style="color:${diffColor};">${fmt(fp.predictedFcr,2)}</b> ${fp.predictedFcrLow!=null?`<span style="color:var(--muted);font-weight:600;">(نطاق ${fmt(fp.predictedFcrLow,2)}–${fmt(fp.predictedFcrHigh,2)})</span>`:''} ${fp.stdFcrAtTarget?`(المعياري ${fmt(fp.stdFcrAtTarget,2)})`:''}</div>
+                    <div>🔮 FCR متوقَّع يوم ${fp.targetAge} (نهاية الدورة): <b style="color:${diffColor};">${fmt(fp.predictedFcr,2)}</b> ${fp.predictedFcrLow!=null?`<span style="color:var(--muted);font-weight:600;">(نطاق ${fmt(fp.predictedFcrLow,2)}–${fmt(fp.predictedFcrHigh,2)})</span>`:''} ${fp.stdFcrAtTarget?`(المعياري ${fmt(fp.stdFcrAtTarget,2)})`:''} ${predTrackRecord ? confBadgeHtml(predTrackRecord.cycles) : ''}</div>
                     <div class="day">مبني على نسبة أداء استهلاك العلف الفعلي مقارنة بمنحنى السلالة (${fmt(fp.feedPerfRatio*100,0)}% من معدل السلالة${fp.feedPerfRatioLong!=null?`، مزيج بين آخر أيام (${fmt(fp.feedPerfRatioShort*100,0)}%) وأداء الدورة كاملة (${fmt(fp.feedPerfRatioLong*100,0)}%)`:''}) + إسقاط النفوق بمعدل آخر 7 أيام${fp.diffPct!=null?` — ${fp.diffPct<=0?'أفضل من':'أعلى من'} المعياري بـ ${fmt(Math.abs(fp.diffPct),1)}%`:''}</div>
                     <div class="day" style="margin-top:2px;">توقّع تقديري وليس نهائيًا — كل ما اقتربت من يوم البيع الفعلي زادت دقته، فرصتك تتدخل بتعديل التغذية أو البيئة الآن لو الفرق واضح</div>
                 </div></div>`;
@@ -11816,9 +11880,10 @@
                     <div>🎯 قرار البيع (حسب بورصة الدواجن)</div>
                     <div class="day">أدخل سعر العلف وسعر البورصة الحالي من تبويب "💰 الإدارة والتخطيط" ← دراسة الجدوى عشان تظهر التوصية هنا</div>
                 </div></div>` : `<div class="check-row"><div class="txt">
-                    <div>🎯 قرار البيع: أفضل يوم مُوصى به <b style="color:var(--green);">يوم ${saleAdv.osd.optimalDay}</b>${saleAdv.osd.limitingFactor==='density'?' <span style="color:var(--red);font-weight:700;">(بسبب الكثافة/المساحة، قبل الحد الاقتصادي)</span>':''}</div>
+                    <div>🎯 قرار البيع: أفضل يوم مُوصى به <b style="color:var(--green);">يوم ${saleAdv.osd.optimalDay}</b>${saleAdv.osd.limitingFactor==='density'?' <span style="color:var(--red);font-weight:700;">(بسبب الكثافة/المساحة، قبل الحد الاقتصادي)</span>':''} ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
                     <div class="day" style="color:${saleAdv.adviceColor};font-weight:700;">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
                     <div class="day" style="margin-top:2px;">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم (${saleAdv.osd.priceSource==='market'?'مُدخَل يدويًا':'من متوسط مبيعات سابقة'}) — حدّثه من تبويب "💰 الإدارة والتخطيط" ← دراسة الجدوى</div>
+                    <div class="day" style="margin-top:2px;color:var(--muted);">مبني على ${saleAdv.osd.weightDataPoints} وزنة فعلية مُقاسة مؤخرًا — كل ما سجّلت أوزان أكتر وأقرب لبعض، زادت دقة اليوم المُوصى به</div>
                 </div></div>`;
             // ============ توقع الربح الحي للدورة — لو استمرت على نفس المنوال حتى يوم البيع الموصى به، يتحدّث تلقائيًا مع كل تسجيل جديد أو تغيير سعر البورصة ============
             const liveProfit = computeLiveProfitForecast(b, m, fin, saleAdv);
@@ -12109,8 +12174,9 @@
                 const vsBest = epefProj.bestEpef ? epefProj.projEpef - epefProj.bestEpef : null;
                 const color = vsBest == null ? 'var(--muted)' : (vsBest >= 0 ? 'var(--green)' : (vsBest >= -20 ? '#c9a227' : 'var(--red)'));
                 return `<div class="check-row"><div class="txt">
-                    <div>🎯 EPEF نهائي متوقع (لو استمريت بنفس المعدل الحالي حتى يوم ${epefProj.targetAge}): <b style="color:${color};">${fmt(epefProj.projEpef,0)}</b></div>
+                    <div>🎯 EPEF نهائي متوقع (لو استمريت بنفس المعدل الحالي حتى يوم ${epefProj.targetAge}): <b style="color:${color};">${fmt(epefProj.projEpef,0)}</b> ${confBadgeHtml(epefProj.sampleSize)}</div>
                     <div class="day">وزن متوقع ${fmt(epefProj.projWeightKg*1000,0)} جم · بقاء متوقع ${fmt(epefProj.projLiveCountPct,1)}% · FCR بنفس المعدل الحالي ${fmt(epefProj.projFcr,2)}${epefProj.bestEpef ? ` — مقابل أفضل EPEF فعلي محقق سابقًا: ${fmt(epefProj.bestEpef,0)}` : ' (لا توجد دورة مؤرشفة سابقة للمقارنة بعد)'}</div>
+                    ${epefProj.epefPercentile != null ? `<div class="day" style="margin-top:2px;">📊 لو تحقق هذا الرقم، هيبقى أفضل من ${epefProj.epefPercentile}% من دوراتك المؤرشفة السابقة لنفس النوع (${epefProj.sampleSize} دورة)</div>` : ''}
                     <div class="day" style="margin-top:2px;">تقدير مباشر يتحدث يوميًا — مش رقمك النهائي الفعلي، لكنه بيوريك بدري لو محتاج تعدّل حاجة قبل ما تفوّت الفرصة</div>
                 </div></div>`;
             })();
@@ -12217,8 +12283,8 @@
                 </details>`;
             const totalInsights = groupAttentionArr.length + groupForecastArr.length + groupPerformanceArr.length + groupBenchmarkArr.length;
             const insightsSection = !totalInsights ? '' : `<div class="section"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
-                ${perfScoreCardHtml}
                 <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">اضغط على أي مجموعة بالأسفل لعرض تفاصيلها — "يحتاج انتباه" مفتوحة افتراضيًا لأنها الأهم.</p>
+                ${perfScoreCardHtml}
                 <div class="card" style="padding:0;overflow:hidden;">
                     ${insightGroup('يحتاج انتباه الآن', '⚠️', 'مخاطر ومؤشرات تستاهل تتصرف فيها دلوقتي', groupAttentionArr, true)}
                     ${insightGroup('توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, false)}
@@ -12457,6 +12523,42 @@
         }
 
         // ============ Feed Tab (مجمّع): برنامج المراحل + الإضافات + التوقعات + المخزون — كل حاجة خاصة بالعلف مكان واحد ============
+        // ============ برنامج التحويل التدريجي بين نوعين علف — منطقة العلف (تبويب الإنتاج) ============
+        function renderFeedTransitionSection(b) {
+            return `<div class="section"><div class="section-head"><h2>🔄 برنامج التحويل بين الأعلاف${b ? ` — الدفعة النشطة (${expansionSpeciesLabel(b.species)})` : ''}</h2></div>
+                <div class="card">
+                    <p style="font-size:11px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                        عرّف هنا مرة واحدة جدول التحويل من علف لآخر (بادئ→نامي، نامي→ناهي، أو أي علف لآخر)، بنسبة كل علف فى كل يوم من أيام التحويل. النسب دي هتتطبّق تلقائيًا فى "تسجيل بيانات اليوم" — هتقسّم كمية العلف اللي هتسجّلها بين الصنفين، وتخصمها من المخزن بنفس النسبة، من غير ما تحتاج تحسب حاجة يدويًا.
+                    </p>
+                    ${!b ? `<div class="empty" style="padding:14px;"><div class="ico">🔄</div>محتاج دفعة نشطة الأول عشان تقدر تدير جدول التحويل بتاعها.</div>` : `
+                    ${(b.feedTransitions||[]).map(t => `
+                    <div class="card" style="margin-bottom:10px;background:var(--cream);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                            <div style="font-weight:800;color:var(--barn-dark);">${esc(t.fromFeed)} ← → ${esc(t.toFeed)} <span style="font-weight:600;color:var(--muted);font-size:11.5px;">(بداية عمر ${t.startAge} يوم، ${t.days.length} يوم تحويل)</span></div>
+                            <button class="btn danger sm" onclick="removeFeedTransition('${t.id}')">🗑️ حذف الجدول</button>
+                        </div>
+                        <div class="scroll-x" style="margin-top:8px;">
+                            <table><thead><tr><th>يوم التحويل</th><th>عمر القطيع</th><th>% ${esc(t.fromFeed)}</th><th>% ${esc(t.toFeed)}</th><th></th></tr></thead>
+                            <tbody>${t.days.map((d,i)=>`
+                                <tr><td>${i+1}</td><td>يوم ${t.startAge+i}</td>
+                                <td><input type="number" min="0" max="100" value="${d.fromPct}" style="width:64px;padding:6px;border:1.5px solid var(--line);border-radius:8px;" onchange="updateTransitionDayPct('${t.id}',${i},this.value)"></td>
+                                <td style="font-weight:800;">${100-d.fromPct}%</td>
+                                <td><button class="btn ghost sm" onclick="removeTransitionDay('${t.id}',${i})">🗑️</button></td></tr>`).join('')}</tbody></table>
+                        </div>
+                        <button class="btn ghost sm" style="margin-top:6px;" onclick="addTransitionDay('${t.id}')">+ إضافة يوم للجدول</button>
+                    </div>`).join('') || '<div class="empty" style="padding:14px;"><div class="ico">🔄</div>لا توجد جداول تحويل بعد.</div>'}
+                    <div class="form-grid" style="margin-top:12px;border-top:1.5px solid var(--line);padding-top:12px;">
+                        <div class="field"><label>من علف (الحالي)</label><input id="ft_from" list="dl_invItems" placeholder="مثال: بادئ"></div>
+                        <div class="field"><label>إلى علف (الجديد)</label><input id="ft_to" list="dl_invItems" placeholder="مثال: نامي"></div>
+                        <div class="field"><label>عمر بداية التحويل (يوم)</label><input id="ft_startAge" type="number" inputmode="decimal" min="0" placeholder="مثال: 10"></div>
+                    </div>
+                    <button class="btn gold block" style="margin-top:6px;" onclick="addFeedTransition()">+ إضافة جدول تحويل جديد</button>
+                    <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 بيبدأ افتراضيًا بيومين (65%/35%) — عدّل النسب وأضف/احذف أيام حسب برنامجك بالظبط (مثال: يوم 1: 65%/35%، يوم 2: 50%/50%، يوم 3: 35%/65%...).</p>
+                    `}
+                </div>
+            </div>`;
+        }
+
         function renderFeedTab(b, m, fin) {
             m = m || computeMetrics(b);
             fin = fin || computeFinance(b, m);
@@ -12579,6 +12681,7 @@
                 </div>
             </div>
             ${feedStageCard}
+            ${renderFeedTransitionSection(b)}
             <div class="section"><div class="section-head"><h2>🌾 برنامج إضافات العلف</h2>
                 <button class="btn ghost sm owner-only" onclick="document.getElementById('feedAddModalOverlay').classList.add('show')">+ إضافة</button></div>
                 <div class="card" style="padding:0;">${feedAddRows||'<div class="empty" style="padding:14px;">لا توجد إضافات علف.</div>'}</div>
@@ -13247,35 +13350,10 @@
                     </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <label style="font-weight:800;display:block;margin-bottom:8px;">🔄 برنامج التحويل بين الأعلاف${b ? ` — الدفعة النشطة (${expansionSpeciesLabel(b.species)})` : ''}</label>
-                        <p style="font-size:11px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
-                            عرّف هنا مرة واحدة جدول التحويل من علف لآخر (بادئ→نامي، نامي→ناهي، أو أي علف لآخر)، بنسبة كل علف فى كل يوم من أيام التحويل. النسب دي هتتطبّق تلقائيًا فى "تسجيل بيانات اليوم" — هتقسّم كمية العلف اللي هتسجّلها بين الصنفين، وتخصمها من المخزن بنفس النسبة، من غير ما تحتاج تحسب حاجة يدويًا.
+                        <label style="font-weight:800;display:block;margin-bottom:8px;">🔄 برنامج التحويل بين الأعلاف</label>
+                        <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">
+                            إدارة جدول التحويل التدريجي بين نوعين علف (بادئ→نامي، نامي→ناهي، أو أي علف لآخر) اتنقلت لتبويب "🌾 الإنتاج" ← قسم "العلف" مباشرة، جنب باقي إعدادات برنامج العلف. من هناك تقدر تضيف/تعدّل جدول التحويل الخاص بالدفعة النشطة.
                         </p>
-                        ${!b ? `<div class="empty" style="padding:14px;"><div class="ico">🔄</div>محتاج دفعة نشطة الأول عشان تقدر تدير جدول التحويل بتاعها.</div>` : `
-                        ${(b.feedTransitions||[]).map(t => `
-                        <div class="card" style="margin-bottom:10px;background:var(--cream);">
-                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-                                <div style="font-weight:800;color:var(--barn-dark);">${esc(t.fromFeed)} ← → ${esc(t.toFeed)} <span style="font-weight:600;color:var(--muted);font-size:11.5px;">(بداية عمر ${t.startAge} يوم، ${t.days.length} يوم تحويل)</span></div>
-                                <button class="btn danger sm" onclick="removeFeedTransition('${t.id}')">🗑️ حذف الجدول</button>
-                            </div>
-                            <div class="scroll-x" style="margin-top:8px;">
-                                <table><thead><tr><th>يوم التحويل</th><th>عمر القطيع</th><th>% ${esc(t.fromFeed)}</th><th>% ${esc(t.toFeed)}</th><th></th></tr></thead>
-                                <tbody>${t.days.map((d,i)=>`
-                                    <tr><td>${i+1}</td><td>يوم ${t.startAge+i}</td>
-                                    <td><input type="number" min="0" max="100" value="${d.fromPct}" style="width:64px;padding:6px;border:1.5px solid var(--line);border-radius:8px;" onchange="updateTransitionDayPct('${t.id}',${i},this.value)"></td>
-                                    <td style="font-weight:800;">${100-d.fromPct}%</td>
-                                    <td><button class="btn ghost sm" onclick="removeTransitionDay('${t.id}',${i})">🗑️</button></td></tr>`).join('')}</tbody></table>
-                            </div>
-                            <button class="btn ghost sm" style="margin-top:6px;" onclick="addTransitionDay('${t.id}')">+ إضافة يوم للجدول</button>
-                        </div>`).join('') || '<div class="empty" style="padding:14px;"><div class="ico">🔄</div>لا توجد جداول تحويل بعد.</div>'}
-                        <div class="form-grid" style="margin-top:12px;border-top:1.5px solid var(--line);padding-top:12px;">
-                            <div class="field"><label>من علف (الحالي)</label><input id="ft_from" list="dl_invItems" placeholder="مثال: بادئ"></div>
-                            <div class="field"><label>إلى علف (الجديد)</label><input id="ft_to" list="dl_invItems" placeholder="مثال: نامي"></div>
-                            <div class="field"><label>عمر بداية التحويل (يوم)</label><input id="ft_startAge" type="number" inputmode="decimal" min="0" placeholder="مثال: 10"></div>
-                        </div>
-                        <button class="btn gold block" style="margin-top:6px;" onclick="addFeedTransition()">+ إضافة جدول تحويل جديد</button>
-                        <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 بيبدأ افتراضيًا بيومين (65%/35%) — عدّل النسب وأضف/احذف أيام حسب برنامجك بالظبط (مثال: يوم 1: 65%/35%، يوم 2: 50%/50%، يوم 3: 35%/65%...).</p>
-                        `}
                     </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:12px;">
@@ -14142,7 +14220,11 @@
         function classifyCrossCycleDiffs(diffs, thresh) {
             const valid = diffs.filter(v => v != null);
             if (!valid.length) return null;
-            return { n: valid.length, improved: valid.filter(v => v > thresh).length, worsened: valid.filter(v => v < -thresh).length };
+            // 🔒 تحسين: بنحسب كمان "متوسط حجم الفرق الفعلي" مش بس عدد الدورات المتحسنة/المتراجعة —
+            // ده اللي بيسمح للتوصيات إنها تتكلم بأرقام صريحة ("تحسّن بمتوسط +3.2%") بدل حكم عام بلا رقم.
+            // الإشارة موحّدة فى كل الاستدعاءات: موجب = تحسّن، سالب = تراجع (راجع تعليقات mortDiff/weightDiff/fcrDiff بالأسفل).
+            const avg = valid.reduce((s, v) => s + v, 0) / valid.length;
+            return { n: valid.length, improved: valid.filter(v => v > thresh).length, worsened: valid.filter(v => v < -thresh).length, avg };
         }
         function verdictFromMetrics(mortC, weightC, fcrC) {
             const metrics = [mortC, weightC, fcrC].filter(Boolean);
@@ -14345,28 +14427,57 @@
         // ============ ملخص "توصيات الدورة القادمة" — بيتولد أوتوماتيك عند أرشفة كل دورة ============
         // بيجمع فى رسالة واحدة أفضل موسم بدء، أفضل مورد علف، والإضافات/المعاملات المستحقة الاستمرار
         // أو المقترح إلغاؤها — بدل ما تدور على نفس المعلومة دي متفرقة فى كذا قسم تحليل منفصل
+        // ============ 🔒 تحصين: سطر إحصائي صريح بالأرقام لكل بند (مورد علف / إضافة / معاملة) — بدل حكم عام بلا رقم ============
+        // الإشارة موحّدة: mortC.avg/weightC.avg/fcrC.avg موجب = تحسّن، سالب = تراجع (راجع تعليقات الدوال المصدر لهذه القيم)
+        function crossCycleStatLine(r) {
+            const parts = [];
+            if (r.weightC && r.weightC.n) {
+                const v = r.weightC.avg;
+                parts.push(`الوزن ${v >= 0 ? 'تحسّن' : 'تراجع'} بمتوسط ${v >= 0 ? '+' : '-'}${fmt(Math.abs(v), 1)}% انحراف عن المعياري (${r.weightC.improved} من ${r.weightC.n} دورة تحسّنت)`);
+            }
+            if (r.fcrC && r.fcrC.n) {
+                const v = r.fcrC.avg;
+                parts.push(`معدل التحويل ${v >= 0 ? 'تحسّن' : 'تراجع'} بمتوسط ${fmt(Math.abs(v), 2)} نقطة (${r.fcrC.improved} من ${r.fcrC.n} دورة تحسّنت)`);
+            }
+            if (r.mortC && r.mortC.n) {
+                const v = r.mortC.avg;
+                parts.push(`النفوق ${v >= 0 ? 'قلّ' : 'زاد'} بمتوسط ${fmt(Math.abs(v), 2)} طائر/يوم (${r.mortC.improved} من ${r.mortC.n} دورة تحسّنت)`);
+            }
+            return parts.join(' · ');
+        }
         function buildNextCycleRecommendations(species) {
             const lines = [];
             const season = computePerformanceSeasonality();
-            if (season && season.best) lines.push(`📅 أفضل شهر بدء تاريخيًا حسب أدائك الفعلي: ${season.best.label} (EPEF ${fmt(season.best.avgEpef,0)})`);
+            if (season && season.best) {
+                const worstTxt = season.worst && season.worst.month !== season.best.month
+                    ? ` (مقابل ${season.worst.label} كأضعف شهر بمتوسط EPEF ${fmt(season.worst.avgEpef,0)}، من ${season.worst.count} دورة)` : '';
+                lines.push(`📅 أفضل شهر بدء تاريخيًا حسب أدائك الفعلي: ${season.best.label} — متوسط EPEF ${fmt(season.best.avgEpef,0)} من ${season.best.count} دورة${worstTxt}`);
+            }
             const lots = computeCrossCycleFeedLotEffectiveness(species);
             if (lots) {
                 const goodLots = lots.filter(r => r.verdict === 'improve');
                 const badLots = lots.filter(r => r.verdict === 'worsen');
-                if (goodLots.length) lines.push(`🌾 موردو علف يستحقوا الاستمرار: ${goodLots.map(r => r.name).join('، ')}`);
-                if (badLots.length) lines.push(`🌾⚠️ موردو علف يستحقوا المراجعة: ${badLots.map(r => r.name).join('، ')}`);
+                goodLots.forEach(r => lines.push(`🌾✅ مورد "${r.name}" يستحق الاستمرار — ${crossCycleStatLine(r)}`));
+                badLots.forEach(r => lines.push(`🌾⚠️ مورد "${r.name}" يستحق المراجعة — ${crossCycleStatLine(r)}`));
             }
             const items = computeCrossCycleItemEffectiveness(species);
             if (items) {
                 const goodItems = items.filter(r => r.verdict === 'improve');
                 const dropItems = items.filter(r => r.verdict === 'worsen' || r.verdict === 'none');
-                if (goodItems.length) lines.push(`💊✅ إضافات تستحق الاستمرار: ${goodItems.map(r => r.name).join('، ')}`);
-                if (dropItems.length) lines.push(`💊🚫 إضافات يُقترح إلغاؤها (بدون فائدة واضحة أو أثر سلبي): ${dropItems.map(r => r.name).join('، ')}`);
+                goodItems.forEach(r => {
+                    const costTxt = r.avgCostPerCycle != null ? ` — تكلفة تقديرية ${money(r.avgCostPerCycle)}/دورة` : '';
+                    lines.push(`💊✅ "${r.name}" يستحق الاستمرار — ${crossCycleStatLine(r)}${costTxt}`);
+                });
+                dropItems.forEach(r => {
+                    const costTxt = r.avgCostPerCycle != null ? ` — توفير تقديري ${money(r.avgCostPerCycle)}/دورة لو أُلغي` : '';
+                    const reasonTxt = r.verdict === 'none' ? 'بدون تأثير يُذكر' : 'أثره سلبي بوضوح';
+                    lines.push(`💊🚫 "${r.name}" يُقترح إلغاؤه (${reasonTxt}) — ${crossCycleStatLine(r)}${costTxt}`);
+                });
             }
             const treatments = computeCrossCycleTreatmentEffectiveness(species);
             if (treatments) {
                 const goodT = treatments.filter(r => r.verdict === 'improve');
-                if (goodT.length) lines.push(`🪣 معاملات فرشة/سبلة أثبتت فائدتها بتوقيت التنفيذ الحالي: ${goodT.map(r => r.name).join('، ')}`);
+                goodT.forEach(r => lines.push(`🪣 معاملة "${r.name}" أثبتت فائدتها بتوقيتها الحالي — ${crossCycleStatLine(r)}`));
             }
             if (!lines.length) return null;
             return lines.join('\n\n');
@@ -15201,6 +15312,11 @@
                     <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px;">الكود ده لازم تحطه فى الـ Rules عشان الجهاز ده بس (جهازك المصدر) يقدر يوافق/يرفض على طلبات الناس. متسبيهوش لحد.</p>
                     <div style="background:var(--cream, #f5efe0);border:1.5px solid var(--line);border-radius:10px;padding:12px;text-align:center;word-break:break-all;font-family:monospace;font-size:12.5px;font-weight:700;color:var(--barn-dark);">${esc(getFbUid() || (window._fbAuthErr ? ('❌ خطأ: ' + window._fbAuthErr) : (window.firebase ? 'لسه بيحاول يتصل...' : '❌ مكتبة فايربيز مش اتحمّلت خالص (تأكد من الإنترنت)')))}</div>
                     <button class="btn ghost sm" style="margin-top:8px;" onclick="copyDeviceUid()">📋 نسخ الـ UID</button>
+                    <button class="btn ghost sm" style="margin-top:8px;" onclick="toggleDeviceUidQR()">🔳 عرض كـQR</button>
+                    <div id="deviceUidQrBox" style="display:none;margin-top:10px;flex-direction:column;align-items:center;gap:6px;">
+                        <div id="deviceUidQrCanvas"></div>
+                        <p style="font-size:10px;color:var(--muted);margin:0;text-align:center;">صوّره بكاميرا أي موبايل تاني عشان تاخد الـUID جاهز بدون كتابة يدوية</p>
+                    </div>
                 </div>
                 <div class="card" style="margin-top:10px;">
                     <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:4px;">🔑 توليد كود تفعيل يدوي (احتياطي بدون إنترنت)</label>
@@ -15362,6 +15478,16 @@
                 ${snippetVibration.replace('margin-top:10px;', '')}
             </div>
             <div class="section">
+                <div class="section-head"><h2>🌙 مظهر التطبيق</h2></div>
+                <div class="card">
+                    <label class="check-row" style="cursor:pointer;">
+                        <input type="checkbox" id="set_darkMode" ${state.darkMode ? 'checked' : ''} onchange="toggleDarkMode(this.checked)">
+                        <div class="txt"><div style="font-weight:800;">🌙 الوضع الليلي</div>
+                        <div class="day">مريح أكتر للعين وقت تسجيل بيانات الليل جوه العنبر أو فى الضلمة</div></div>
+                    </label>
+                </div>
+            </div>
+            <div class="section">
                 <div class="section-head"><h2>💱 العملة والوحدات</h2></div>
                 <div class="card">${renderCurrencySettings()}</div>
             </div>
@@ -15389,7 +15515,8 @@
                         <div class="txt"><div style="font-weight:800;">🔄 نسخ احتياطي تلقائي أسبوعي</div>
                         <div class="day">يُصدَّر تلقائيًا كل 7 أيام طالما الجهاز فاتح التطبيق — لا يعتمد على تذكّرك</div></div>
                     </label>
-                    <button class="btn ghost block" onclick="exportCSV()">📊 تصدير سجل الدفعة الحالية (Excel/CSV)</button>
+                    <button class="btn ghost block" onclick="exportCSV()">📊 تصدير سجل الدفعة الحالية (CSV)</button>
+                    <button class="btn ghost block" onclick="exportXLSX()">📗 تصدير سجل الدفعة الحالية (Excel .xlsx)</button>
                     <button class="btn ghost block" onclick="document.getElementById('importFile').click()">📂 استيراد نسخة احتياطية</button>
                     <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">💡 التطبيق يعمل بالكامل بدون إنترنت وبياناته محفوظة على هذا الجهاز أولًا (localStorage)، وتتزامن مع السحابة تلقائيًا لو فعّلت المزامنة أدناه. لحماية إضافية، صدّر نسخة احتياطية بشكل دوري.</p>
                 </div>
@@ -17420,6 +17547,54 @@
             } catch (e) { showToast('حدث خطأ أثناء تصدير CSV'); }
         }
 
+        // ============ تصدير Excel حقيقي (.xlsx) — ورقتين: السجل اليومي الكامل + ملخص أداء الدورة ============
+        function exportXLSX() {
+            const b = getActiveBatch();
+            if (!b) { showToast('اختر دفعة أولاً'); return; }
+            if (typeof XLSX === 'undefined') { showToast('⚠️ مكتبة إكسل لسه بتتحمّل، جرّب تاني بعد ثانية (محتاج إنترنت أول مرة)'); return; }
+            try {
+                const m = computeMetrics(b);
+                const fin = computeFinance(b, m);
+                // ===== ورقة 1: السجل اليومي التفصيلي =====
+                const headers = ['التاريخ', 'العمر', 'نفوق نهار', 'نفوق ليل', 'إجمالي نفوق', 'مستبعد', 'علف(كجم)', 'ماء(لتر)', 'الوزن(جم)', 'حرارة°', 'رطوبة%', 'أمونيا ppm', 'ملاحظات'];
+                const dataRows = [...b.records].sort((a, c) => a.age - c.age).map(r => [
+                    r.date, r.age, r.mortDay ?? '', r.mortNight ?? '', r.mort || 0, r.cull || 0,
+                    r.feed || '', r.water ?? '', r.weight ?? '', r.temp ?? '', r.humidity ?? '', r.nh3 ?? '', r.notes || ''
+                ]);
+                const ws1 = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+                ws1['!cols'] = headers.map(() => ({ wch: 14 }));
+                // ===== ورقة 2: ملخص أداء الدورة =====
+                const summaryRows = [
+                    ['المؤشر', 'القيمة'],
+                    ['اسم الدفعة', b.name],
+                    ['النوع', expansionSpeciesLabel(b.species)],
+                    ['تاريخ التسكين', b.startDate || '—'],
+                    ['العمر الحالي (يوم)', m.todayAge],
+                    ['الأعداد الحية', fmt(m.liveCount, 0)],
+                    ['نسبة البقاء %', fmt(m.liveCountPct, 1)],
+                    ['نسبة النفوق التراكمية %', fmt(m.mortRate, 2)],
+                    ['متوسط الوزن (جم)', fmt(m.avgWeightG, 0)],
+                    ['معامل التحويل الغذائي FCR', m.fcr ? fmt(m.fcr, 2) : '—'],
+                    ['EPEF', m.epef != null ? fmt(m.epef, 0) : '—'],
+                    ['إجمالي الإيرادات', fmt(fin.totalRevenue, 0)],
+                    ['إجمالي التكاليف', fmt(fin.totalCost, 0)],
+                    ['صافي الربح', fmt(fin.netProfit, 0)],
+                    ['تكلفة الكيلو', fin.costPerKg != null ? fmt(fin.costPerKg, 2) : '—'],
+                ];
+                const ws2 = XLSX.utils.aoa_to_sheet(summaryRows);
+                ws2['!cols'] = [{ wch: 26 }, { wch: 20 }];
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws2, 'ملخص الأداء');
+                XLSX.utils.book_append_sheet(wb, ws1, 'السجل اليومي');
+                const filename = `${b.name.replace(/[^\u0600-\u06FFa-zA-Z0-9]+/g, '_')}-تقرير-${todayStr()}.xlsx`;
+                const wbArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                downloadOrShareFile(blob, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'تقرير الدفعة Excel').then(result => {
+                    showToast(result !== 'failed' ? '✅ تم تصدير تقرير Excel (ورقتين: ملخص + سجل يومي)' : 'حدث خطأ أثناء التصدير');
+                });
+            } catch (e) { showToast('حدث خطأ أثناء تصدير Excel'); }
+        }
+
         // ============ تشفير النسخ الاحتياطية (AES-GCM + PBKDF2) — اختياري، لحماية البيانات لو النسخة اتشاركت أو اتسرّبت ============
         async function deriveBackupKey(passphrase, saltBytes) {
             const enc = new TextEncoder();
@@ -17493,6 +17668,15 @@
             state.vibrationEnabled = checked;
             persist();
             if (checked) vibrate(40);
+        }
+        // ============ الوضع الليلي (Dark Mode) ============
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
+        }
+        function toggleDarkMode(checked) {
+            state.darkMode = checked;
+            persist();
+            applyTheme();
         }
         // يحدّث اسم المزرعة الظاهر أعلى التطبيق بدون الحاجة لإعادة رسم الشاشة كلها
         function updateHeaderIdentity() {
@@ -18218,10 +18402,16 @@
             closeModal('onboardingModalOverlay');
         }
 
-        registerKatkotServiceWorker();
-        initFirebaseCloud(); // بيتولى هو نفسه استدعاء بوابة إذن الاستخدام أول ما فايربيز يجهز (نجاح أو فشل)
-        // ============ مؤقت أمان: لو فايربيز اتعلّق (نت بطيء/متقطع) ومردش خلال 6 ثواني، كمّل بالمسار اليدوي بدل ما الشاشة تفضل فاضية للأبد ============
-        setTimeout(() => { if (!_authFlowHandled) onFirebaseAuthUnavailable(); }, 6000);
+        // ============ 🔒 تحصين أداء: بعد ما بقت المكتبات الخارجية (فايربيز/xlsx/html2pdf/qrcode) بتتحمّل بـ defer ============
+        // لازم ننادي أي حاجة بتعتمد عليها (خصوصًا initFirebaseCloud اللي بتستخدم window.firebase) من جوه
+        // DOMContentLoaded، مش مباشرة فى نص السكريبت — عشان نضمن إن الملفات دي خلصت تحميل وتنفيذ فعلاً
+        // قبل ما نحاول نستخدمها (المتصفح بينفّذ كل الـ defer scripts بالترتيب قبل ما يطلق DOMContentLoaded).
+        document.addEventListener('DOMContentLoaded', () => {
+            registerKatkotServiceWorker();
+            initFirebaseCloud(); // بيتولى هو نفسه استدعاء بوابة إذن الاستخدام أول ما فايربيز يجهز (نجاح أو فشل)
+            // مؤقت أمان: لو فايربيز اتعلّق (نت بطيء/متقطع) ومردش خلال 6 ثواني، كمّل بالمسار اليدوي بدل ما الشاشة تفضل فاضية للأبد
+            setTimeout(() => { if (!_authFlowHandled) onFirebaseAuthUnavailable(); }, 6000);
+        });
 
         // ============ تحديث تلقائي لبيانات الطقس كل ساعة (لو موقع المزرعة محدد) — يقرأ درجة الحرارة والرطوبة من غير تدخل يدوي ============
         function autoRefreshWeatherIfStale() {
