@@ -16572,9 +16572,17 @@
         async function registerKatkotServiceWorker() {
             if (!('serviceWorker' in navigator)) return null;
             try {
-                const blob = new Blob([KATKOT_SW_SOURCE], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                const reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
+                // ============ ملف sw.js حقيقي منفصل (بدل Blob URL) — عشان أدوات فحص الـ PWA زي PWABuilder
+                // تقدر تكتشفه وتحلله فعليًا؛ الـ Blob كان شغال للمستخدمين لكن غير مرئي لأدوات الفحص الخارجية.
+                // لو الملف الحقيقي فشل لأي سبب (مثلاً 404)، بنرجع تلقائيًا لأسلوب Blob القديم كخط دفاع ثاني. ============
+                let reg;
+                try {
+                    reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+                } catch (e2) {
+                    const blob = new Blob([KATKOT_SW_SOURCE], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
+                }
                 katkotSwRegistration = reg;
                 if ('periodicSync' in reg && navigator.permissions) {
                     try {
