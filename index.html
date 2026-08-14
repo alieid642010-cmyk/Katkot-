@@ -3909,7 +3909,7 @@
                 if (!window.firebase) { onFirebaseAuthUnavailable(); return false; }
                 if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 fbDb = firebase.firestore();
-                firebase.auth().onAuthStateChanged(user => { if (user) { onFirebaseAuthReady(); showUidDebugBadge(user.uid); } });
+                firebase.auth().onAuthStateChanged(user => { if (user) onFirebaseAuthReady(); });
                 firebase.auth().signInAnonymously().catch(e => { console.error('فشل تسجيل دخول فايربيز', e); window._fbAuthErr = (e && (e.code || e.message)) || String(e); onFirebaseAuthUnavailable(); });
                 try { farmId = localStorage.getItem(FARM_ID_KEY); } catch (e) {}
                 if (farmId) { addFarmToList(farmId); startCloudSync(); }
@@ -4130,18 +4130,6 @@
         function isActivated() { try { return localStorage.getItem(ACTIVATION_KEY) === '1'; } catch (e) { return false; } }
         function setActivated(flag) { try { localStorage.setItem(ACTIVATION_KEY, flag ? '1' : '0'); } catch (e) {} }
         function isSourceDevice() { try { return localStorage.getItem(SOURCE_DEVICE_KEY) === '1'; } catch (e) { return false; } }
-        // ============ [مؤقت للتشخيص] شارة عائمة تعرض الـ UID فور نجاح تسجيل الدخول، من غير شرط isSourceDevice — احذف السطر اللي بينده (showUidDebugBadge) من onAuthStateChanged بعد ما تاخد الكود ============
-        function showUidDebugBadge(uid) {
-            try {
-                if (document.getElementById('uidDebugBadge')) return;
-                const b = document.createElement('div');
-                b.id = 'uidDebugBadge';
-                b.style.cssText = 'position:fixed;top:8px;left:8px;right:8px;z-index:99999;background:#111;color:#0f0;font-family:monospace;font-size:12px;padding:10px;border-radius:8px;text-align:center;word-break:break-all;box-shadow:0 2px 10px rgba(0,0,0,.4);';
-                b.innerHTML = '🆔 UID: ' + uid + '<br><span style="font-size:10px;color:#aaa;">(دوس هنا عشان تنسخ / تقفل)</span>';
-                b.onclick = () => { try { navigator.clipboard.writeText(uid); } catch (e) {} b.remove(); };
-                document.body.appendChild(b);
-            } catch (e) {}
-        }
         // ===== صلاحيات الجهاز الممنوحة (النظام الموحّد) =====
         function getDeviceGrant() {
             try { const raw = localStorage.getItem(DEVICE_GRANT_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
