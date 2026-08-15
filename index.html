@@ -484,6 +484,35 @@
             border-top: 1px dashed var(--line);
             padding-top: 8px;
         }
+        /* ============ آلية إدخال جديدة: عداد +/- بدل كتابة رقم يدويًا (نفوق/مستبعد/أسباب) ============ */
+        .stepper { display: flex; align-items: center; gap: 5px; }
+        .stepper input {
+            flex: 1; min-width: 0; text-align: center; -moz-appearance: textfield;
+        }
+        .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .stepper-btn {
+            width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; border: 1px solid var(--line);
+            background: #fff; font-size: 17px; font-weight: 800; color: var(--barn-dark);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;
+        }
+        .stepper-btn:active { background: var(--barn-dark); color: #fff; }
+        .stepper.sm .stepper-btn { width: 24px; height: 24px; font-size: 13px; border-radius: 6px; }
+        .stepper.sm input { font-size: 12.5px; padding: 4px 2px; }
+        /* ============ آلية إدخال جديدة: مقياس تعبيري بالألوان بدل رقم مجرد من 1-10 (تقييم الحالة الصحية) ============ */
+        .health-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 4px; }
+        .hs-btn {
+            border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 7px 2px;
+            font-size: 10px; font-weight: 700; color: var(--muted); cursor: pointer; line-height: 1.6; text-align: center;
+        }
+        .hs-btn span { display: block; font-size: 16px; }
+        .hs-btn.active { border-color: var(--barn-dark); background: #f8f5ed; color: var(--barn-dark); box-shadow: 0 0 0 1.5px var(--barn-dark) inset; }
+        /* ============ حقول متقدمة قابلة للطي (CO2/O2/سرعة الهواء) — تفتح عند الحاجة بدل ظهورها دايمًا ============ */
+        .adv-fields { grid-column: 1/-1; }
+        .adv-fields summary { cursor: pointer; font-size: 11.5px; font-weight: 800; color: var(--barn); padding: 6px 2px; list-style: none; }
+        .adv-fields summary::-webkit-details-marker { display: none; }
+        .adv-fields summary::before { content: '▸ '; }
+        .adv-fields[open] summary::before { content: '▾ '; }
+        .adv-fields .form-grid { margin-top: 4px; }
         .btn {
             border: none;
             border-radius: 12px;
@@ -1670,7 +1699,16 @@
                 <div class="field-group-title" style="margin-top:0;border-top:none;padding-top:0;">⚖️ الوزن والصحة (قياس واحد لليوم — لا يتبع النهار أو الليل)</div>
                 <div class="field"><label>متوسط وزن الطائر (جم)</label><input id="d_weight" type="number" inputmode="decimal" step="1" min="0"></div>
                 <div class="field full"><label>عيّنة أوزان فردية (جم، اختياري) — لحساب تجانس القطيع</label><input id="d_weightSample" type="text" inputmode="decimal" placeholder="مثال: 1180,1250,1090,1300,1210 (5-10 طائر)"></div>
-                <div class="field"><label>تقييم الحالة الصحية والبيئة (من 10)</label><input id="d_health" type="number" inputmode="decimal" min="1" max="10" placeholder="1-10"></div>
+                <div class="field full"><label>تقييم الحالة الصحية والبيئة</label>
+                    <div class="health-scale" id="d_health_scale">
+                        <button type="button" class="hs-btn" data-v="2" onclick="setHealthRating(2,this)"><span>🔴</span>ضعيف جدًا</button>
+                        <button type="button" class="hs-btn" data-v="4" onclick="setHealthRating(4,this)"><span>🟠</span>ضعيف</button>
+                        <button type="button" class="hs-btn" data-v="6" onclick="setHealthRating(6,this)"><span>🟡</span>متوسط</button>
+                        <button type="button" class="hs-btn" data-v="8" onclick="setHealthRating(8,this)"><span>🟢</span>جيد</button>
+                        <button type="button" class="hs-btn" data-v="10" onclick="setHealthRating(10,this)"><span>💚</span>ممتاز</button>
+                    </div>
+                    <input type="hidden" id="d_health">
+                </div>
                 <div class="field-group-title">💧 جودة مياه الشرب (اختياري)</div>
                 <div class="field"><label>pH الماء</label><input id="d_waterPh" type="number" inputmode="decimal" step="0.1" min="0" max="14" placeholder="6-8 مثالي"></div>
                 <div class="field"><label>الملوحة/الأملاح الذائبة TDS (ppm)</label><input id="d_waterSalinity" type="number" inputmode="decimal" step="10" placeholder="أقل من 1500 مثالي" min="0"></div>
@@ -1683,28 +1721,56 @@
                 <div style="font-weight:bold;color:#6B4226;margin-bottom:6px;">☀️ قراءة النهار</div>
                 <div class="form-grid">
                     <div class="field-group-title" style="margin-top:0;border-top:none;padding-top:0;">📊 الإنتاج (نفوق / علف / ماء)</div>
-                    <div class="field"><label>نفوق نهارًا (طائر)</label><input id="d_mort_day" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()"></div>
-                    <div class="field"><label>مستبعد نهارًا (طائر)</label><input id="d_cull_day" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()"></div>
+                    <div class="field"><label>نفوق نهارًا (طائر)</label>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_mort_day',-1,0)">−</button>
+                            <input id="d_mort_day" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_mort_day',1,0)">+</button>
+                        </div>
+                    </div>
+                    <div class="field"><label>مستبعد نهارًا (طائر)</label>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_cull_day',-1,0)">−</button>
+                            <input id="d_cull_day" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_cull_day',1,0)">+</button>
+                        </div>
+                    </div>
                     <div class="field full" style="background:#fdf0ef;border:1px solid #f0c9c5;border-radius:10px;padding:8px 10px;">
                         <label style="margin-bottom:6px;">🔍 تصنيف سبب نفوق النهار (اختياري لكن مهم لمعرفة السبب الأساسي)</label>
-                        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
-                            <div><label style="font-size:10.5px;">🌡️ إجهاد حراري</label><input id="d_mc_heat_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">🦠 مرض</label><input id="d_mc_disease_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">🐾 دهس/اختناق</label><input id="d_mc_trample_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">🧬 تشوهات</label><input id="d_mc_deform_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">❓ أخرى</label><input id="d_mc_other_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;">
+                            <div><label style="font-size:10.5px;">🌡️ إجهاد حراري</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_day',-1,0)">−</button><input id="d_mc_heat_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_day',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">🦠 مرض</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_day',-1,0)">−</button><input id="d_mc_disease_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_day',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">🐾 دهس/اختناق</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_day',-1,0)">−</button><input id="d_mc_trample_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_day',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">🧬 تشوهات</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_day',-1,0)">−</button><input id="d_mc_deform_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_day',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">❓ أخرى</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_day',-1,0)">−</button><input id="d_mc_other_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_day',1,0)">+</button></div>
+                            </div>
                         </div>
                         <div id="d_mortCauseHintDay" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
                     </div>
                     <div class="field"><label>علف نهارًا (كجم)</label><input id="d_feed_day" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
                     <div class="field"><label>ماء نهارًا (لتر)</label><input id="d_water_day" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
                     <div class="field-group-title">🌡️ البيئة والتهوية</div>
+                    <div class="field full"><button type="button" class="btn ghost sm" onclick="copyYesterdayEnv('day')" style="width:100%;">📋 نسخ قيم البيئة من سجل أمس (وعدّل الفرق بس)</button></div>
                     <div class="field"><label>حرارة العنبر نهارًا (°C)</label><input id="d_temp_day" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()"></div>
                     <div class="field"><label>الرطوبة نهارًا (%)</label><input id="d_humidity_day" type="number" inputmode="decimal" step="1" placeholder="50-70" oninput="updateDayNightPreview()" min="0"></div>
-                    <div class="field"><label>سرعة الهواء نهارًا (م/ث)</label><input id="d_airspeed_day" type="number" inputmode="decimal" step="0.1" min="0"></div>
-                    <div class="field"><label>CO2 نهارًا (ppm)</label><input id="d_co2_day" type="number" inputmode="decimal" step="1" placeholder="أقل من 3000" min="0"></div>
-                    <div class="field"><label>NH3 نهارًا (ppm)</label><input id="d_nh3_day" type="number" inputmode="decimal" step="1" placeholder="أقل من 20" min="0"></div>
-                    <div class="field"><label>O2 نهارًا (%)</label><input id="d_o2_day" type="number" inputmode="decimal" step="0.1" placeholder="≈ 21" min="0"></div>
+                    <details class="adv-fields">
+                        <summary>حقول متقدمة (سرعة الهواء / CO2 / NH3 / O2) — لو عندك أجهزة قياس</summary>
+                        <div class="form-grid">
+                            <div class="field"><label>سرعة الهواء نهارًا (م/ث)</label><input id="d_airspeed_day" type="number" inputmode="decimal" step="0.1" min="0"></div>
+                            <div class="field"><label>CO2 نهارًا (ppm)</label><input id="d_co2_day" type="number" inputmode="decimal" step="1" placeholder="أقل من 3000" min="0"></div>
+                            <div class="field"><label>NH3 نهارًا (ppm)</label><input id="d_nh3_day" type="number" inputmode="decimal" step="1" placeholder="أقل من 20" min="0"></div>
+                            <div class="field"><label>O2 نهارًا (%)</label><input id="d_o2_day" type="number" inputmode="decimal" step="0.1" placeholder="≈ 21" min="0"></div>
+                        </div>
+                    </details>
                     <div class="field"><label>ساعات الإضاءة</label><input id="d_light" type="number" inputmode="decimal" step="0.5" min="0"></div>
                     <div class="field-group-title">📝 ملاحظات</div>
                     <div class="field full"><label>ملاحظات النهار (أمراض، تطعيمات، تهوية...)</label>
@@ -1720,28 +1786,56 @@
                 <div style="font-weight:bold;color:#2F4538;margin-bottom:6px;">🌙 قراءة الليل</div>
                 <div class="form-grid">
                     <div class="field-group-title" style="margin-top:0;border-top:none;padding-top:0;">📊 الإنتاج (نفوق / علف / ماء)</div>
-                    <div class="field"><label>نفوق ليلًا (طائر)</label><input id="d_mort_night" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()"></div>
-                    <div class="field"><label>مستبعد ليلًا (طائر)</label><input id="d_cull_night" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()"></div>
+                    <div class="field"><label>نفوق ليلًا (طائر)</label>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_mort_night',-1,0)">−</button>
+                            <input id="d_mort_night" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_mort_night',1,0)">+</button>
+                        </div>
+                    </div>
+                    <div class="field"><label>مستبعد ليلًا (طائر)</label>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_cull_night',-1,0)">−</button>
+                            <input id="d_cull_night" type="number" inputmode="numeric" min="0" step="1" value="0" oninput="updateMortTotalPreview()">
+                            <button type="button" class="stepper-btn" onclick="stepInput('d_cull_night',1,0)">+</button>
+                        </div>
+                    </div>
                     <div class="field full" style="background:#fdf0ef;border:1px solid #f0c9c5;border-radius:10px;padding:8px 10px;">
                         <label style="margin-bottom:6px;">🔍 تصنيف سبب نفوق الليل (اختياري لكن مهم لمعرفة السبب الأساسي)</label>
-                        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
-                            <div><label style="font-size:10.5px;">🌡️ إجهاد حراري</label><input id="d_mc_heat_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">🦠 مرض</label><input id="d_mc_disease_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">🐾 دهس/اختناق</label><input id="d_mc_trample_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">🧬 تشوهات</label><input id="d_mc_deform_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
-                            <div><label style="font-size:10.5px;">❓ أخرى</label><input id="d_mc_other_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"></div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;">
+                            <div><label style="font-size:10.5px;">🌡️ إجهاد حراري</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_night',-1,0)">−</button><input id="d_mc_heat_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_night',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">🦠 مرض</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_night',-1,0)">−</button><input id="d_mc_disease_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_night',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">🐾 دهس/اختناق</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_night',-1,0)">−</button><input id="d_mc_trample_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_night',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">🧬 تشوهات</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_night',-1,0)">−</button><input id="d_mc_deform_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_night',1,0)">+</button></div>
+                            </div>
+                            <div><label style="font-size:10.5px;">❓ أخرى</label>
+                                <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_night',-1,0)">−</button><input id="d_mc_other_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_night',1,0)">+</button></div>
+                            </div>
                         </div>
                         <div id="d_mortCauseHintNight" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
                     </div>
                     <div class="field"><label>علف ليلًا (كجم)</label><input id="d_feed_night" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
                     <div class="field"><label>ماء ليلًا (لتر)</label><input id="d_water_night" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
                     <div class="field-group-title">🌡️ البيئة والتهوية</div>
+                    <div class="field full"><button type="button" class="btn ghost sm" onclick="copyYesterdayEnv('night')" style="width:100%;">📋 نسخ قيم البيئة من سجل أمس (وعدّل الفرق بس)</button></div>
                     <div class="field"><label>حرارة العنبر ليلًا (°C)</label><input id="d_temp_night" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()"></div>
                     <div class="field"><label>الرطوبة ليلًا (%)</label><input id="d_humidity_night" type="number" inputmode="decimal" step="1" placeholder="50-70" oninput="updateDayNightPreview()" min="0"></div>
-                    <div class="field"><label>سرعة الهواء ليلًا (م/ث)</label><input id="d_airspeed_night" type="number" inputmode="decimal" step="0.1" min="0"></div>
-                    <div class="field"><label>CO2 ليلًا (ppm)</label><input id="d_co2_night" type="number" inputmode="decimal" step="1" placeholder="أقل من 3000" min="0"></div>
-                    <div class="field"><label>NH3 ليلًا (ppm)</label><input id="d_nh3_night" type="number" inputmode="decimal" step="1" placeholder="أقل من 20" min="0"></div>
-                    <div class="field"><label>O2 ليلًا (%)</label><input id="d_o2_night" type="number" inputmode="decimal" step="0.1" placeholder="≈ 21" min="0"></div>
+                    <details class="adv-fields">
+                        <summary>حقول متقدمة (سرعة الهواء / CO2 / NH3 / O2) — لو عندك أجهزة قياس</summary>
+                        <div class="form-grid">
+                            <div class="field"><label>سرعة الهواء ليلًا (م/ث)</label><input id="d_airspeed_night" type="number" inputmode="decimal" step="0.1" min="0"></div>
+                            <div class="field"><label>CO2 ليلًا (ppm)</label><input id="d_co2_night" type="number" inputmode="decimal" step="1" placeholder="أقل من 3000" min="0"></div>
+                            <div class="field"><label>NH3 ليلًا (ppm)</label><input id="d_nh3_night" type="number" inputmode="decimal" step="1" placeholder="أقل من 20" min="0"></div>
+                            <div class="field"><label>O2 ليلًا (%)</label><input id="d_o2_night" type="number" inputmode="decimal" step="0.1" placeholder="≈ 21" min="0"></div>
+                        </div>
+                    </details>
                     <div class="field"><label>ساعات الإظلام</label><input id="d_dark" type="number" inputmode="decimal" step="0.5" min="0"></div>
                     <div class="field-group-title">📝 ملاحظات</div>
                     <div class="field full"><label>ملاحظات الليل (أمراض، تطعيمات، تهوية...)</label>
@@ -1944,37 +2038,7 @@
         </div>
     </div>
 
-    <!-- Modal: Equipment -->
-    <div class="modal-overlay" id="equipModalOverlay">
-        <div class="modal">
-            <button class="close-x" aria-label="إغلاق" onclick="closeModal('equipModalOverlay')">✕</button>
-            <h3 id="equipModalTitle">⚙️ إضافة معدة</h3>
-            <p style="font-size:11.5px;color:var(--muted);margin-top:-6px;">سجّل ساعات تشغيل المراوح/المولد/الدفايات — التطبيق يذكّرك بموعد الصيانة الدورية (شحم/فلاتر/زيت) تلقائيًا بدل الاعتماد على الذاكرة.</p>
-            <div class="form-grid">
-                <div class="field full"><label>اسم المعدة</label><input id="eq_name" placeholder="مثال: مروحة نفقية 1، مولد كهرباء..."></div>
-                <div class="field"><label>النوع</label>
-                    <select id="eq_type"><option value="fan">🌀 مروحة</option><option value="generator">🔌 مولد</option><option value="heater">🔥 دفاية</option><option value="other">أخرى</option></select>
-                </div>
-                <div class="field"><label>فاصل الصيانة (ساعات تشغيل)</label><input id="eq_interval" type="number" placeholder="مثال: 500" min="0"></div>
-                <div class="field"><label>استهلاك الطاقة (كيلو وات، اختياري)</label><input id="eq_power" type="number" inputmode="decimal" step="0.1" placeholder="مثال: 0.75" min="0"></div>
-                <div class="field"><label>إجمالي ساعات التشغيل الحالية</label><input id="eq_hours" type="number" inputmode="decimal" step="0.5" min="0"></div>
-                <div class="field full"><label>📅 موعد الصيانة القادمة (تاريخ محدد، اختياري بديل/إضافي لعداد الساعات)</label><input id="eq_nextDate" type="date"></div>
-            </div>
-            <div class="row-actions"><button class="btn block" id="equipModalBtn" onclick="saveEquipment()">حفظ</button></div>
-        </div>
-    </div>
-
-    <!-- Modal: Add Runtime Hours -->
-    <div class="modal-overlay" id="runtimeModalOverlay">
-        <div class="modal">
-            <button class="close-x" aria-label="إغلاق" onclick="closeModal('runtimeModalOverlay')">✕</button>
-            <h3>⏱️ تسجيل ساعات تشغيل</h3>
-            <div class="form-grid">
-                <div class="field full"><label>عدد الساعات المُشغَّلة (منذ آخر تسجيل)</label><input id="rt_hours" type="number" inputmode="decimal" step="0.5" placeholder="مثال: 8" min="0"></div>
-            </div>
-            <div class="row-actions"><button class="btn block" onclick="saveRuntimeHours()">إضافة للإجمالي</button></div>
-        </div>
-    </div>
+    <!-- (تمت إزالة نوافذ "المعدات" و"تسجيل ساعات تشغيل" مع إزالة نظام ساعات التشغيل والصيانة) -->
 
     <!-- Modal: Power Outage Log -->
     <div class="modal-overlay" id="outageModalOverlay">
@@ -1987,6 +2051,42 @@
                 <div class="field full"><label>ملاحظة (اختياري)</label><input id="og_note" placeholder="مثال: عطل مفاجئ فى المولد الاحتياطي"></div>
             </div>
             <div class="row-actions"><button class="btn block" onclick="saveOutageLog()">حفظ</button></div>
+        </div>
+    </div>
+
+    <!-- Modal: Quick/Emergency Intervention (feed or water outside the day/night schedule) -->
+    <div class="modal-overlay" id="quickIntModalOverlay">
+        <div class="modal">
+            <button class="close-x" aria-label="إغلاق" onclick="closeModal('quickIntModalOverlay')">✕</button>
+            <h3>➕ إضافة علف أو مياه خارج الجدول</h3>
+            <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px;line-height:1.6;">لإضافة كمية علف أو مياه فعلية فى وقت غير مواعيد تسجيل النهار/الليل المعتادة. تُخصم كمية العلف من المخزون فورًا، وتُسجَّل بوقتها الفعلي منفصلة عن السجل اليومي.</p>
+            <div class="form-grid">
+                <div class="field full">
+                    <label>نوع التدخل</label>
+                    <div class="row-actions" style="margin:0;">
+                        <button type="button" class="btn gold" id="qi_btn_feed" style="flex:1;" onclick="setQuickIntType('feed')">🌾 علف</button>
+                        <button type="button" class="btn ghost" id="qi_btn_water" style="flex:1;" onclick="setQuickIntType('water')">💧 مياه</button>
+                    </div>
+                </div>
+                <div class="field full" id="qi_feedItemField"><label>صنف العلف</label><select id="qi_feedItem"></select></div>
+                <div class="field"><label>الكمية</label><input id="qi_qty" type="number" inputmode="decimal" step="0.1" min="0" placeholder="مثال: 25"></div>
+                <div class="field"><label>الوحدة</label><select id="qi_unit"><option value="كجم">كجم</option><option value="لتر">لتر</option></select></div>
+                <div class="field full"><label>وقت الإضافة</label><input id="qi_datetime" type="datetime-local"></div>
+                <div class="field full">
+                    <label>السبب (اختياري)</label>
+                    <select id="qi_reason" onchange="document.getElementById('qi_reasonOtherField').style.display = this.value === 'أخرى' ? '' : 'none';">
+                        <option value="زيادة عن الكمية المعتادة">زيادة عن الكمية المعتادة</option>
+                        <option value="نفاد قبل ميعاده">نفاد قبل ميعاده</option>
+                        <option value="ارتفاع حرارة مفاجئ">ارتفاع حرارة مفاجئ</option>
+                        <option value="عطل فى خط التغذية/السقاية">عطل فى خط التغذية/السقاية</option>
+                        <option value="زيارة إضافية خارج الجدول">زيارة إضافية خارج الجدول</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                <div class="field full" id="qi_reasonOtherField" style="display:none;"><label>تفاصيل السبب</label><input id="qi_reasonOther" placeholder="اكتب السبب..."></div>
+                <div class="field full"><label>ملاحظة إضافية (اختياري)</label><input id="qi_note"></div>
+            </div>
+            <div class="row-actions"><button class="btn block" onclick="saveQuickIntervention()">حفظ الإضافة</button></div>
         </div>
     </div>
 
@@ -2007,25 +2107,8 @@
         </div>
     </div>
 
-    <!-- Modal: Communication Log -->
-    <div class="modal-overlay" id="commLogModalOverlay">
-        <div class="modal">
-            <button class="close-x" aria-label="إغلاق" onclick="closeModal('commLogModalOverlay')">✕</button>
-            <h3>📞 تسجيل تواصل/استشارة</h3>
-            <p style="font-size:11.5px;color:var(--muted);margin-top:-6px;">وثّق أي مكالمة أو استشارة (طبيب/مورد) مرتبطة بالدفعة الحالية — يبقى عندك تاريخ استشارات موثّق مع كل دورة.</p>
-            <div class="form-grid">
-                <div class="field"><label>التاريخ</label><input id="cl_date" type="date"></div>
-                <div class="field"><label>الجهة</label><select id="cl_contact"></select></div>
-                <div class="field full"><label>ملخّص المكالمة/الاستشارة</label>
-                    <div style="display:flex;gap:6px;">
-                        <textarea id="cl_note" rows="2" placeholder="مثال: اتصلت بالطبيب بخصوص نفوق مرتفع، قال يراجع التهوية ويبدأ فيتامينات..." style="flex:1;"></textarea>
-                        <button type="button" class="btn ghost sm" onclick="voiceInput('cl_note', this)" title="إدخال صوتي">🎤</button>
-                    </div>
-                </div>
-            </div>
-            <div class="row-actions"><button class="btn block" onclick="saveCommLog()">حفظ فى السجل</button></div>
-        </div>
-    </div>
+    <!-- (تمت إزالة نافذة "سجل التواصل/الاستشارات" بناءً على طلب تبسيط الاستخدام) -->
+
 
     <!-- Modal: Anon Snapshot Import -->
     <div class="modal-overlay" id="importSnapshotModalOverlay">
@@ -4052,18 +4135,24 @@
         }
 
         function pushStateToCloud(immediate) {
-            if (_applyingRemoteUpdate || !cloudSyncEnabled || !farmId || !fbDb) return;
+            if (_applyingRemoteUpdate || !cloudSyncEnabled || !farmId || !fbDb) return Promise.resolve();
             clearTimeout(_cloudPushTimer);
+            // ⚠️ إصلاح: كانت الدالة دي "fire-and-forget" — الكود اللي بينادّيها بـ immediate:true (زي
+            // تبديل/إنشاء/الانضمام لمزرعة) كان بيكمّل على طول ويستبدل الـ state المحلي بمزرعة تانية،
+            // من غير ما يستنى تأكيد إن آخر تعديلات المزرعة القديمة فعلاً وصلت السحاب. لو النت بطيء/
+            // اتقطع لحظتها، التعديلات دي كانت بتضيع نهائيًا بصمت. دلوقتي بترجّع Promise حقيقي يقدر
+            // الكود اللي بينادّيها يستناه فعلاً قبل ما يكمل.
             const doPush = () => {
                 _lastPushedRev = Date.now();
-                fbDb.collection('farms').doc(farmId).set({
+                return fbDb.collection('farms').doc(farmId).set({
                     stateJson: JSON.stringify(state),
                     lastWriter: getDeviceId(),
                     rev: _lastPushedRev,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true }).then(() => { cloudConnected = true; }).catch(e => { cloudConnected = false; console.error('فشل رفع البيانات للسحاب', e); });
+                }, { merge: true }).then(() => { cloudConnected = true; }).catch(e => { cloudConnected = false; console.error('فشل رفع البيانات للسحاب', e); throw e; });
             };
-            if (immediate) doPush(); else _cloudPushTimer = setTimeout(doPush, 1200); // تجميع التعديلات المتتالية فى رفعة واحدة بدل ما نرفع مع كل حرف يتكتب
+            if (immediate) return doPush();
+            return new Promise((resolve) => { _cloudPushTimer = setTimeout(() => { doPush().catch(() => {}).finally(resolve); }, 1200); }); // تجميع التعديلات المتتالية فى رفعة واحدة بدل ما نرفع مع كل حرف يتكتب
         }
 
         function copyFarmCode() {
@@ -4091,11 +4180,23 @@
             return { batches: [], activeId: null, activeTab: 'dashboard', compareIds: [], speciesOverrides: {}, appSettings: {}, protocols: [], lastBackupDate: null, globalAuditLog: [], farmLocation: null, localSnapshots: [],
                 contacts: [], sharedSnapshots: [], autoBackupEnabled: false, lastAutoBackupAt: null, farmWeatherForecast: null, farmName: null, vibrationEnabled: true, conflictRules: [] };
         }
+        // ⚠️ إصلاح: هيلبر موحّد يُستخدم قبل أي عملية بتستبدل الـstate المحلي بمزرعة تانية (تبديل/إنشاء/
+        // انضمام). بيستنى تأكيد حقيقي إن آخر تعديلات المزرعة الحالية وصلت السحاب قبل ما يكمل، ولو
+        // فشل الاتصال، بيدّي المستخدم خيار صريح "كمّل على مسؤوليتك" أو "إلغاء" بدل ما يضيع بياناته بصمت.
+        function flushBeforeFarmSwitch(onReady) {
+            if (!cloudSyncEnabled) { onReady(); return; }
+            pushStateToCloud(true).then(onReady).catch(() => {
+                showConfirm(
+                    '⚠️ تعذّر تأكيد حفظ آخر تعديلاتك على المزرعة الحالية على السحاب (مشكلة فى الاتصال). لو كملت دلوقتي، آخر تعديلاتك غير المحفوظة ممكن تضيع.\n\nتحب تكمل على مسؤوليتك، ولا تلغي وتحاول تاني لما الاتصال يتحسّن؟',
+                    onReady, '⚠️ فشل تأكيد الحفظ على السحاب', () => showToast('تم الإلغاء — حاول تاني لما الاتصال يتحسّن')
+                );
+            });
+        }
         function switchToFarm(id) {
             if (id === farmId) return;
             if (!fbDb) { showToast('⚠️ تعذّر الاتصال بالسحابة، تأكد من الإنترنت'); return; }
             showConfirm('سيتم حفظ التعديلات الحالية على هذا الجهاز أولًا، ثم عرض بيانات المزرعة المختارة بدلًا منها. متابعة؟', () => {
-                if (cloudSyncEnabled) pushStateToCloud(true);
+                flushBeforeFarmSwitch(() => {
                 stopCloudSync();
                 fbDb.collection('farms').doc(id).get().then(doc => {
                     if (!doc.exists) { showToast('❌ تعذّر تحميل بيانات هذه المزرعة'); return; }
@@ -4113,6 +4214,7 @@
                         render();
                     } catch (e) { showToast('❌ فشل تحميل بيانات المزرعة'); console.error(e); }
                 }).catch(e => { console.error(e); showToast('❌ فشل الاتصال بالسحابة'); });
+                });
             }, 'تبديل المزرعة');
         }
         function removeFarmFromListUI(id) {
@@ -4126,7 +4228,7 @@
 
         function createNewFarm() {
             showConfirm('سيتم إنشاء مزرعة سحابية جديدة فارغة بالكامل (بدون دفعات أو سجلات) وربط هذا الجهاز بيها كجهاز أساسي. بيانات المزرعة اللي واقف فيها دلوقتي (لو موجودة) هتفضل محفوظة بالكامل على السحابة وتقدر ترجعلها فى أي وقت من قايمة المزارع. متابعة؟', () => {
-                if (cloudSyncEnabled) pushStateToCloud(true); // حفظ آخر تعديلات المزرعة الحالية قبل ما نسيبها
+                flushBeforeFarmSwitch(() => { // حفظ آخر تعديلات المزرعة الحالية قبل ما نسيبها (وننتظر تأكيد نجاحه فعليًا)
                 stopCloudSync();
                 const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
                 let id = '';
@@ -4153,6 +4255,7 @@
                 }
                 showToast('✅ تم إنشاء المزرعة السحابية — شارك الرمز مع العمال');
                 render();
+                });
             }, 'إنشاء مزرعة سحابية جديدة');
         }
 
@@ -4168,8 +4271,8 @@
                 fbDb.collection('farms').doc(code).get().then(doc => {
                     if (!doc.exists) { showToast('❌ الرمز غير صحيح أو المزرعة غير موجودة'); return; }
                     showConfirm('سيتم استبدال البيانات المعروضة حاليًا على هذا الجهاز ببيانات المزرعة المرتبطة بهذا الرمز (بيانات المزرعة الحالية، لو موجودة، تبقى محفوظة بالكامل على السحابة). متابعة؟', () => {
+                        flushBeforeFarmSwitch(() => {
                         try {
-                            if (cloudSyncEnabled) pushStateToCloud(true);
                             stopCloudSync();
                             const remote = doc.data();
                             _applyingRemoteUpdate = true;
@@ -4183,6 +4286,7 @@
                             showToast('✅ تم الانضمام للمزرعة بنجاح');
                             render();
                         } catch (e) { showToast('❌ فشل تطبيق بيانات المزرعة'); console.error(e); }
+                        });
                     }, 'استبدال البيانات المعروضة');
                 }).catch(e => { console.error(e); showToast('❌ فشل الاتصال بالسحابة'); });
             });
@@ -4694,6 +4798,11 @@
                 window._katkotNotifyIntervalSet = true;
                 setInterval(() => checkAndNotifyToday(false), 45 * 60 * 1000);
                 setInterval(checkExactTimeReminders, 60 * 1000);
+                // ⚠️ إصلاح مكمّل: فحص فوري لحظة رجوع التطبيق للمقدمة (بعد ما كان فى الخلفية) — بدل ما
+                // نستنى لحد الـ60 ثانية الجاية للـ interval العادي، اللي أصلًا ممكن يكون اتوقّف بسبب
+                // نفس تبطيء المتصفح للتابات الخلفية. مع نافذة السماح فى isDueNow، ده بيقلل احتمال تفويت
+                // الإشعار للحد الأدنى.
+                document.addEventListener('visibilitychange', () => { if (!document.hidden) checkExactTimeReminders(); });
             }
         }
 
@@ -5191,6 +5300,7 @@
             if (state.darkMode === undefined) state.darkMode = false;
             applyTheme();
             if (!state.conflictRules) state.conflictRules = [];
+            if (!state.pendingCarryOver) state.pendingCarryOver = []; // ⚠️ ترحيل: قائمة انتظار مخزون الدورات المؤرشفة حديثًا
             state.batches.forEach(migrateBatch);
             if (!state.activeId && activeBatches().length) state.activeId = activeBatches()[0].id;
             maybeAutoSnapshot();
@@ -5239,9 +5349,8 @@
             if (!b.status) b.status = 'نشطة';
             if (b.archivedDate === undefined) b.archivedDate = null;
             if (b.location === undefined) b.location = '';
-            if (!b.commLog) b.commLog = [];
-            if (!b.equipment) b.equipment = [];
             if (!b.outageLog) b.outageLog = [];
+            if (!b.quickInterventions) b.quickInterventions = [];
             b.records.forEach(r => {
                 if (r.humidity === undefined) r.humidity = null;
                 if (r.airspeed === undefined) r.airspeed = null;
@@ -5900,6 +6009,56 @@
 
         // يعرض إجمالي النفوق/المستبعد لليوم (نهار + ليل مجتمعين، للقراءة فقط) فوق القسمين، حتى لو كان أحدهما مخفيًا حاليًا.
         // تصنيف سبب النفوق يبقى مستقلاً تمامًا لكل فترة (نهار/ليل) ويتحقق كل واحد من رقمه فقط بدون ربط بالآخر.
+        // ============ 🆕 آليات إدخال جديدة لتبويب التسجيل اليومي (عداد / مقياس تعبيري / نسخ من أمس) ============
+        // عداد +/- بديل لكتابة رقم يدويًا فى حقول الإنتاج المتكررة (نفوق/مستبعد/أسباب) — بيدسبتش حدث
+        // 'input' حقيقي على الحقل عشان أي oninput موجود أصلاً (زي updateMortTotalPreview) يفضل شغال زي ما هو بدون تعديل.
+        function stepInput(id, delta, min) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const cur = parseFloat(el.value) || 0;
+            const next = Math.max(min != null ? min : -Infinity, cur + delta);
+            el.value = next;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        // مقياس تعبيري بالألوان بدل رقم مجرد 1-10 — بيكتب القيمة فى حقل d_health المخفي زي ما كان بالظبط
+        function setHealthRating(v, btn) {
+            document.getElementById('d_health').value = v;
+            document.querySelectorAll('#d_health_scale .hs-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+        }
+        // بيحدد أقرب زرار للقيمة المخزّنة وقت فتح سجل قديم للتعديل (بيانات قديمة ممكن تكون بأي رقم من 1-10)
+        function highlightHealthScale(v) {
+            const scale = document.getElementById('d_health_scale');
+            if (!scale) return;
+            scale.querySelectorAll('.hs-btn').forEach(b => b.classList.remove('active'));
+            if (v == null || v === '') return;
+            let best = null, bestDiff = Infinity;
+            scale.querySelectorAll('.hs-btn').forEach(b => {
+                const d = Math.abs(parseFloat(b.dataset.v) - v);
+                if (d < bestDiff) { bestDiff = d; best = b; }
+            });
+            if (best) best.classList.add('active');
+        }
+        // نسخ القيم البيئية (حرارة/رطوبة/سرعة هواء/CO2/NH3/O2) من سجل أمس لنفس الفترة (نهار/ليل) —
+        // بيوفر إعادة كتابة قيم بتتغير بالتدريج مش بشكل جذري يوم بيوم؛ المستخدم يعدّل الفرق بس.
+        function copyYesterdayEnv(period) {
+            const b = getActiveBatch();
+            if (!b) return;
+            const curDate = document.getElementById('d_date').value || todayStr();
+            const prev = new Date(curDate + 'T00:00:00'); prev.setDate(prev.getDate() - 1);
+            const prevStr = prev.toISOString().slice(0, 10);
+            const yr = b.records.find(r => r.date === prevStr);
+            if (!yr) { showToast('⚠️ لا يوجد سجل ليوم أمس لنسخ بياناته'); return; }
+            const suffix = period === 'night' ? 'Night' : 'Day';
+            const fields = { temp: 'd_temp_', humidity: 'd_humidity_', airspeed: 'd_airspeed_', co2: 'd_co2_', nh3: 'd_nh3_', o2: 'd_o2_' };
+            let copied = 0;
+            Object.keys(fields).forEach(k => {
+                const val = yr[k + suffix];
+                const el = document.getElementById(fields[k] + period);
+                if (val != null && el) { el.value = val; el.dispatchEvent(new Event('input', { bubbles: true })); copied++; }
+            });
+            showToast(copied ? `✅ اتنسخ ${copied} قيمة بيئية من سجل أمس — عدّل الفرق لو محتاج` : '⚠️ سجل أمس مفيهوش قيم بيئية مسجّلة');
+        }
         function updateMortTotalPreview() {
             const box = document.getElementById('d_mortTotalBox');
             if (!box) return;
@@ -6016,6 +6175,7 @@
                 document.getElementById('d_cull_day').value = 0;
                 document.getElementById('d_mort_night').value = 0;
                 document.getElementById('d_cull_night').value = 0;
+                highlightHealthScale(null);
                 ['d_mc_heat_day', 'd_mc_disease_day', 'd_mc_trample_day', 'd_mc_deform_day', 'd_mc_other_day',
                     'd_mc_heat_night', 'd_mc_disease_night', 'd_mc_trample_night', 'd_mc_deform_night', 'd_mc_other_night'].forEach(id => document.getElementById(id).value = 0);
                 dailyPhotoDataArr = [];
@@ -6417,9 +6577,8 @@
                 houses: [],
                 feedTransitions: [],
                 aiRecommendationLog: [],
-                commLog: [],
-                equipment: [],
-                outageLog: []
+                outageLog: [],
+                quickInterventions: []
             };
             state.batches.push(batch);
             state.activeId = batch.id;
@@ -6443,6 +6602,40 @@
             if (applyProtocolId) { applyProtocol(applyProtocolId); protocolMsg = ' + تم تحميل البروتوكول المختار'; }
             render();
             showToast('تم إنشاء الدفعة بنجاح 🐣 — تم تجهيز برنامج التحصينات القياسي لهذا النوع تلقائيًا' + protocolMsg);
+            setTimeout(() => offerInventoryCarryOver(batch), 500);
+        }
+
+        // ============ ✨ عرض ترحيل مخزون متبقي من دورة سابقة (نفس النوع) عند إنشاء دفعة جديدة ============
+        // كل دفعة عندها b.inventory مستقل يبدأ فاضي دايمًا (شوف ملاحظة الأمان فى saveBatch/endCycle) —
+        // الدالة دي بتعوّض عن كده بعرض أي رصيد اتسجّل وقت أرشفة آخر دورة من نفس النوع، وتخلي المستخدم
+        // يقرر هل يرحّله فعليًا (يفترض إنه نفس المكان الفعلي) أو لأ.
+        function offerInventoryCarryOver(batch) {
+            const pending = (state.pendingCarryOver || []).filter(c => c.species === batch.species);
+            if (!pending.length) return;
+            const co = pending.sort((a, c) => c.date.localeCompare(a.date))[pending.length - 1]; // الأحدث لو فيه أكتر من واحد
+            // عرض لمرة واحدة بس — سواء اتقبل أو اتراض، ميتكررش على كل دفعة جديدة تانية من نفس النوع
+            state.pendingCarryOver = (state.pendingCarryOver || []).filter(c => c.id !== co.id);
+            persist();
+            const itemsListHtml = co.items.map(i => `• ${esc(i.name)}: ${fmt(i.balance,2)} ${esc(i.unit)}`).join('<br>');
+            const locNote = co.location ? ` (${esc(co.location)})` : '';
+            showConfirm(
+                `فيه مخزون متبقي من دورة سابقة "${esc(co.fromBatchName)}"${locNote} أُرشفت فى ${co.date}:<br><br>${itemsListHtml}<br><br>` +
+                `تحب ترحّل الرصيد ده لبداية الدفعة الجديدة؟ (تأكد الأول إنه فعلاً نفس مكان التخزين قبل الموافقة)`,
+                () => {
+                    const b = state.batches.find(x => x.id === batch.id);
+                    if (!b) return;
+                    co.items.forEach(i => {
+                        let it = findInvItem(b, i.name, i.category);
+                        if (!it) { it = { id: uid(), name: i.name, category: i.category, unit: i.unit, balance: 0 }; b.inventory.push(it); }
+                        it.balance += i.balance;
+                        b.stockMovements.push({ id: uid(), itemId: it.id, itemName: it.name, type: 'in', qty: i.balance, date: todayStr(), note: `ترحيل رصيد من دورة سابقة: ${co.fromBatchName}` });
+                    });
+                    persist();
+                    render();
+                    showToast('✅ تم ترحيل المخزون المتبقي للدفعة الجديدة');
+                },
+                '📦 ترحيل مخزون من دورة سابقة؟'
+            );
         }
 
         function selectBatch(id) {
@@ -6509,6 +6702,17 @@
                 if (state.activeId === id) state.activeId = activeBatches().length ? activeBatches()[0].id : null;
                 const recs = buildNextCycleRecommendations(b.species);
                 if (recs) b.nextCycleRecommendations = recs;
+                // ============ ✨ ميزة جديدة: رصد المخزون المتبقي عند الأرشفة لعرض ترحيله على الدفعة القادمة ============
+                // كل دفعة عندها مخزون مستقل (b.inventory)، فمن غير ده أي رصيد فعلي متبقي (أدوية/إضافات/علف)
+                // كان بيختفي من تتبع النظام تمامًا لما تتقفل الدورة وتتعمل دفعة جديدة (مخزونها بيبدأ صفر دايمًا).
+                const leftover = (b.inventory || []).filter(i => i.balance > 0.001);
+                if (leftover.length) {
+                    state.pendingCarryOver = (state.pendingCarryOver || []).filter(c => c.species !== b.species);
+                    state.pendingCarryOver.push({
+                        id: uid(), fromBatchId: b.id, fromBatchName: b.name, species: b.species, location: b.location || '', date: todayStr(),
+                        items: leftover.map(i => ({ name: i.name, category: i.category, unit: i.unit, balance: i.balance }))
+                    });
+                }
                 persist();
                 render();
                 if (newFcrRecord || newEpefRecord) {
@@ -6531,6 +6735,9 @@
             b.status = 'نشطة';
             b.archivedDate = null;
             state.activeId = id;
+            // إصلاح: لو الدورة دي كانت ولّدت "ترحيل مخزون معلّق" وقت أرشفتها، لازم يتلغي — لأن رصيدها
+            // ممكن يتغيّر تاني دلوقتي وهي شغالة، فالنسخة المحفوظة بقت غير موثوقة.
+            state.pendingCarryOver = (state.pendingCarryOver || []).filter(c => c.fromBatchId !== id);
             persist();
             closeModal('archiveModalOverlay');
             render();
@@ -6637,9 +6844,12 @@
             return best;
         }
 
+        // ⚠️ إصلاح: لازم نطابق بالاسم + التصنيف معًا. النظام بيسمح (بتحذير فقط) بوجود صنفين
+        // بنفس الاسم فى تصنيفين مختلفين، فلو تجاهلنا التصنيف هنا، أي عملية خصم/إضافة/عكس
+        // ممكن تمسك أول صنف مطابق بالاسم بس وتخصم أو تضيف على الصنف الغلط فى التصنيف الغلط.
         function findInvItem(b, name, category) {
             const key = normalizeArabicName(name);
-            return b.inventory.find(i => normalizeArabicName(i.name) === key);
+            return b.inventory.find(i => normalizeArabicName(i.name) === key && (!category || i.category === category));
         }
 
         function ensureInvItem(b, name, category, unit) {
@@ -6683,6 +6893,18 @@
         // يحل كمية جرعة/تنفيذ مُدخلة بوحدتها الأصلية (مثال: جم أو مل) إلى وحدة الصنف الفعلية
         // المسجلة بالمخزن (يُنشئ الصنف بهذه الوحدة لو كان جديدًا تمامًا). لو الصنف موجود بوحدة
         // من عائلة مختلفة تمامًا، ترجع qty بقيمة null للدلالة على عدم إمكانية التحويل التلقائي.
+        // يحدد الصنف المطابق للاسم/التصنيف، أو ينشئ صنف جديد بنفس منطق تطبيع الوحدة المستخدم
+        // فى stockIn (وزن/حجم يتحوّلوا لوحدة قياسية موحدة) — بدون أي تعديل على الرصيد.
+        // مستخدمة فى تعديل حركة مخزون قديمة (editMovement) لو المستخدم غيّر اسم/تصنيف الصنف.
+        function resolveOrCreateInvItemForName(b, name, category, unit) {
+            const existing = findInvItem(b, name, category);
+            if (existing) return existing;
+            let baseUnit = unit;
+            if (UNIT_FAMILY[unit] === 'weight') baseUnit = 'كجم';
+            else if (UNIT_FAMILY[unit] === 'volume') baseUnit = 'لتر';
+            return ensureInvItem(b, name, category, baseUnit);
+        }
+
         function resolveInvQty(b, name, category, doseQty, doseUnit) {
             const it = ensureInvItem(b, name, category, doseUnit || 'قطعة');
             if (it.unit === doseUnit) return { it, qty: doseQty };
@@ -6690,7 +6912,12 @@
         }
 
         function stockIn(b, name, category, unit, qty, date, note, expiryDate) {
-            if (qty <= 0) return null;
+            // ⚠️ إصلاح: كانت الدالة بترجع null بصمت لو الكمية صفر/سالبة، فيتحفظ المشترى
+            // بـ stocked:false من غير أي تنبيه للمستخدم إن المخزون ما اتحدّثش فعليًا.
+            if (qty <= 0) {
+                showToast('⚠️ كمية الصنف صفر أو غير صحيحة — لم تُضَف أي كمية للمخزون');
+                return null;
+            }
             const existing = findInvItem(b, name, category);
             if (existing) {
                 const converted = convertUnitQty(qty, unit, existing.unit);
@@ -6738,9 +6965,16 @@
         function confirmIfShort(itemName, unit, balance, qty, actionLabel, onProceed) {
             if (balance >= qty) { onProceed(); return; }
             const shortage = qty - balance;
+            // ⚠️ إصلاح: لو الرصيد صفر (أو قريب من الصفر) من الأساس، ده مؤشر قوي إن الصنف
+            // ده اسمه مكتوب غير مطابق لاسم الصنف وقت الشراء (بدل نقص فعلي فى المخزون)،
+            // فبنوضّح ده صراحة فى رسالة التحذير بدل ما تبان كأنها نقص طبيعي بس.
+            const likelyNameMismatch = balance <= 0;
             showConfirm(
                 `⚠️ رصيد "${itemName}" الحالي ${fmt(balance,2)} ${unit || ''}، والكمية المطلوب خصمها ${actionLabel} هي ${fmt(qty,2)} ${unit || ''}.\n` +
-                `سيصبح الرصيد سالبًا بمقدار ${fmt(shortage,2)} ${unit || ''} — تأكد أن مشتريات هذا الصنف مسجَّلة فعليًا فى المخزن بنفس الاسم تمامًا.\n\n` +
+                `سيصبح الرصيد سالبًا بمقدار ${fmt(shortage,2)} ${unit || ''}.\n` +
+                (likelyNameMismatch
+                    ? `⚠️ الرصيد صفر من الأساس — الأرجح إن اسم الصنف هنا مش مطابق حرفيًا لاسم الصنف وقت الشراء (راجع تبويب المخزون وتأكد من الاسم بالظبط قبل التأكيد).\n\n`
+                    : `تأكد أن مشتريات هذا الصنف مسجَّلة فعليًا فى المخزن بنفس الاسم تمامًا.\n\n`) +
                 `اضغط "نعم، تأكيد" للتنفيذ وخصم الكمية كاملة رغم النقص (سيظهر رصيد سالب حتى تُصحّح المخزون)، أو "إلغاء" للتوقف الآن ومراجعة المخزون أولاً.`,
                 onProceed,
                 '⚠️ نقص فى رصيد المخزن'
@@ -6832,6 +7066,7 @@
             document.getElementById('d_o2_day').value = r.o2Day ?? '';
             document.getElementById('d_o2_night').value = r.o2Night ?? '';
             document.getElementById('d_health').value = r.health ?? '';
+            highlightHealthScale(r.health);
             document.getElementById('d_light').value = r.light ?? '';
             document.getElementById('d_dark').value = r.dark ?? '';
             document.getElementById('d_heatfuel').value = r.heatfuel ?? '';
@@ -7199,6 +7434,22 @@
             if (!date || !total) { showToast('أدخل التاريخ والإجمالي على الأقل'); return; }
             if (editingPurchaseId) {
                 const old = b.purchases.find(p => p.id === editingPurchaseId);
+                // ⚠️ إصلاح: كنا بنسحب أثر الحركة القديمة من المخزون قبل التأكد إن الكمية/الوحدة
+                // الجديدة هتتضاف بنجاح. لو الوحدة الجديدة مش متوافقة مع وحدة الصنف الموجود، أو
+                // الكمية صفر، كانت الكمية القديمة بتتفقد نهائيًا من غير ما تتعوّض. دلوقتي بنتحقق
+                // الأول قبل ما نلمس أي رصيد.
+                if (old && old.stocked && type !== 'كتاكيت' && !NON_STOCK_TYPES.includes(type)) {
+                    const itemNameCheck = type === 'علف' ? (desc || 'علف') : (desc || type);
+                    if (qty <= 0) {
+                        showToast('⚠️ أدخل كمية صحيحة أكبر من صفر — لم يُحفظ التعديل حتى لا تُفقد الكمية القديمة من المخزون');
+                        return;
+                    }
+                    const existingCheck = findInvItem(b, itemNameCheck, type);
+                    if (existingCheck && convertUnitQty(qty, unit, existingCheck.unit) == null) {
+                        showToast(`⚠️ وحدة "${unit}" لا تتوافق مع وحدة "${existingCheck.unit}" المسجلة لصنف "${itemNameCheck}" — صحّح الوحدة قبل الحفظ (لم يُحفظ التعديل حتى لا تُفقد الكمية القديمة من المخزون)`);
+                        return;
+                    }
+                }
                 if (old && old.stocked) reverseStockMovement(b, old.stockItemName, old.type, old.stockQty, old.stockUnit);
                 b.purchases = b.purchases.filter(p => p.id !== editingPurchaseId);
             }
@@ -7295,6 +7546,10 @@
                 const productType = document.getElementById('s_producttype').value;
                 const carcassYield = parseFloat(document.getElementById('s_carcassyield').value) || 0;
                 const processCost = parseFloat(document.getElementById('s_processcost').value) || 0;
+                // ⚠️ إصلاح: كان ممكن تتسجّل عملية بيع بعدد/وزن صفر وإجمالي مُدخل يدويًا — فيضخّم
+                // إيراد المبيعات (meatRevenue) فى الحسابات المالية من غير ما يقابله أي كجم مباع
+                // فعليًا، فيشوّه متوسط سعر البيع (avgSalePrice) لكل عمليات البيع مجتمعة.
+                if (count <= 0 || weight <= 0) { showToast('⚠️ أدخل عدد ووزن أكبر من صفر لعملية بيع اللحم'); return; }
                 if (isNaN(total)) total = weight * price;
                 Object.assign(sale, { count, weight, price, productType, carcassYield, processCost, total });
                 // نغذّي سجل سعر السوق بالسعر الفعلي اللي اتباع بيه — نفس السجل المستخدم فى حاسبة يوم البيع الأمثل
@@ -7304,6 +7559,9 @@
                 const litterArea = parseFloat(document.getElementById('s_litterarea').value) || (b.area || 0);
                 const volume = litterHeight * litterArea;
                 const price = parseFloat(document.getElementById('s_litterprice').value) || 0;
+                // نفس إصلاح بيع اللحم: مانعين إجمالي مُدخل بدون ارتفاع/مساحة حقيقيين وراهم، عشان
+                // لا يتضخّم litterRevenue من غير litterVolumeM3 مقابل له.
+                if (litterHeight <= 0 || litterArea <= 0) { showToast('⚠️ أدخل ارتفاع ومساحة الفرشة أكبر من صفر'); return; }
                 if (isNaN(total)) total = volume * price;
                 Object.assign(sale, { litterHeight, litterArea, volume, price, total });
             }
@@ -7677,14 +7935,22 @@
             if (editingMovementId) {
                 const mv = b.stockMovements.find(m => m.id === editingMovementId);
                 if (mv) {
-                    const it = b.inventory.find(i => i.id === mv.itemId);
-                    if (it) {
-                        // التراجع عن أثر الحركة القديمة على الرصيد، ثم تطبيق أثر القيمة الجديدة
-                        it.balance -= (mv.type === 'in' ? mv.qty : -mv.qty);
-                        it.balance += (mv.type === 'in' ? qty : -qty);
+                    // ⚠️ إصلاح: كنا بنفترض إن الصنف المعدَّل عليه لسه نفسه (mv.itemId) حتى لو
+                    // المستخدم غيّر الاسم/التصنيف فى النموذج. دلوقتي بنعيد تحديد الصنف الصحيح
+                    // بالاسم/التصنيف الجديدين، ونتحقق من توافق الوحدة، قبل ما نلمس أي رصيد.
+                    const newIt = resolveOrCreateInvItemForName(b, name, category, unit);
+                    const convQty = convertUnitQty(qty, unit, newIt.unit);
+                    if (convQty == null) {
+                        showToast(`⚠️ وحدة "${unit}" لا تتوافق مع وحدة "${newIt.unit}" المسجلة لصنف "${newIt.name}" — عدّل الوحدة قبل الحفظ`);
+                        return;
                     }
+                    const oldIt = b.inventory.find(i => i.id === mv.itemId);
+                    if (oldIt) oldIt.balance -= (mv.type === 'in' ? mv.qty : -mv.qty); // تراجع كامل عن أثر الحركة القديمة على صنفها الأصلي
+                    newIt.balance += (mv.type === 'in' ? convQty : -convQty); // تطبيق الأثر على الصنف الصحيح (سواء اتغيّر أو لأ)
+                    mv.itemId = newIt.id;
+                    mv.itemName = newIt.name;
                     mv.date = date;
-                    mv.qty = qty;
+                    mv.qty = convQty;
                     mv.note = note || mv.note;
                 }
                 editingMovementId = null;
@@ -7696,11 +7962,19 @@
             }
             if (stockMode === 'in') stockIn(b, name, category, unit, qty, date, note || 'إضافة يدوية');
             else if (stockMode === 'adjust') {
-                const { it, qty: convQty } = resolveInvQty(b, name, category, qty, unit);
+                // ⚠️ إصلاح: كان بيستخدم resolveInvQty اللي بتنشئ صنف جديد تلقائيًا لو الاسم مش
+                // موجود بالظبط — يعني خطأ إملائي بسيط وقت "حذف/تسوية" كان بينشئ صنف وهمي رصيده
+                // صفر وينزل سالب فورًا، بدل ما يوقف ويطلب تصحيح الاسم.
+                const it = findInvItem(b, name, category);
+                if (!it) { showToast(`⚠️ لا يوجد صنف باسم "${name}" فى تصنيف "${category}" بالمخزون — راجع الاسم من تبويب المخزون قبل الحذف/التسوية`); return; }
+                const convQty = convertUnitQty(qty, unit, it.unit);
                 if (convQty == null) { showToast(`⚠️ وحدة "${unit}" لا تتوافق مع وحدة "${it.unit}" المسجلة لصنف "${it.name}" — عدّل الوحدة قبل الحذف/التسوية`); return; }
                 stockAdjustByItem(b, it.id, convQty, date, note || 'حذف/تسوية يدوية (غير محسوبة كاستهلاك)');
             } else {
-                const { it, qty: convQty } = resolveInvQty(b, name, category, qty, unit);
+                // نفس إصلاح وضع "استهلاك": لازم الصنف يكون موجود فعليًا بنفس الاسم، من غير إنشاء تلقائي.
+                const it = findInvItem(b, name, category);
+                if (!it) { showToast(`⚠️ لا يوجد صنف باسم "${name}" فى تصنيف "${category}" بالمخزون — راجع الاسم من تبويب المخزون قبل تسجيل الصرف`); return; }
+                const convQty = convertUnitQty(qty, unit, it.unit);
                 if (convQty == null) { showToast(`⚠️ وحدة "${unit}" لا تتوافق مع وحدة "${it.unit}" المسجلة لصنف "${it.name}" — عدّل الوحدة قبل تسجيل الصرف`); return; }
                 stockOutByItem(b, it.id, convQty, date, note || 'استهلاك يدوي');
             }
@@ -7938,10 +8212,21 @@
             const b = getActiveBatch();
             if (!b) return;
             const v = b.vaccineLog.find(v => v.id === id);
-            showConfirm('حذف هذا التحصين من البرنامج؟ يمكن استرجاعه لاحقًا من سلة المهملات.', () => { b.vaccineLog = b.vaccineLog.filter(v => v.id !== id);
+            // ⚠️ إصلاح: كان الحذف بيمسح البند من غير ما يرجّع كميته المخصومة للمخزون لو كان منفَّذ
+            // بالفعل (done:true) — بعكس "إلغاء التنفيذ" اللي بيرجّعها صح. دلوقتي بنرجّع الكمية أولاً
+            // (نفس منطق toggleVaccine بالظبط) قبل الحذف، ولو أنه اترجعت بننبّه المستخدم بتوست واضح.
+            const wasStocked = v && v.done && v.qty > 0;
+            const confirmMsg = wasStocked
+                ? `حذف هذا التحصين من البرنامج؟ الكمية (${fmt(v.qty,2)} ${v.unit || 'جرعة'}) المخصومة من المخزن هترجع تلقائيًا. يمكن استرجاعه لاحقًا من سلة المهملات.`
+                : 'حذف هذا التحصين من البرنامج؟ يمكن استرجاعه لاحقًا من سلة المهملات.';
+            showConfirm(confirmMsg, () => {
+                if (wasStocked) reverseStockOut(b, v.name, 'أدوية ولقاحات', v.qty, v.unit || 'جرعة');
+                b.vaccineLog = b.vaccineLog.filter(v => v.id !== id);
                 if (v) softDeleteToTrash(b, 'vaccine', v, `🗑️ حذف تحصين من البرنامج: ${v.name || ''}`);
                 persist();
-                render(); });
+                render();
+                if (wasStocked) showToast(`✅ تم الحذف وإرجاع ${fmt(v.qty,2)} ${v.unit || 'جرعة'} للمخزن`);
+            });
         }
 
         function loadDefaultVaccineProgram() {
@@ -8069,11 +8354,20 @@
             const b = getActiveBatch();
             if (!b) return;
             const t0 = b.treatmentLog.find(t => t.id === id);
-            showConfirm('حذف هذه المعاملة من برنامج السبلة والفرشة؟ يمكن استرجاعها لاحقًا من سلة المهملات.', () => { b.treatmentLog = b.treatmentLog.filter(t => t
-                    .id !== id);
+            // ⚠️ إصلاح: نفس إصلاح deleteVaccine — نرجّع الكمية المخصومة للمخزون لو المعاملة كانت
+            // منفَّذة بالفعل، قبل ما نحذفها، بدل ما تضيع الكمية بصمت.
+            const wasStocked = t0 && t0.done && t0.qty > 0;
+            const confirmMsg = wasStocked
+                ? `حذف هذه المعاملة من برنامج السبلة والفرشة؟ الكمية (${fmt(t0.qty,2)} ${t0.unit || 'لتر'}) المخصومة من المخزن هترجع تلقائيًا. يمكن استرجاعها لاحقًا من سلة المهملات.`
+                : 'حذف هذه المعاملة من برنامج السبلة والفرشة؟ يمكن استرجاعها لاحقًا من سلة المهملات.';
+            showConfirm(confirmMsg, () => {
+                if (wasStocked) reverseStockOut(b, t0.name, 'أدوية ولقاحات', t0.qty, t0.unit || 'لتر');
+                b.treatmentLog = b.treatmentLog.filter(t => t.id !== id);
                 if (t0) softDeleteToTrash(b, 'treatment', t0, `🗑️ حذف معاملة فرشة/سبلة: ${t0.name || ''}`);
                 persist();
-                render(); });
+                render();
+                if (wasStocked) showToast(`✅ تم الحذف وإرجاع ${fmt(t0.qty,2)} ${t0.unit || 'لتر'} للمخزن`);
+            });
         }
 
         // ============ جدولة أيام التكرار (غير متصلة) لإضافات العلف/الماء ومعاملات الفرشة ============
@@ -9226,16 +9520,21 @@
             const remainingDays = targetAge - m.todayAge;
             const stdWNow = getRefValue(b, 'weight', m.todayAge) || m.avgWeightG;
             const stdWTarget = getRefValue(b, 'weight', targetAge) || m.avgWeightG;
-            const weightRatio = stdWNow > 0 ? m.avgWeightG / stdWNow : 1;
+            // ⚠️ إصلاح: m.avgWeightG هو حرفيًا آخر وزن مُدخَل من غير أي فلترة — وزن واحد مُدخَل غلط
+            // (فاصلة عشرية، صفر زيادة) كان بيقلب نسبة الأداء وترتيبك المئوي مقابل كل دوراتك السابقة.
+            // بنستخدم نفس فلترة القيم الشاذة المستخدمة فى weightPrediction: لو آخر وزن شاذ، نرجع لآخر
+            // وزن نظيف قبله بدل ما نصدّق الرقم الشاذ على طول.
+            const weightRobust = getRobustRecentWeights(m, 8, 5);
+            const baseWeightG = weightRobust.outlierExcluded && weightRobust.recs.length
+                ? weightRobust.recs[weightRobust.recs.length - 1].weight
+                : m.avgWeightG;
+            const weightRatio = stdWNow > 0 ? baseWeightG / stdWNow : 1;
             const projWeightKg = (stdWTarget * weightRatio) / 1000;
             // معدل نفوق يومي فعلي آخر 7 أيام (نفس منطق نصيحة البيع)
+            // ⚠️ إصلاح: نفس منطق computeOptimalSaleDay — وسيط بدل متوسط، عشان يوم نفوق استثنائي واحد
+            // ما يهيمنش على توقع الأيام المتبقية للدورة كلها.
             const recentMortRecs = m.series.filter(r => r.age > 0).slice(-7);
-            let dailyMortRate = 0;
-            if (recentMortRecs.length) {
-                const totalMort = recentMortRecs.reduce((s, r) => s + (r.mort || 0) + (r.cull || 0), 0);
-                const avgLive = recentMortRecs.reduce((s, r) => s + r.liveCount, 0) / recentMortRecs.length;
-                if (avgLive > 0) dailyMortRate = Math.min((totalMort / recentMortRecs.length) / avgLive, MAX_PROJECTED_DAILY_MORT_RATE);
-            }
+            const dailyMortRate = getRobustDailyMortRate(recentMortRecs, MAX_PROJECTED_DAILY_MORT_RATE);
             const projLiveCountPct = (m.liveCountPct / 100) * Math.pow(1 - dailyMortRate, remainingDays) * 100;
             const projFcr = m.fcr; // أفضل تقدير متاح لاستمرار نفس كفاءة التحويل الحالية
             const projEpef = (projFcr > 0 && targetAge > 0 && projWeightKg > 0)
@@ -9387,14 +9686,8 @@
             if (!missingWeight.length && !missingFeed.length) return null;
             return { missingWeight: missingWeight.length, missingFeed: missingFeed.length, ofDays: recentAges.length };
         }
-        // ============ 9) العائد الاقتصادي التقريبي من ساعات التبريد/التهوية الإضافية ============
-        function computeCoolingROI(b, m) {
-            const coolingEquip = (b.equipment || []).filter(eq => (eq.type === 'fan' || eq.type === 'generator') && eq.powerKw > 0 && eq.totalHours > 0);
-            if (!coolingEquip.length) return null;
-            const price = AS().electricityPricePerKwh;
-            const totalCost = coolingEquip.reduce((s, eq) => s + eq.totalHours * eq.powerKw * price, 0);
-            return { equipCount: coolingEquip.length, totalCost, mortRate: m.mortRate };
-        }
+        // (تمت إزالة computeCoolingROI مع إزالة نظام ساعات تشغيل المعدات والصيانة — كان معتمدًا على eq.totalHours المُسجَّلة يدويًا)
+
         // ============ 10) تنبؤ مبكر بخطر الأمراض التنفسية (رطوبة/أمونيا + الموسم + عمر القطيع) ============
         function computeRespiratoryRisk(b, m) {
             if (m.todayAge < 14) return null; // الخطر التنفسي عادة يبدأ يظهر بعد منتصف الدورة تقريبًا
@@ -9706,7 +9999,11 @@
                             { key: 'humidity', label: 'الرطوبة', stdCoef: stdCoef(reg.coefs[1], sdH) },
                             { key: 'nh3', label: 'الأمونيا', stdCoef: stdCoef(reg.coefs[2], sdN) },
                         ].sort((a, c) => Math.abs(c.stdCoef) - Math.abs(a.stdCoef));
-                        envMultiRegression = { r2: reg.r2, n: matched.length, factors, dominant: factors[0] };
+                        // ⚠️ إصلاح: كان النموذج بيعرض "العامل الأكثر تأثيرًا" بثقة حتى لو r² قريب من الصفر (يعني
+                        // النموذج فعليًا مش مفسِّر حاجة). دلوقتي modelWeak بتوضّح للواجهة إنها متعرضش الترتيب
+                        // كحقيقة، وr2 بيتحفظ عشان يتعرض للمستخدم بدل ما يفضل مخفي عنه.
+                        const modelWeak = reg.r2 == null || reg.r2 < 0.15;
+                        envMultiRegression = { r2: reg.r2, n: matched.length, factors, dominant: factors[0], modelWeak };
                     }
                 }
             }
@@ -9874,24 +10171,36 @@
                         const doneAge = daysBetween(b.startDate, t.doneDate);
                         const before = series.filter(r => r.age >= doneAge - 3 && r.age < doneAge);
                         const after = series.filter(r => r.age > doneAge && r.age <= doneAge + 3);
-                        if (before.length < 2 || after.length < 2) return null;
+                        // ⚠️ إصلاح: كان الحد الأدنى نقطتين بس (يوم واحد فعليًا فى فترة 3 أيام ممكن يحتوي نقطة
+                        // واحدة لو فيه فجوات تسجيل) — رفعناه لـ 3 نقاط كحد أدنى حقيقي قبل أي مقارنة قبل/بعد.
+                        if (before.length < 3 || after.length < 3) return null;
                         const mortBefore = before.reduce((s, r) => s + (r.mort || 0) + (r.cull || 0), 0) / before.length;
                         const mortAfter = after.reduce((s, r) => s + (r.mort || 0) + (r.cull || 0), 0) / after.length;
-                        const nh3Before = avgOfArr(before.map(r => avgOf(r.nh3Day, r.nh3Night)).filter(v => v != null));
-                        const nh3After = avgOfArr(after.map(r => avgOf(r.nh3Day, r.nh3Night)).filter(v => v != null));
-                        const beforePerf = perfPeriodStats(dailyPerf.filter(d => d.age >= doneAge - 3 && d.age < doneAge));
-                        const afterPerf = perfPeriodStats(dailyPerf.filter(d => d.age > doneAge && d.age <= doneAge + 3));
+                        const nh3BeforeArr = before.map(r => avgOf(r.nh3Day, r.nh3Night)).filter(v => v != null);
+                        const nh3AfterArr = after.map(r => avgOf(r.nh3Day, r.nh3Night)).filter(v => v != null);
+                        const nh3Before = avgOfArr(nh3BeforeArr);
+                        const nh3After = avgOfArr(nh3AfterArr);
+                        const beforeDailyPerf = dailyPerf.filter(d => d.age >= doneAge - 3 && d.age < doneAge);
+                        const afterDailyPerf = dailyPerf.filter(d => d.age > doneAge && d.age <= doneAge + 3);
+                        const beforePerf = perfPeriodStats(beforeDailyPerf);
+                        const afterPerf = perfPeriodStats(afterDailyPerf);
                         const mortSig = welchSignificant(before.map(r => (r.mort || 0) + (r.cull || 0)), after.map(r => (r.mort || 0) + (r.cull || 0)));
+                        // ⚠️ إصلاح: الأمونيا والوزن كان بيتحكم فيهم نسبة مباشرة بس من غير أي اختبار دلالة —
+                        // دلوقتي بنطبّق نفس اختبار Welch المستخدم أصلاً للنفوق. الـ FCR لسه مفيهوش سلسلة يومية
+                        // طبيعية تصلح لاختبار تباين (شوف نفس الملاحظة فى additiveAnalysis)، فهيفضل نسبة وصفية بس.
+                        const nh3Sig = welchSignificant(nh3BeforeArr, nh3AfterArr);
+                        const devSig = welchSignificant(beforeDailyPerf.map(d => d.devPct).filter(v => v != null), afterDailyPerf.map(d => d.devPct).filter(v => v != null));
                         return { name: t.name, doneAge, mortBefore, mortAfter, nh3Before, nh3After,
                             devBefore: beforePerf.avgDev, devAfter: afterPerf.avgDev, fcrBefore: beforePerf.periodFcr, fcrAfter: afterPerf.periodFcr,
-                            mortStatSignificant: mortSig.significant };
+                            mortStatSignificant: mortSig.significant, nh3StatSignificant: nh3Sig.significant, devStatSignificant: devSig.significant };
                     }).filter(Boolean);
                     if (rows.length) {
                         // نعلّم المعاملات اللي حسّنت النفوق أو الأمونيا أو الوزن أو معدل التحويل بوضوح بعد تنفيذها
-                        // (تحسّن النفوق تحديدًا لازم يكون مدعوم بدلالة إحصائية Welch مش بس نسبة، لصغر حجم عينة قبل/بعد عادة 3-4 أيام)
+                        // (تحسّن النفوق/الأمونيا/الوزن لازم يكون مدعوم بدلالة إحصائية Welch مش بس نسبة، لصغر
+                        // حجم عينة قبل/بعد عادة 3-4 أيام — الـ FCR وحده بيفضل نسبة وصفية لعدم وجود سلسلة يومية له)
                         const improved = rows.filter(r => (r.mortAfter < r.mortBefore * 0.7 && r.mortStatSignificant)
-                            || (r.nh3Before != null && r.nh3After != null && r.nh3After < r.nh3Before * 0.8)
-                            || (r.devBefore != null && r.devAfter != null && (r.devAfter - r.devBefore) >= 2)
+                            || (r.nh3Before != null && r.nh3After != null && r.nh3After < r.nh3Before * 0.8 && r.nh3StatSignificant)
+                            || (r.devBefore != null && r.devAfter != null && (r.devAfter - r.devBefore) >= 2 && r.devStatSignificant)
                             || (r.fcrBefore != null && r.fcrAfter != null && r.fcrAfter < r.fcrBefore * 0.92))
                             .sort((x, y) => (x.mortAfter - x.mortBefore) - (y.mortAfter - y.mortBefore));
                         treatmentImpact = { rows, best: improved[0] || null };
@@ -9916,9 +10225,13 @@
                         const totalMort = recsInSeg.reduce((s, r) => s + (r.mort || 0), 0);
                         const days = recsInSeg.length;
                         const segAges = new Set(recsInSeg.map(r => r.age));
-                        const perf = perfPeriodStats(dailyPerf.filter(d => segAges.has(d.age)));
-                        return { lot: fl.lot, days, totalMort, mortPerDay: days > 0 ? totalMort / days : 0, avgDev: perf.avgDev, periodFcr: perf.periodFcr };
-                    }).filter(s => s.days >= 2);
+                        const segDailyPerf = dailyPerf.filter(d => segAges.has(d.age));
+                        const perf = perfPeriodStats(segDailyPerf);
+                        // ⚠️ إصلاح: بنحتفظ بالسلاسل اليومية الخام (مش بس المتوسط) عشان نقدر نشغّل اختبار
+                        // Welch لكل شحنة مقابل باقي الشحنات مجتمعة، بدل ما نحكم بمجرد نسبة مباشرة.
+                        return { lot: fl.lot, days, totalMort, mortPerDay: days > 0 ? totalMort / days : 0, avgDev: perf.avgDev, periodFcr: perf.periodFcr,
+                            mortDaily: recsInSeg.map(r => (r.mort || 0) + (r.cull || 0)), devDaily: segDailyPerf.map(d => d.devPct).filter(v => v != null) };
+                    }).filter(s => s.days >= 3); // ⚠️ إصلاح: رفعنا الحد الأدنى من يومين لـ 3 أيام كحد أدنى حقيقي للمقارنة
                     if (segs.length >= 2) {
                         const avgMortRate = segs.reduce((s, x) => s + x.mortPerDay, 0) / segs.length;
                         const devVals = segs.map(s => s.avgDev).filter(v => v != null);
@@ -9929,10 +10242,16 @@
                         const worstMort = segs.reduce((a, c) => c.mortPerDay > a.mortPerDay ? c : a, segs[0]);
                         const worstDev = devVals.length ? segs.reduce((a, c) => (c.avgDev != null && (a.avgDev == null || c.avgDev < a.avgDev)) ? c : a, segs[0]) : null;
                         const worstFcr = fcrVals.length ? segs.reduce((a, c) => (c.periodFcr != null && (a.periodFcr == null || c.periodFcr > a.periodFcr)) ? c : a, segs[0]) : null;
+                        // ⚠️ إصلاح: اختبار Welch لكل بند (نفوق/وزن) مقابل باقي الشحنات مجتمعة، قبل ما نتهم شحنة بعينها.
+                        // الـ FCR (زي فى باقي التحليلات) مفيهوش سلسلة يومية طبيعية، فبيفضل نسبة وصفية بس.
+                        const otherMort = (seg) => segs.filter(s => s !== seg).flatMap(s => s.mortDaily);
+                        const otherDev = (seg) => segs.filter(s => s !== seg).flatMap(s => s.devDaily);
+                        const worstMortSig = welchSignificant(worstMort.mortDaily, otherMort(worstMort)).significant;
+                        const worstDevSig = worstDev ? welchSignificant(worstDev.devDaily, otherDev(worstDev)).significant : false;
                         let flagged = null;
-                        if (avgMortRate > 0 && worstMort.mortPerDay > avgMortRate * 1.5) flagged = { ...worstMort, reason: 'mort' };
-                        else if (worstDev && avgDevAll != null && (avgDevAll - worstDev.avgDev) >= 3) flagged = { ...worstDev, reason: 'weight' };
-                        else if (worstFcr && avgFcrAll != null && worstFcr.periodFcr > avgFcrAll * 1.1) flagged = { ...worstFcr, reason: 'fcr' };
+                        if (avgMortRate > 0 && worstMort.mortPerDay > avgMortRate * 1.5 && worstMortSig) flagged = { ...worstMort, reason: 'mort' };
+                        else if (worstDev && avgDevAll != null && (avgDevAll - worstDev.avgDev) >= 3 && worstDevSig) flagged = { ...worstDev, reason: 'weight' };
+                        else if (worstFcr && avgFcrAll != null && worstFcr.periodFcr > avgFcrAll * 1.1) flagged = { ...worstFcr, reason: 'fcr', fcrOnly: true };
                         feedLotAnalysis = { segs, avgMortRate, avgDevAll, avgFcrAll, flagged };
                     }
                 }
@@ -10065,7 +10384,11 @@
             let riskIndex = null;
             {
                 let score = 0; const reasons = [];
-                if (envStressBest && Math.abs(envStressBest.corr) >= 0.3) { score += Math.abs(envStressBest.corr) >= 0.5 ? 25 : 15; reasons.push(`إجهاد بيئي مرتبط بالنفوق (ارتباط ${fmt(Math.abs(envStressBest.corr)*100,0)}%)`); }
+                // ⚠️ إصلاح: كان بيضيف نقط للمؤشر المُجمَّع لمجرد |r|≥0.3 من غير أي فحص دلالة إحصائية —
+                // حتى لو نفس الارتباط ده كان هيظهر بشارة "⚪ ممكن يكون صدفة" لو اتعرض كنص منفصل
+                // (شوف corrConfidence/pearsonSignificant). دلوقتي بنشترط الدلالة الإحصائية الفعلية
+                // قبل ما يساهم فى المؤشر المُجمَّع، عشان يفضل على الأقل بنفس مصداقية العرض التفصيلي.
+                if (envStressBest && Math.abs(envStressBest.corr) >= 0.3 && pearsonSignificant(envStressBest.corr, envStressBest.count)) { score += Math.abs(envStressBest.corr) >= 0.5 ? 25 : 15; reasons.push(`إجهاد بيئي مرتبط بالنفوق (ارتباط ${fmt(Math.abs(envStressBest.corr)*100,0)}%)`); }
                 if (waterFeedAnalysis && waterFeedAnalysis.deviationPct != null && waterFeedAnalysis.deviationPct >= 8) { score += waterFeedAnalysis.deviationPct >= 15 ? 20 : 10; reasons.push(`نسبة الماء:العلف أعلى من المعتاد بـ${fmt(waterFeedAnalysis.deviationPct,0)}%`); }
                 if (devTrend != null && devTrend < -1) { score += 15; reasons.push(`الوزن بيتراجع عن بداية الدورة بمعدل ${fmt(Math.abs(devTrend),1)} نقطة%/يوم`); }
                 if (weightZAnomaly) { score += Math.abs(weightZAnomaly.z) >= 3 ? 20 : 10; reasons.push(`آخر وزنة (يوم ${weightZAnomaly.age}) خارج نمط الدفعة بانحراف z=${fmt(weightZAnomaly.z,1)}`); }
@@ -10250,6 +10573,27 @@
                 liveProjAtTarget: targetRow.liveProj, salePrice: osd.salePrice, priceSource: osd.priceSource, confidence };
         }
 
+        // ⚠️ إصلاح: helper موحّد لفلترة القيم الشاذة فى الوزن — بيتشارك بين computeOptimalSaleDay
+        // و computeEpefProjection عشان قرار "يوم البيع الأمثل" وتوقع الـ EPEF ما ينبنوش على وزن
+        // واحد مُدخَل غلط (فاصلة عشرية، صفر زيادة، إلخ)، نفس الحماية المستخدمة أصلاً فى weightPrediction.
+        function getRobustRecentWeights(m, windowSize, tailSize) {
+            const raw = m.series.filter(r => r.age > 0 && r.weight != null).slice(-(windowSize || 8));
+            if (raw.length < 5) return { recs: raw, outlierExcluded: false }; // مش كفاية نقط لحساب IQR أصلًا
+            const out = filterOutlierRecords(raw, 'weight');
+            const clean = out.clean.length >= 2 ? out.clean : raw;
+            return { recs: clean.slice(-(tailSize || 5)), outlierExcluded: out.removed.length > 0, removedAges: out.removed.map(r => r.age) };
+        }
+        // ⚠️ إصلاح مماثل للنفوق: بعكس الوزن، بيانات النفوق غالبًا صفر لأيام كتير فمعامل IQR بيبقى صفر
+        // (يعني فلترة IQR العادية مش هتمسك يوم نفوق استثنائي وسط أيام صفر) — فبنستخدم الوسيط (median)
+        // بدل المتوسط لحساب معدل النفوق اليومي المتوقع، لأن الوسيط أصلًا مقاوم ليوم شاذ واحد.
+        function getRobustDailyMortRate(recentMortRecs, cap) {
+            if (!recentMortRecs.length) return 0;
+            const dailyRates = recentMortRecs.map(r => r.liveCount > 0 ? ((r.mort || 0) + (r.cull || 0)) / r.liveCount : 0);
+            const sorted = [...dailyRates].sort((a, c) => a - c);
+            const mid = Math.floor(sorted.length / 2);
+            const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+            return Math.min(median, cap);
+        }
         function computeOptimalSaleDay(b, m, fin, overridePrice) {
             const feedPriceInfo = computeActualFeedPrice(b);
             const feedPrice = feedPriceInfo.price || 0;
@@ -10263,7 +10607,10 @@
             const startAge = Math.max(m.age || m.todayAge, 1);
 
             // ===== نسبة أداء الوزن الفعلي مقابل المرجعي — من آخر 5 أوزان فعلية مُقاسة (مش تقديرية) =====
-            const recentWeightRecs = m.series.filter(r => r.age > 0 && r.weight != null).slice(-5);
+            // ⚠️ إصلاح: فلترة القيم الشاذة قبل الاعتماد عليها (زي weightPrediction بالظبط) — وزن واحد
+            // مُدخَل غلط ما يقلبش قرار يوم البيع كله.
+            const weightRobust = getRobustRecentWeights(m, 8, 5);
+            const recentWeightRecs = weightRobust.recs;
             let weightRatio = 1;
             if (recentWeightRecs.length >= 1) {
                 let actualSum = 0, stdSum = 0;
@@ -10290,12 +10637,9 @@
 
             // ===== معدل نفوق يومي متوقع (متوسط آخر 7 أيام فعلية كنسبة من الأعداد الحية) =====
             const recentMortRecs = m.series.filter(r => r.age > 0).slice(-7);
-            let dailyMortRate = 0;
-            if (recentMortRecs.length) {
-                const totalMort = recentMortRecs.reduce((s, r) => s + (r.mort || 0) + (r.cull || 0), 0);
-                const avgLive = recentMortRecs.reduce((s, r) => s + r.liveCount, 0) / recentMortRecs.length;
-                if (avgLive > 0) dailyMortRate = Math.min((totalMort / recentMortRecs.length) / avgLive, MAX_PROJECTED_DAILY_MORT_RATE);
-            }
+            // ⚠️ إصلاح: كان بيستخدم المتوسط الحسابي، فيوم نفوق استثنائي واحد (حدث عابر انتهى) بيتراكب
+            // أُسّيًا على توقع 21 يوم قادمة. دلوقتي بنستخدم الوسيط (أقاوم للقيم الشاذة من طبيعته).
+            const dailyMortRate = getRobustDailyMortRate(recentMortRecs, MAX_PROJECTED_DAILY_MORT_RATE);
 
             // ===== حد الكثافة الأقصى الآمن حسب نظام التهوية والأرضية (نفس القيم المستخدمة فى توصيات التهوية) =====
             const ventType = b.ventType || 'natural';
@@ -11048,17 +11392,8 @@
                     }
                 }
             })();
-            // ===== صيانة معدات مستحقة =====
-            (b.equipment || []).forEach(eq => {
-                const hoursSince = eq.totalHours - (eq.lastMaintenanceHours || 0);
-                const dueByHours = eq.intervalHours > 0 && hoursSince >= eq.intervalHours;
-                const dueByDate = !!(eq.nextMaintenanceDate && eq.nextMaintenanceDate <= todayStr());
-                if (dueByHours) {
-                    alerts.push({ level: 'warn', text: `🔧 حان موعد صيانة "${eq.name}" (${fmt(hoursSince,0)} ساعة تشغيل منذ آخر صيانة) — راجع تبويب العمليات` });
-                } else if (dueByDate) {
-                    alerts.push({ level: 'warn', text: `🔧 حان موعد صيانة "${eq.name}" المحدد بتاريخ ${eq.nextMaintenanceDate} — راجع تبويب العمليات` });
-                }
-            });
+            // (تمت إزالة تنبيه "صيانة معدات مستحقة" مع إزالة نظام ساعات تشغيل المعدات والصيانة)
+
             // ===== صلاحية اللقاحات/الأدوية =====
             const expiryRows = computeExpiryAlerts(b);
             expiryRows.slice(0, 3).forEach(r => {
@@ -11091,6 +11426,16 @@
                     alerts.push({ level: 'warn', text: `🌾 مخزون العلف يكفي ~${fmt(feedForecastForAlert.stockOutInDays,0)} يوم فقط حسب معدل الاستهلاك المتوقع — جهّز الشراء القادم قريبًا` });
                 }
             }
+            // ===== تحذير: قيمة مشتريات العلف المسجّلة أقل بكتير من التقدير القياسي (كمية مستهلكة فعليًا × متوسط سعر) =====
+            // الحسابات المالية بتثق بأول عملية شراء مسجّلة بالكامل وتلغي التقدير الاحتياطي فورًا (شوف computeFinanceRaw).
+            // لو فيه فجوة كبيرة، الأرجح إن شحنات علف اتستخدمت فعليًا لكن ما اتسجّلتش كمشترى، فالربح الظاهر يبقى متضخّم وهمي.
+            (() => {
+                const feedFromPurchases = b.purchases.filter(p => p.type === 'علف').reduce((s, p) => s + p.total, 0);
+                const feedEstimate = (m.cumFeed || 0) * (b.feedprice || 0);
+                if (feedFromPurchases > 0 && feedEstimate > 0 && feedFromPurchases < feedEstimate * 0.5) {
+                    alerts.push({ level: 'warn', text: `💰 قيمة مشتريات العلف المسجّلة (${money(feedFromPurchases)}) أقل من نص التقدير القياسي (${money(feedEstimate)}) بناءً على الكمية المستهلكة فعليًا — الأرجح إن فيه شحنات علف اتستخدمت لكن ما اتسجّلتش كمشترى، فالربح الظاهر فى تبويب المالية ممكن يكون متضخّم وهمي. راجع سجل المشتريات.` });
+                }
+            })();
             // ===== مرحلة العلف (بادئ/نامي/ناهي): تنبيه استباقي قبل ميعاد التحويل، مبني على الاستهلاك الفعلي لا التقويم =====
             const feedStageInfo = getFeedStageInfo(b, m);
             if (feedStageInfo && feedStageInfo.nextStage && feedStageInfo.remainingKg != null) {
@@ -11764,8 +12109,11 @@
             if (ins.additiveAnalysis && ins.additiveAnalysis.flagged) {
                 const aa = ins.additiveAnalysis.flagged;
                 const topReason = aa.reasons[0] ? aa.reasons[0].key : 'mort';
+                // ⚠️ إصلاح: بند FCR (بعكس النفوق والوزن) مش بيتفحص بـ welchSignificant لأن معدل التحويل
+                // مش له سلسلة يومية طبيعية تُبنى منها اختبار تباين — فبنوضّح صراحة إنه فرق نسبي وصفي بس.
+                const fcrCaveat = topReason === 'fcr' ? ' (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا بعد)' : '';
                 const aaTxt = topReason === 'weight' ? `الوزن أضعف من المعتاد بـ ${fmt(aa.inactiveDev - aa.activeDev,1)}% وقت سريانه`
-                    : topReason === 'fcr' ? `معدل التحويل أسوأ (${fmt(aa.activeFcr,2)} مقابل ${fmt(aa.inactiveFcr,2)}) وقت سريانه`
+                    : topReason === 'fcr' ? `معدل التحويل أسوأ (${fmt(aa.activeFcr,2)} مقابل ${fmt(aa.inactiveFcr,2)}) وقت سريانه${fcrCaveat}`
                     : `معدل نفوق ${fmt(aa.activeMortRate,2)} طائر/يوم وقت سريانه مقابل ${fmt(aa.inactiveMortRate,2)} خارج فترته`;
                 push('production', '💊', `راجع جرعة/توقيت "${aa.name}" (${aa.kind}) — ${aaTxt}`, 7);
             }
@@ -11927,7 +12275,7 @@
                 const fl = ins.feedLotAnalysis;
                 if (fl.flagged) {
                     const reasonTxt = fl.flagged.reason === 'weight' ? `متوسط انحراف الوزن ${fmt(fl.flagged.avgDev,1)}% مقابل متوسط ${fmt(fl.avgDevAll,1)}% فى باقي الشحنات — الوزن أضعف من المعتاد بوضوح خلال فترة هذه الشحنة`
-                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة`
+                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا)`
                         : `معدل نفوق ${fmt(fl.flagged.mortPerDay,2)} طائر/يوم مقابل متوسط ${fmt(fl.avgMortRate,2)}`;
                     return `<div class="check-row"><div class="txt">
                         <div>🌾📦 شحنة العلف "<b>${fl.flagged.lot}</b>" مرتبطة بأداء أضعف (${fl.flagged.reason === 'weight' ? 'وزن' : fl.flagged.reason === 'fcr' ? 'معدل تحويل' : 'نفوق'})</div>
@@ -11942,8 +12290,9 @@
                 let html = '';
                 if (aa.flagged) {
                     const topR = aa.flagged.reasons[0];
+                    const fcrCaveat = topR.key === 'fcr' ? ' (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا بعد)' : '';
                     const txt = topR.key === 'weight' ? `الوزن أضعف من المعتاد بمتوسط ${fmt(aa.flagged.inactiveDev - aa.flagged.activeDev,1)}% وقت سريانه مقارنة بخارج فترته`
-                        : topR.key === 'fcr' ? `معدل التحويل وقت السريان ${fmt(aa.flagged.activeFcr,2)} مقابل ${fmt(aa.flagged.inactiveFcr,2)} خارج فترته — أسوأ بوضوح`
+                        : topR.key === 'fcr' ? `معدل التحويل وقت السريان ${fmt(aa.flagged.activeFcr,2)} مقابل ${fmt(aa.flagged.inactiveFcr,2)} خارج فترته — أسوأ بوضوح${fcrCaveat}`
                         : `معدل نفوق ${fmt(aa.flagged.activeMortRate,2)} طائر/يوم وقت السريان مقابل ${fmt(aa.flagged.inactiveMortRate,2)} خارج فترته`;
                     html += `<div class="check-row"><div class="txt">
                         <div>💊⚠️ "<b>${aa.flagged.name}</b>" (${aa.flagged.kind}) مرتبط بأداء أضعف (${reasonLabel[topR.key]}) وقت سريانه</div>
@@ -11952,8 +12301,9 @@
                 }
                 if (aa.improved) {
                     const topR = aa.improved.positiveReasons[0];
+                    const fcrCaveat = topR.key === 'fcr' ? ' (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا بعد)' : '';
                     const txt = topR.key === 'weight' ? `الوزن أفضل من المعتاد بمتوسط ${fmt(aa.improved.activeDev - aa.improved.inactiveDev,1)}% وقت سريانه`
-                        : `معدل التحويل وقت السريان ${fmt(aa.improved.activeFcr,2)} مقابل ${fmt(aa.improved.inactiveFcr,2)} خارج فترته — أفضل بوضوح`;
+                        : `معدل التحويل وقت السريان ${fmt(aa.improved.activeFcr,2)} مقابل ${fmt(aa.improved.inactiveFcr,2)} خارج فترته — أفضل بوضوح${fcrCaveat}`;
                     html += `<div class="check-row"><div class="txt">
                         <div>💊✅ "<b>${aa.improved.name}</b>" (${aa.improved.kind}) مرتبط بأداء أفضل (${reasonLabel[topR.key]}) وقت سريانه</div>
                         <div class="day">${txt} — مؤشر إيجابي يستحق الاستمرار عليه، خصوصًا لو تكرر فى دورات قادمة</div>
@@ -11973,7 +12323,10 @@
                 return `<div class="check-row"><div class="txt">
                         <div>🌡️💧🌬️ الإجهاد البيئي (حرارة+رطوبة+أمونيا) والنفوق: <b style="color:${clear?strengthColor:'var(--muted)'};">${clear?`ارتباط ${strength}`:'لا يوجد ارتباط واضح حتى الآن'}</b> ${corrConfidence(eb.count, eb.corr)}</div>
                         <div class="day">${clear?`النفوق بيرتفع بوضوح ${lagTxt} من كل مرة يرتفع فيها الإجهاد البيئي معًا (مش بالضرورة نفس اليوم) — راجع التهوية والتبريد وقت ارتفاع الحرارة/الرطوبة/الأمونيا مجتمعين`:`أقرب ما توصّلنا له: ارتباط ضعيف (r=${fmt(eb.corr,2)}) — مش كافي كنمط مؤكد بعد، تابع القراءات البيئية اليومية لتزيد الدقة`}</div>
-                        ${ins.envMultiRegression ? `<div class="day" style="margin-top:4px;">🧮 لو فصلنا أثر كل عامل بيئي عن التانى (من ${ins.envMultiRegression.n} قراءة): العامل الأكثر تأثيرًا فعليًا على النفوق هو <b>${ins.envMultiRegression.dominant.label}</b> — يليه بالترتيب: ${ins.envMultiRegression.factors.slice(1).map(f=>f.label).join('، ') || '—'}</div>` : ''}
+                        ${ins.envMultiRegression ? (ins.envMultiRegression.modelWeak
+                            ? `<div class="day" style="margin-top:4px;color:var(--muted);">🧮 حاولنا نفصل أثر كل عامل بيئي عن التانى (من ${ins.envMultiRegression.n} قراءة)، لكن النموذج ضعيف التفسير حاليًا (r²=${fmt(ins.envMultiRegression.r2*100,0)}%) — الأرجح إن العوامل مترابطة بقوة أو العينة لسه صغيرة، فمش هنعرض ترتيب "الأكثر تأثيرًا" حتى تتوفر بيانات أكتر</div>`
+                            : `<div class="day" style="margin-top:4px;">🧮 لو فصلنا أثر كل عامل بيئي عن التانى (من ${ins.envMultiRegression.n} قراءة، جودة النموذج r²=${fmt(ins.envMultiRegression.r2*100,0)}%): العامل الأكثر تأثيرًا فعليًا على النفوق هو <b>${ins.envMultiRegression.dominant.label}</b> — يليه بالترتيب: ${ins.envMultiRegression.factors.slice(1).map(f=>f.label).join('، ') || '—'}</div>`
+                        ) : ''}
                         ${clear ? insightActions('envStress', '🌡️ تسجيل قراءة بيئية', "openDailyModal('day')") : ''}
                     </div></div>`;
             })();
@@ -12065,9 +12418,11 @@
                 const ti = ins.treatmentImpact;
                 if (ti.best) {
                     const extra = [];
-                    if (ti.best.nh3Before != null && ti.best.nh3After != null) extra.push(`أمونيا ${fmt(ti.best.nh3Before,1)}→${fmt(ti.best.nh3After,1)} ppm`);
-                    if (ti.best.devBefore != null && ti.best.devAfter != null) extra.push(`انحراف الوزن ${fmt(ti.best.devBefore,1)}%→${fmt(ti.best.devAfter,1)}%`);
-                    if (ti.best.fcrBefore != null && ti.best.fcrAfter != null) extra.push(`معدل التحويل ${fmt(ti.best.fcrBefore,2)}→${fmt(ti.best.fcrAfter,2)}`);
+                    if (ti.best.nh3Before != null && ti.best.nh3After != null) extra.push(`أمونيا ${fmt(ti.best.nh3Before,1)}→${fmt(ti.best.nh3After,1)} ppm${ti.best.nh3StatSignificant===false?' (فرق غير مؤكد إحصائيًا)':''}`);
+                    if (ti.best.devBefore != null && ti.best.devAfter != null) extra.push(`انحراف الوزن ${fmt(ti.best.devBefore,1)}%→${fmt(ti.best.devAfter,1)}%${ti.best.devStatSignificant===false?' (فرق غير مؤكد إحصائيًا)':''}`);
+                    // ⚠️ إصلاح: الـ FCR مفيهوش سلسلة يومية طبيعية تصلح لاختبار دلالة إحصائية (زي باقي القيم)،
+                    // فبنوضّح صراحة إنه فرق نسبي وصفي بس، عشان المستخدم يقرأه بحذر مناسب.
+                    if (ti.best.fcrBefore != null && ti.best.fcrAfter != null) extra.push(`معدل التحويل ${fmt(ti.best.fcrBefore,2)}→${fmt(ti.best.fcrAfter,2)} (فرق نسبي وصفي فقط)`);
                     return `<div class="check-row"><div class="txt">
                         <div>🪣✅ معاملة "<b>${ti.best.name}</b>" (يوم ${ti.best.doneAge}) مرتبطة بتحسّن ملموس بعد التنفيذ</div>
                         <div class="day">نفوق ${fmt(ti.best.mortBefore,2)}→${fmt(ti.best.mortAfter,2)} طائر/يوم${extra.length ? ' · ' + extra.join(' · ') : ''} (مقارنة 3 أيام قبل/بعد) — مؤشر جيد لتكرارها فى نفس التوقيت بالدورات القادمة</div>
@@ -12235,12 +12590,7 @@
             </div></div>`;
             // ===== 7) مقارنة العنابر النشطة — مدموجة بالفعل فى قسم "نظرة عامة على كل الدفعات/العنابر النشطة" بالأسفل، بدون تكرار هنا =====
             // ===== 8) مؤشر ثقة البيانات — مدموج بالفعل فى بطاقة "تغطية التسجيل" أعلى لوحة التحكم، بدون تكرار هنا =====
-            // ===== 9) عائد التبريد/التهوية =====
-            const coolingRoi = computeCoolingROI(b, m);
-            const coolingRoiHtml = !coolingRoi ? '' : `<div class="check-row"><div class="txt">
-                <div>🌀 تكلفة تشغيل معدات التبريد/التهوية حتى الآن: <b>${money(coolingRoi.totalCost)}</b></div>
-                <div class="day">${coolingRoi.equipCount} معدة مسجَّلة استهلاك طاقة · نسبة النفوق الحالية ${fmt(coolingRoi.mortRate,2)}% — قارنها بمتوسط دوراتك تاريخيًا لتقييم جدوى الاستثمار</div>
-            </div></div>`;
+            // ===== 9) (أُزيل: عائد التبريد/التهوية كان معتمدًا على ساعات تشغيل المعدات المُزالة) =====
             // ===== 10) خطر الأمراض التنفسية =====
             const respRisk = computeRespiratoryRisk(b, m);
             const respRiskHtml = (!respRisk || isDismissedToday(b, 'respRisk')) ? '' : `<div class="check-row"><div class="txt">
@@ -12257,8 +12607,12 @@
                 const devColor = wf.deviationPct != null && wf.deviationPct >= 15 ? 'var(--red)' : (wf.deviationPct != null && wf.deviationPct >= 8 ? '#c9a227' : 'var(--green)');
                 const isHigh = wf.deviationPct != null && wf.deviationPct >= 8;
                 if (isHigh && isDismissedToday(b, 'waterFeedRatio')) return '';
+                // ⚠️ إصلاح: كان بيعرض "مرتبط بارتفاع النفوق" لمجرد |r|≥0.3 من غير فحص دلالة إحصائية
+                // ولا شارة ثقة — بعكس نفس التحليل بالظبط فى مؤشر الإجهاد البيئي (stressHtml) اللي
+                // بيحط corrConfidence() جنبه. دلوقتي بنشترط pearsonSignificant وبنضيف نفس الشارة.
+                const corrIsSig = wf.corr && pearsonSignificant(wf.corr.corr, wf.corr.count);
                 const corrTxt = wf.corr && Math.abs(wf.corr.corr) >= 0.3
-                    ? `<br>ارتفاع النسبة عن المعتاد مرتبط بارتفاع النفوق ${wf.corr.lag===0?'فى نفس اليوم':'بعد يوم واحد'} فى بيانات هذه الدورة`
+                    ? `<br>ارتفاع النسبة عن المعتاد ${corrIsSig ? 'مرتبط' : 'قد يكون مرتبطًا (غير مؤكد إحصائيًا بعد)'} بارتفاع النفوق ${wf.corr.lag===0?'فى نفس اليوم':'بعد يوم واحد'} فى بيانات هذه الدورة ${corrConfidence(wf.corr.count, wf.corr.corr)}`
                     : '';
                 return `<div class="check-row"><div class="txt">
                     <div>💧🌾 نسبة الماء:العلف — آخر 3 أيام: <b>${fmt(wf.recentAvg,2)}</b> مقابل المرجعي ${fmt(baseline,2)} (<b style="color:${devColor};">${devTxt}</b>)</div>
@@ -12269,7 +12623,7 @@
             // ============ تجميع التحليلات فى 4 مجموعات مصنّفة بدل عرضها كلها فى كومة واحدة غير منظمة ============
             const groupAttentionArr = [respRiskHtml, devOnsetHtml, riskIndexHtml, upcomingVaccHtml, weeklyStressHtml, weightZHtml, stressHtml, waterFeedRatioHtml, waterQualityCorrHtml].filter(Boolean);
             const groupForecastArr = [epefProjHtml, saleHtml, liveProfitHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
-            const groupPerformanceArr = [effScoreHtml, mortCostHtml, addImpactHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, coolingRoiHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
+            const groupPerformanceArr = [effScoreHtml, mortCostHtml, addImpactHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
             const groupBenchmarkArr = [seasonalHtml, globalBenchHtml, blendedCurveHtml, farmBenchHtml, bestCyclesHtml].filter(Boolean);
             const insightGroup = (title, icon, desc, arr, openByDefault) => !arr.length ? '' : `
                 <details ${openByDefault ? 'open' : ''} style="border-bottom:1px solid var(--line);">
@@ -12382,6 +12736,7 @@
             </div>` : '';
             return `
             ${streakHtml}
+            ${renderDashboardWeatherCard(b, m)}
             ${multiHouseSection}
             ${housesSection}
             ${recCompHtml}
@@ -12467,8 +12822,11 @@
             </div>
             <div class="row-actions" style="margin:0 0 12px;">
                 <button class="btn ghost block" style="background:#e7f5ec;color:#1c6b3f;" onclick="shareWhatsapp()">📲 مشاركة ملخص اليوم على واتساب</button>
+            </div>
+            <div class="row-actions" style="margin:0 0 12px;">
+                <button class="btn" style="flex:1;background:#fff4e0;color:#8a5a12;border:1.5px solid #e0b45c;" onclick="openQuickIntModal()">➕ إضافة علف أو مياه خارج الجدول</button>
             </div>`;
-            if (b.records.length === 0) return quickBtns + `<div class="card empty"><div class="ico">📋</div>لا توجد سجلات يومية بعد. سجّل قراءة النهار أو الليل من الأزرار أعلاه.</div>`;
+            if (b.records.length === 0) return quickBtns + renderQuickInterventionsSection(b) + `<div class="card empty"><div class="ico">📋</div>لا توجد سجلات يومية بعد. سجّل قراءة النهار أو الليل من الأزرار أعلاه.</div>`;
             const realDates = new Set(b.records.map(r => r.date));
             const dn = (d, n, unit) => (d == null && n == null) ? '—' : `☀️${d != null ? fmt(d,1) : '—'} / 🌙${n != null ? fmt(n,1) : '—'}${unit ? ' ' + unit : ''}`;
             const dnInt = (d, n) => (d == null && n == null) ? '—' : `☀️${d ?? 0} / 🌙${n ?? 0}`;
@@ -12497,6 +12855,7 @@
                     كل كمية علف تُسجَّل هنا (نهار + ليل) تُخصم تلقائيًا من مخزون "علف". التحليل التلقائي يقارن قراءتى النهار والليل لرصد أى تفاوت قد يشير لمشكلة تهوية أو تدفئة.<br>
                     💡 سجّل النهار عند جولة الصباح، وسجّل الليل عند جولة المساء — كل زر يفتح نموذجًا مختصرًا بحقول القسم المطلوب فقط، وتُجمَّع البيانات تلقائيًا فى سجل يوم واحد. اضغط "تعديل" لعرض/تصحيح السجل الكامل (نهار + ليل معًا).
                 </div></div></div>
+                <div class="section" style="margin-top:0;">${renderQuickInterventionsSection(b)}</div>
                 <div class="section" style="margin-top:0;">${renderOpsSections(b, m)}</div>`;
         }
 
@@ -12641,7 +13000,7 @@
                 const fl = ins.feedLotAnalysis;
                 if (fl.flagged) {
                     const reasonTxt = fl.flagged.reason === 'weight' ? `متوسط انحراف الوزن ${fmt(fl.flagged.avgDev,1)}% مقابل متوسط ${fmt(fl.avgDevAll,1)}% فى باقي الشحنات — الوزن أضعف من المعتاد بوضوح خلال فترة هذه الشحنة`
-                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة`
+                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا)`
                         : `معدل نفوق ${fmt(fl.flagged.mortPerDay,2)} طائر/يوم مقابل متوسط ${fmt(fl.avgMortRate,2)}`;
                     return `<div class="check-row"><div class="txt">
                         <div>📦 شحنة العلف "<b>${fl.flagged.lot}</b>" مرتبطة بأداء أضعف (${fl.flagged.reason === 'weight' ? 'وزن' : fl.flagged.reason === 'fcr' ? 'معدل تحويل' : 'نفوق'})</div>
@@ -12700,19 +13059,16 @@
             const ventLabelMap = { natural: '🌬️ طبيعي (فتحات جانبية)', tunnel: '🌀 نفقي (مراوح وبادات)', mixed: '🔀 مختلط' };
             const ventRows = ventPlan.map(v => `<div class="alert-item ${v.level}">${v.text}</div>`).join('');
 
-            // ===== مؤشرات محسوبة: خطر تنفسي + عائد التبريد =====
+            // ===== مؤشر محسوب: خطر تنفسي =====
             const respRisk = computeRespiratoryRisk(b, m);
             const respRiskHtml = !respRisk ? '' : `<div class="check-row"><div class="txt">
                 <div style="color:${respRisk.level==='high'?'var(--red)':'#c9a227'};font-weight:800;">🫁 احتمالية إجهاد/مشاكل تنفسية: ${respRisk.level==='high'?'مرتفعة':'متوسطة'}</div>
                 <div class="day">${respRisk.avgHumid!=null?`متوسط رطوبة آخر 5 أيام ${fmt(respRisk.avgHumid,0)}%`:''}${respRisk.avgNh3!=null?` · أمونيا ${fmt(respRisk.avgNh3,0)}ppm`:''} · الموسم الحالي ${respRisk.season} — راجع معدلات التهوية الدنيا الآن قبل ظهور أعراض فعلية</div>
             </div></div>`;
-            const coolingRoi = computeCoolingROI(b, m);
-            const coolingRoiHtml = !coolingRoi ? '' : `<div class="check-row"><div class="txt">
-                <div>🌀 تكلفة تشغيل معدات التبريد/التهوية حتى الآن: <b>${money(coolingRoi.totalCost)}</b></div>
-                <div class="day">${coolingRoi.equipCount} معدة مسجَّلة استهلاك طاقة · نسبة النفوق الحالية ${fmt(coolingRoi.mortRate,2)}% — قارنها بمتوسط دوراتك تاريخيًا لتقييم جدوى الاستثمار</div>
-            </div></div>`;
-            const envInsightsHtml = (respRiskHtml || coolingRoiHtml) ? `<div class="section"><div class="section-head"><h2>📊 مؤشرات البيئة</h2></div>
-                <div class="card" style="padding:0;">${respRiskHtml}${coolingRoiHtml}</div></div>` : '';
+            const envInsightsHtml = respRiskHtml ? `<div class="section"><div class="section-head"><h2>📊 مؤشرات البيئة</h2></div>
+                <div class="card" style="padding:0;">${respRiskHtml}</div></div>` : '';
+
+
 
             // ===== برنامج معاملات الفرشة/السبلة (مع تمييز المستحق اليوم) =====
             const treatRows = [...b.treatmentLog].sort((a,c)=>a.day-c.day).map(t => {
@@ -12752,7 +13108,6 @@
                 <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 نظام التربية والأرضية الحالي: <b>${getFloorInfo(b).label}</b> — ${getFloorInfo(b).hint}</p>
             </div>
 
-            ${renderEquipmentSection(b)}
             ${renderOutageSection(b, m)}
             <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 التسجيل اليومي لدرجة الحرارة والرطوبة لسه فى تبويب "📅 السجل اليومي" زي ما هو — التبويب ده لإدارة البرنامج والمتابعة فقط.</p>`;
         }
@@ -13887,9 +14242,7 @@
             <div class="section"><div class="card">
                 <h2 style="margin:0 0 8px;color:var(--barn-dark);">✅ تشيك ليست العمليات اليومية</h2>
                 <p style="font-size:11.5px;color:var(--muted);margin-top:0;">تنفيذ بنود اليوم بقى فى "تسجيل بيانات اليوم" مباشرة — وتعديل/إضافة بنود القالب بقى فى ⚙️ الإعدادات ← 🐔 المزرعة.</p>
-            </div></div>
-
-            ${renderCommLogSection(b)}`;
+            </div></div>`;
         }
 
         // اختيار نوع حدث الأمان الحيوي من الأزرار السريعة (chips) وفتح باقي الحقول تلقائيًا
@@ -14810,7 +15163,8 @@
             try {
                 const { lat, lon } = state.farmLocation;
                 // forecast_days=4 عشان يغطي اليوم + 3 أيام قادمة لجدول الاستعداد الاستباقي لموجات الحر/البرد
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4`;
+                // current=... عشان نجيب قراءة حرارة/رطوبة حقيقية آنية (مش بس توقع أعلى حرارة لليوم) تُعرض فى لوحة التحكم
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature&hourly=temperature_2m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4`;
                 const res = await fetch(url);
                 const data = await res.json();
                 if (!data || !data.hourly || !data.daily) throw new Error('بيانات غير متاحة');
@@ -14819,6 +15173,11 @@
                 const humidityAtMax = data.hourly.relative_humidity_2m[idxOfMax];
                 // وقت الذروة الحرارية الفعلي اليوم (HH:MM) — لاقتراح توقيت تنفيذ تبريد/تهوية دقيق بدل نصيحة عامة
                 const peakTimeToday = (data.hourly.time && data.hourly.time[idxOfMax]) ? data.hourly.time[idxOfMax].slice(11, 16) : null;
+                // القراءة الآنية الحقيقية (مش توقّع) — درجة الحرارة والرطوبة الفعليين الآن حسب أقرب محطة/نموذج طقس لموقع المزرعة
+                const current = data.current ? {
+                    temp: data.current.temperature_2m, humidity: data.current.relative_humidity_2m,
+                    apparentTemp: data.current.apparent_temperature, time: data.current.time ? data.current.time.slice(11, 16) : null,
+                } : null;
                 // بناء جدول توقعات لكل يوم من الـ4 أيام (اليوم + 3 قادمين) — نستخدم أعلى رطوبة مسجلة وقت الذروة الحرارية لكل يوم
                 const forecastDays = (data.daily.time || []).map((date, i) => {
                     const hStart = i * 24, hEnd = hStart + 24;
@@ -14837,7 +15196,7 @@
                     }
                     return { offset: i, date, tempMax: data.daily.temperature_2m_max[i], tempMin: data.daily.temperature_2m_min[i], humidityAtMax: humidityAtDayMax, peakTime, minTime };
                 });
-                weatherResult = { tempMax, humidityAtMax, peakTimeToday, fetchedAt: new Date().toISOString(), forecastDays };
+                weatherResult = { tempMax, humidityAtMax, peakTimeToday, current, fetchedAt: new Date().toISOString(), forecastDays };
                 state.farmWeatherForecast = { fetchedAt: weatherResult.fetchedAt, forecastDays };
                 persist();
             } catch (e) {
@@ -14875,6 +15234,53 @@
                 return { ...d, futureAge, refTemp, diffHeat, diffCold, level, action };
             });
             return rows.length ? rows : null;
+        }
+
+        // ============ كارت مختصر للطقس فى لوحة التحكم — قراءة آنية حقيقية (حرارة/رطوبة الآن) + أعلى حرارة متوقعة اليوم، يتحدث تلقائيًا كل ساعة ============
+        function renderDashboardWeatherCard(b, m) {
+            if (!state.farmLocation) {
+                return `<div class="card" style="margin-bottom:10px;padding:12px;text-align:center;">
+                    <div style="font-size:12px;font-weight:800;">🌦️ الطقس والإجهاد الحراري</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px;">حدّد موقع المزرعة من تبويب "اليومي ← البيئة" لمتابعة الحرارة/الرطوبة الآنية والفعلية تلقائيًا هنا فى لوحة التحكم.</div>
+                    <button class="btn ghost sm" style="margin-top:8px;" onclick="setFarmLocation()">📍 تحديد موقع المزرعة</button>
+                </div>`;
+            }
+            if (weatherLoading && !weatherResult) {
+                return `<div class="card" style="margin-bottom:10px;padding:12px;text-align:center;font-size:12px;color:var(--muted);">⏳ جارٍ جلب قراءة الطقس...</div>`;
+            }
+            if (!weatherResult || weatherResult.error) {
+                return `<div class="card" style="margin-bottom:10px;padding:12px;text-align:center;">
+                    <div style="font-size:12px;font-weight:800;">🌦️ الطقس والإجهاد الحراري</div>
+                    <div style="font-size:11px;color:var(--red);margin-top:4px;">${weatherResult && weatherResult.error ? weatherResult.error : 'لسه ما اتجابتش قراءة الطقس'}</div>
+                    <button class="btn ghost sm" style="margin-top:8px;" onclick="checkWeatherAlert()">🔄 تحديث الآن</button>
+                </div>`;
+            }
+            const cur = weatherResult.current;
+            const fetchedTime = weatherResult.fetchedAt ? new Date(weatherResult.fetchedAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : null;
+            let heatWarning = '';
+            if (b) {
+                const refTemp = getRefValue(b, 'temp', m.todayAge);
+                if (refTemp != null && cur && cur.temp != null && cur.temp - refTemp >= 6) {
+                    heatWarning = `<div style="margin-top:6px;color:var(--red);font-weight:800;font-size:12px;">⚠️ الحرارة الآن أعلى من معياري عمر القطيع (${m.todayAge} يوم) بـ ${fmt(cur.temp - refTemp,1)}°م — جهّز التبريد/التهوية.</div>`;
+                } else if (refTemp != null && weatherResult.tempMax - refTemp >= 6) {
+                    heatWarning = `<div style="margin-top:6px;color:#e08a2b;font-weight:800;font-size:12px;">⚠️ إجهاد حراري متوقع لاحقًا اليوم — أعلى حرارة متوقعة أعلى من المعياري بـ ${fmt(weatherResult.tempMax - refTemp,1)}°م.</div>`;
+                }
+            }
+            return `<div class="card" style="margin-bottom:10px;padding:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:12px;font-weight:800;">🌦️ الطقس الآن${fetchedTime ? ` <span style="font-weight:600;color:var(--muted);font-size:10.5px;">(آخر تحديث ${fetchedTime})</span>` : ''}</div>
+                        ${cur && cur.temp != null ? `<div style="font-size:22px;font-weight:900;color:var(--barn-dark);margin-top:2px;">${fmt(cur.temp,1)}°م <span style="font-size:13px;font-weight:700;color:#2b6fe0;">💧${fmt(cur.humidity,0)}%</span></div>
+                        <div style="font-size:10.5px;color:var(--muted);margin-top:1px;">${cur.apparentTemp != null ? `يُحس كأنها ${fmt(cur.apparentTemp,1)}°م` : ''}</div>` : `<div style="font-size:11px;color:var(--muted);margin-top:4px;">قراءة آنية غير متاحة الآن</div>`}
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:10.5px;color:var(--muted);">أعلى حرارة اليوم</div>
+                        <div style="font-size:18px;font-weight:800;color:var(--red);">${fmt(weatherResult.tempMax,1)}°م</div>
+                        ${weatherResult.peakTimeToday ? `<div style="font-size:10px;color:var(--muted);">الساعة ${clockLabel(weatherResult.peakTimeToday)}</div>` : ''}
+                    </div>
+                </div>
+                ${heatWarning}
+            </div>`;
         }
 
         function renderWeatherWidget() {
@@ -14943,109 +15349,107 @@
                 ${prepHtml}`;
         }
 
-        // ============ عداد ساعات تشغيل المعدات وجدولة الصيانة الدورية ============
-        const EQUIP_ICON = { fan: '🌀', generator: '🔌', heater: '🔥', other: '⚙️' };
-        let editingEquipId = null;
-        function openEquipModal(id) {
-            editingEquipId = id || null;
-            const b = getActiveBatch();
-            const eq = (id && b) ? b.equipment.find(x => x.id === id) : null;
-            document.getElementById('equipModalTitle').textContent = id ? '✏️ تعديل معدة' : '⚙️ إضافة معدة';
-            document.getElementById('eq_name').value = eq ? eq.name : '';
-            document.getElementById('eq_type').value = eq ? eq.type : 'fan';
-            document.getElementById('eq_interval').value = eq ? eq.intervalHours : '';
-            document.getElementById('eq_power').value = eq ? (eq.powerKw || '') : '';
-            document.getElementById('eq_hours').value = eq ? eq.totalHours : 0;
-            if (document.getElementById('eq_nextDate')) document.getElementById('eq_nextDate').value = eq ? (eq.nextMaintenanceDate || '') : '';
-            openModal('equipModalOverlay');
+        // (تمت إزالة نظام "المعدات وساعات التشغيل والصيانة" بالكامل — كان يشمل عداد ساعات تشغيل يدوي
+        // وجدولة صيانة دورية بالساعات/التاريخ. الميزة كانت مستقلة ولا يعتمد عليها أي تبويب آخر.)
+
+        // ============ إضافة علف/مياه خارج الجدول: تسجيل كمية بوقت فعلي غير مواعيد النهار/الليل المعتادة ============
+        let quickIntType = 'feed';
+        function setQuickIntType(type) {
+            quickIntType = type;
+            document.getElementById('qi_btn_feed').className = 'btn ' + (type === 'feed' ? 'gold' : 'ghost');
+            document.getElementById('qi_btn_water').className = 'btn ' + (type === 'water' ? 'gold' : 'ghost');
+            document.getElementById('qi_feedItemField').style.display = type === 'feed' ? '' : 'none';
+            document.getElementById('qi_unit').value = type === 'feed' ? 'كجم' : 'لتر';
         }
-        function saveEquipment() {
+        function populateQuickIntFeedSelect() {
             const b = getActiveBatch();
-            if (!b) { showToast('لا توجد دفعة نشطة'); return; }
-            const name = document.getElementById('eq_name').value.trim();
-            const type = document.getElementById('eq_type').value;
-            const intervalHours = parseFloat(document.getElementById('eq_interval').value) || 0;
-            const powerKw = parseFloat(document.getElementById('eq_power').value) || 0;
-            const totalHours = parseFloat(document.getElementById('eq_hours').value) || 0;
-            const nextMaintenanceDate = document.getElementById('eq_nextDate') ? document.getElementById('eq_nextDate').value : '';
-            if (!name) { showToast('⚠️ اكتب اسم المعدة'); return; }
-            if (editingEquipId) {
-                const eq = b.equipment.find(x => x.id === editingEquipId);
-                if (eq) Object.assign(eq, { name, type, intervalHours, totalHours, powerKw, nextMaintenanceDate });
-            } else {
-                b.equipment.push({ id: uid(), name, type, intervalHours, totalHours, powerKw, nextMaintenanceDate, lastMaintenanceHours: 0, lastMaintenanceDate: null });
-            }
-            persist();
-            closeModal('equipModalOverlay');
-            showToast('✅ تم حفظ المعدة');
-            render();
+            const sel = document.getElementById('qi_feedItem');
+            if (!b || !sel) return;
+            const feedItems = b.inventory.filter(i => i.category === 'علف');
+            if (!feedItems.some(i => i.name === 'علف')) feedItems.unshift({ name: 'علف', balance: 0 });
+            sel.innerHTML = feedItems.map(i => `<option value="${esc(i.name)}">${esc(i.name)} (الرصيد: ${fmt(i.balance,1)} كجم)</option>`).join('');
         }
-        function deleteEquipment(id) {
+        function openQuickIntModal() {
+            const b = getActiveBatch();
+            if (!b) { showToast('⚠️ فعّل دفعة نشطة أولاً'); return; }
+            populateQuickIntFeedSelect();
+            setQuickIntType('feed');
+            document.getElementById('qi_qty').value = '';
+            document.getElementById('qi_reason').value = 'زيادة عن الكمية المعتادة';
+            document.getElementById('qi_reasonOther').value = '';
+            document.getElementById('qi_reasonOtherField').style.display = 'none';
+            document.getElementById('qi_note').value = '';
+            // وقت الإضافة يتعبّى تلقائيًا باللحظة الحالية (محليًا) — قابل للتعديل لو كان التسجيل بأثر رجعي بعد الإضافة الفعلية
+            const now = new Date();
+            const tzOffsetMs = now.getTimezoneOffset() * 60000;
+            document.getElementById('qi_datetime').value = new Date(now - tzOffsetMs).toISOString().slice(0, 16);
+            document.getElementById('qi_datetime').max = new Date(now - tzOffsetMs).toISOString().slice(0, 16);
+            openModal('quickIntModalOverlay');
+        }
+        function saveQuickIntervention() {
             const b = getActiveBatch();
             if (!b) return;
-            const eq = b.equipment.find(x => x.id === id);
-            showConfirm('حذف هذه المعدة؟ يمكن استرجاعها لاحقًا من سلة المهملات.', () => {
-                b.equipment = b.equipment.filter(x => x.id !== id);
-                if (eq) softDeleteToTrash(b, 'equipment', eq, `🗑️ حذف معدة: ${eq.name || ''}`);
+            const qty = parseFloat(document.getElementById('qi_qty').value) || 0;
+            if (qty <= 0) { showToast('⚠️ اكتب كمية أكبر من صفر'); return; }
+            const unit = document.getElementById('qi_unit').value;
+            const dtVal = document.getElementById('qi_datetime').value;
+            if (!dtVal) { showToast('⚠️ حدّد وقت الإضافة'); return; }
+            const reasonSel = document.getElementById('qi_reason').value;
+            const reason = reasonSel === 'أخرى' ? (document.getElementById('qi_reasonOther').value.trim() || 'أخرى') : reasonSel;
+            const note = document.getElementById('qi_note').value.trim();
+            const feedItem = document.getElementById('qi_feedItem').value || 'علف';
+            const dateOnly = dtVal.slice(0, 10);
+            const finish = () => {
+                const rec = {
+                    id: uid(), type: quickIntType, dateTime: dtVal, date: dateOnly, qty, unit,
+                    feedItem: quickIntType === 'feed' ? feedItem : null, reason, note,
+                    enteredBy: currentRole === 'worker' && currentWorker ? currentWorker.name : 'المالك',
+                    enteredAt: new Date().toISOString(),
+                };
+                b.quickInterventions.push(rec);
+                logAudit(b, `➕ إضافة خارج الجدول: ${quickIntType === 'feed' ? '🌾 علف' : '💧 مياه'} ${fmt(qty,1)} ${unit}${quickIntType==='feed'?' ('+feedItem+')':''} — ${reason}`);
+                persist();
+                closeModal('quickIntModalOverlay');
+                showToast('✅ تم تسجيل الإضافة');
+                render();
+            };
+            if (quickIntType === 'feed') {
+                const it = ensureInvItem(b, feedItem, 'علف', 'كجم');
+                confirmIfShort(feedItem, 'كجم', it.balance, qty, 'كإضافة خارج الجدول', () => {
+                    stockOutByItem(b, it.id, qty, dateOnly, 'إضافة خارج الجدول');
+                    finish();
+                });
+            } else {
+                finish();
+            }
+        }
+        function deleteQuickIntervention(id) {
+            const b = getActiveBatch();
+            if (!b) return;
+            const it = (b.quickInterventions || []).find(x => x.id === id);
+            showConfirm('حذف هذه الإضافة؟ يمكن استرجاعها لاحقًا من سلة المهملات (لن تُعاد كمية العلف المخصومة تلقائيًا للمخزون).', () => {
+                b.quickInterventions = b.quickInterventions.filter(x => x.id !== id);
+                if (it) softDeleteToTrash(b, 'quickIntervention', it, `🗑️ حذف إضافة خارج الجدول (${it.type === 'feed' ? 'علف' : 'مياه'} ${fmt(it.qty,1)} ${it.unit})`);
                 persist();
                 render();
             });
         }
-        let editingRuntimeEquipId = null;
-        function openRuntimeModal(equipId) {
-            editingRuntimeEquipId = equipId;
-            document.getElementById('rt_hours').value = '';
-            openModal('runtimeModalOverlay');
-        }
-        function saveRuntimeHours() {
-            const b = getActiveBatch();
-            const eq = b && b.equipment.find(x => x.id === editingRuntimeEquipId);
-            if (!eq) return;
-            const hrs = parseFloat(document.getElementById('rt_hours').value) || 0;
-            if (hrs <= 0) { showToast('⚠️ اكتب عدد ساعات صحيح'); return; }
-            eq.totalHours += hrs;
-            persist();
-            closeModal('runtimeModalOverlay');
-            showToast('✅ تم تحديث إجمالي ساعات التشغيل');
-            render();
-        }
-        function markMaintenanceDone(equipId) {
-            const b = getActiveBatch();
-            const eq = b && b.equipment.find(x => x.id === equipId);
-            if (!eq) return;
-            eq.lastMaintenanceHours = eq.totalHours;
-            eq.lastMaintenanceDate = todayStr();
-            eq.nextMaintenanceDate = '';
-            persist();
-            showToast('✅ تم تسجيل الصيانة — هيبدأ العداد من جديد');
-            render();
-        }
-        function renderEquipmentSection(b) {
-            const today0 = todayStr();
-            const rows = (b.equipment || []).map(eq => {
-                const hoursSince = eq.totalHours - (eq.lastMaintenanceHours || 0);
-                const dueByHours = eq.intervalHours > 0 && hoursSince >= eq.intervalHours;
-                const nearDueByHours = eq.intervalHours > 0 && !dueByHours && hoursSince >= eq.intervalHours * 0.85;
-                const dueByDate = !!(eq.nextMaintenanceDate && eq.nextMaintenanceDate <= today0);
-                const daysToDate = eq.nextMaintenanceDate ? Math.round((new Date(eq.nextMaintenanceDate) - new Date(today0)) / 86400000) : null;
-                const nearDueByDate = !dueByDate && daysToDate != null && daysToDate <= 3;
-                const due = dueByHours || dueByDate;
-                const nearDue = !due && (nearDueByHours || nearDueByDate);
-                return `<div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">${EQUIP_ICON[eq.type] || '⚙️'} ${esc(eq.name)}</div>
-                    <div class="day">إجمالي ${fmt(eq.totalHours,1)} ساعة تشغيل${eq.intervalHours ? ` · باقي ${fmt(Math.max(eq.intervalHours - hoursSince,0),1)} ساعة للصيانة القادمة` : ''}${eq.nextMaintenanceDate ? ` · 📅 موعد محدد: ${eq.nextMaintenanceDate}` : ''}</div>
-                    ${due ? `<div style="color:var(--red);font-weight:800;font-size:12px;margin-top:2px;">🔧 حان موعد الصيانة الدورية الآن${dueByDate && !dueByHours ? ' (بالتاريخ المحدد)' : ''}</div>` : (nearDue ? `<div style="color:#c9a227;font-weight:800;font-size:12px;margin-top:2px;">⏳ اقترب موعد الصيانة${nearDueByDate ? ` (باقي ${daysToDate} يوم)` : ''}</div>` : '')}
+        // آخر 20 إضافة علف/مياه خارج الجدول — تُعرض فى تبويب التسجيل اليومي منفصلة عن جدول النهار/الليل المعتاد
+        function renderQuickInterventionsSection(b) {
+            const list = [...(b.quickInterventions || [])].sort((a, c) => c.dateTime.localeCompare(a.dateTime)).slice(0, 20);
+            const rows = list.map(it => `<div class="check-row"><div class="txt">
+                    <div style="font-weight:800;">${it.type === 'feed' ? '🌾 علف' : '💧 مياه'} ${fmt(it.qty,1)} ${it.unit}${it.type==='feed' && it.feedItem ? ' — ' + esc(it.feedItem) : ''}</div>
+                    <div class="day">${it.dateTime.replace('T',' الساعة ')} · ${esc(it.reason || '')}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
+                    ${it.note ? `<div style="font-size:11px;color:var(--muted);">${esc(it.note)}</div>` : ''}
                 </div>
-                <div class="row-actions" style="gap:6px;">
-                    <button class="btn ghost sm" onclick="openRuntimeModal('${eq.id}')">⏱️ +ساعات</button>
-                    ${due || nearDue ? `<button class="btn gold sm" onclick="markMaintenanceDone('${eq.id}')">✅ تمت الصيانة</button>` : ''}
-                    <button class="btn ghost sm owner-only" onclick="openEquipModal('${eq.id}')">✏️</button>
-                    <button class="btn ghost sm owner-only" style="color:var(--red);" onclick="deleteEquipment('${eq.id}')">🗑️</button>
-                </div></div>`;
-            }).join('');
-            return `<div class="section"><div class="section-head"><h2>⚙️ المعدات وساعات التشغيل والصيانة</h2></div>
-                <div class="card" style="padding:0;">${rows || '<div class="empty" style="padding:14px;"><div class="ico">⚙️</div>لا توجد معدات مسجّلة بعد.</div>'}</div>
-                <button class="btn ghost block" style="margin-top:10px;" onclick="openEquipModal()">+ إضافة معدة (مروحة/مولد/دفاية)</button>
+                <button class="btn danger sm" onclick="deleteQuickIntervention('${it.id}')">حذف</button>
+            </div>`).join('');
+            return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>➕ إضافات علف/مياه خارج الجدول</h2><span class="tag">${(b.quickInterventions||[]).length}</span></div>
+                <div class="card" style="padding:8px 10px;margin-bottom:8px;">
+                    <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">أي كمية علف أو مياه تضيفها فعليًا فى وقت غير مواعيد تسجيل النهار/الليل المعتادة — تُسجَّل هنا بوقتها الحقيقي منفصلة عن السجل اليومي.</p>
+                    <button class="btn gold block" onclick="openQuickIntModal()">➕ إضافة الآن</button>
+                </div>
+                ${list.length ? `<div class="card">${rows}</div>` : `<div class="card empty" style="padding:14px;"><div class="ico">➕</div>لا توجد إضافات خارج الجدول مسجَّلة بعد.</div>`}
             </div>`;
         }
 
@@ -15171,60 +15575,10 @@
             return `<div style="grid-column:1/-1;margin:-4px 0 4px;">${chips}</div>`;
         }
 
-        // ============ سجل التواصل/الاستشارات المربوط بالدفعة ============
-        function openCommLogModal() {
-            const b = getActiveBatch();
-            if (!b) { showToast('لا توجد دفعة نشطة'); return; }
-            document.getElementById('cl_date').value = todayStr(); document.getElementById('cl_date').max = todayStr();
-            const sel = document.getElementById('cl_contact');
-            sel.innerHTML = state.contacts.length
-                ? state.contacts.map(c => `<option value="${c.id}">${esc(c.name)} (${c.role})</option>`).join('') + '<option value="">أخرى / بدون جهة محفوظة</option>'
-                : '<option value="">أخرى / بدون جهة محفوظة</option>';
-            document.getElementById('cl_note').value = '';
-            openModal('commLogModalOverlay');
-        }
-        function saveCommLog() {
-            const b = getActiveBatch();
-            if (!b) return;
-            const date = document.getElementById('cl_date').value || todayStr();
-            const contactId = document.getElementById('cl_contact').value || null;
-            const contact = contactId ? state.contacts.find(c => c.id === contactId) : null;
-            const note = document.getElementById('cl_note').value.trim();
-            if (!note) { showToast('⚠️ اكتب ملخص المكالمة/الاستشارة'); return; }
-            b.commLog.push({ id: uid(), date, contactName: contact ? contact.name : null, contactRole: contact ? contact.role : null, note });
-            persist();
-            closeModal('commLogModalOverlay');
-            showToast('✅ تم تسجيل التواصل');
-            render();
-        }
-        function deleteCommLog(id) {
-            const b = getActiveBatch();
-            if (!b) return;
-            const cl = b.commLog.find(x => x.id === id);
-            showConfirm('حذف هذا السجل؟ يمكن استرجاعه لاحقًا من سلة المهملات.', () => {
-                b.commLog = b.commLog.filter(x => x.id !== id);
-                if (cl) softDeleteToTrash(b, 'commLog', cl, `🗑️ حذف سجل تواصل بتاريخ ${cl.date || ''}`);
-                persist();
-                render();
-            });
-        }
-        function renderCommLogSection(b) {
-            const log = [...(b.commLog || [])].sort((a, c) => c.date.localeCompare(a.date));
-            const rows = log.length ? log.map(e => `
-                <div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">${e.contactName ? '📞 ' + esc(e.contactName) + (e.contactRole ? ' (' + e.contactRole + ')' : '') : '📝 ملاحظة تواصل'}</div>
-                    <div class="day">${e.date}</div>
-                    <div style="font-size:12.5px;margin-top:2px;">${esc(e.note)}</div>
-                </div>
-                <button class="btn ghost owner-only" style="padding:6px 10px;font-size:12px;color:var(--red);" onclick="deleteCommLog('${e.id}')">🗑️</button></div>`).join('')
-                : '<div class="empty" style="padding:14px;"><div class="ico">📞</div>لا توجد استشارات مسجّلة لهذه الدفعة بعد.</div>';
-            return `<div class="section"><div class="section-head"><h2>📞 سجل التواصل والاستشارات</h2></div>
-                <div class="card" style="padding:0;">${rows}</div>
-                <button class="btn ghost block" style="margin-top:10px;" onclick="openCommLogModal()">+ تسجيل تواصل/استشارة</button>
-            </div>`;
-        }
+        // (تمت إزالة نظام "سجل التواصل/الاستشارات" بالكامل بناءً على طلب تبسيط الاستخدام)
 
-        let settingsSubTab = 'farm';
+
+        let settingsSubTab = 'identity';
         function setSettingsSubTab(id) { settingsSubTab = id; render(); }
         function renderSettingsTab() {
             if (currentRole !== 'owner') {
@@ -15644,14 +15998,13 @@
                 </div>
             </div>`;
 
+            // ============ 🔒 تبسيط: دمج 7 تصنيفات فرعية فى 4 مجموعات منطقية بدل التنقل بين 7 شاشات ============
+            // كل المحتوى الأصلي موجود بالكامل زي ما هو — التجميع بس بيقلل عدد الأزرار/النقرات للوصول له
             const cats = [
-                { id: 'identity', label: '🏷️ الهوية', content: catIdentity },
-                { id: 'farm', label: '🐔 المزرعة', content: catFarm },
-                { id: 'standards', label: '📊 المعايير المرجعية', content: catStandards },
-                { id: 'tools', label: '🧰 الأدوات', content: catTools },
-                { id: 'system', label: '⚙️ النظام', content: catSystem },
+                { id: 'identity', label: '🏷️ الملف والمزرعة', content: catIdentity + catFarm },
+                { id: 'standards', label: '📊 المعايير والأدوات', content: catStandards + catTools },
+                { id: 'system', label: '⚙️ النظام والبيانات', content: catSystem + catData },
                 { id: 'access', label: '🔐 الوصول والحسابات', content: catAccess },
-                { id: 'data', label: '💾 البيانات', content: catData },
             ];
             const navHtml = `<div class="settings-subnav">${cats.map(c => `<button class="ssnav-btn ${settingsSubTab===c.id?'active':''}" onclick="setSettingsSubTab('${c.id}')">${c.label}</button>`).join('')}</div>`;
             const active = cats.find(c => c.id === settingsSubTab) || cats[0];
@@ -16934,14 +17287,26 @@
         function checkExactTimeReminders() {
             if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
             const now = new Date();
-            const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const nowMinutes = now.getHours() * 60 + now.getMinutes();
             const today0 = todayStr();
             // تنظيف مفاتيح الأيام السابقة عشان الـSet ما يكبرش على الفاضي
             exactTimeNotifiedKeys.forEach(k => { if (!k.endsWith(today0)) exactTimeNotifiedKeys.delete(k); });
+            // ⚠️ إصلاح: كان الفحص بيتطابق حرفيًا مع الدقيقة بالظبط (مثال: 14:30 لازم يتفحص وهو 14:30 بالظبط).
+            // متصفحات الموبايل (خصوصًا كروم أندرويد) بتوقف/تبطّئ الـ JS timers للتابات فى الخلفية، فلو
+            // التطبيق كان مقفول/فى الخلفية وقت الموعد بالظبط، الإشعار كان بيتفوّت تمامًا ومفيش أي تعويض.
+            // دلوقتي بنستخدم نافذة سماح (10 دقايق بعد الموعد): لو الوقت الحالي جواها ولسه محدش نبّه، ينبّه.
+            const EXACT_TIME_GRACE_MINUTES = 10;
+            const isDueNow = (timeStr) => {
+                if (!timeStr) return false;
+                const [hh, mm] = timeStr.split(':').map(Number);
+                if (isNaN(hh) || isNaN(mm)) return false;
+                const schedMinutes = hh * 60 + mm;
+                return nowMinutes >= schedMinutes && nowMinutes <= schedMinutes + EXACT_TIME_GRACE_MINUTES;
+            };
             activeBatches().forEach(b => {
                 const m = computeMetrics(b);
                 (b.feedAdditives || []).forEach(a => {
-                    if (!a.active || a.time !== nowTime || !additiveActiveOnDay(a, m.todayAge)) return;
+                    if (!a.active || !isDueNow(a.time) || !additiveActiveOnDay(a, m.todayAge)) return;
                     const key = `feed-${a.id}-${today0}`;
                     if (exactTimeNotifiedKeys.has(key)) return;
                     exactTimeNotifiedKeys.add(key);
@@ -16949,7 +17314,7 @@
                     showKatkotNotification('⏰ موعد إضافة العلف الآن', `${b.name}: ${a.name} — الجرعة ${a.dose} ${a.unit}/${a.per}`, `feed-${a.id}`);
                 });
                 (b.waterAdditives || []).forEach(a => {
-                    if (!a.active || a.time !== nowTime || !additiveActiveOnDay(a, m.todayAge)) return;
+                    if (!a.active || !isDueNow(a.time) || !additiveActiveOnDay(a, m.todayAge)) return;
                     const key = `water-${a.id}-${today0}`;
                     if (exactTimeNotifiedKeys.has(key)) return;
                     exactTimeNotifiedKeys.add(key);
@@ -16957,7 +17322,7 @@
                     showKatkotNotification('⏰ موعد إضافة الماء الآن', `${b.name}: ${a.name} — الجرعة ${a.dose} ${a.unit}/${a.per}`, `water-${a.id}`);
                 });
                 (b.treatmentLog || []).forEach(t => {
-                    if (t.done || t.time !== nowTime || t.day !== m.todayAge) return;
+                    if (t.done || !isDueNow(t.time) || t.day !== m.todayAge) return;
                     const key = `treat-${t.id}-${today0}`;
                     if (exactTimeNotifiedKeys.has(key)) return;
                     exactTimeNotifiedKeys.add(key);
@@ -17736,9 +18101,8 @@
             treatment: (b, item) => { b.treatmentLog.push(item); },
             feedAdditive: (b, item) => { b.feedAdditives.push(item); },
             waterAdditive: (b, item) => { b.waterAdditives.push(item); },
-            equipment: (b, item) => { b.equipment.push(item); },
             outage: (b, item) => { b.outageLog.push(item); },
-            commLog: (b, item) => { b.commLog.push(item); },
+            quickIntervention: (b, item) => { b.quickInterventions.push(item); },
         };
         function softDeleteToTrash(b, type, item, auditText, note) {
             logAudit(b, auditText);
