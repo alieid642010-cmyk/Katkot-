@@ -1691,7 +1691,7 @@
                 <div class="field full" id="stdRefBox" style="background:#f8f5ed;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;"></div>
                 <div class="field full" id="dailyDueBox" style="background:#fff8ea;border:1px solid #e8d9ad;border-radius:12px;padding:8px;font-size:13px;"></div>
                 <div class="field full" id="dailyWorkerBox" style="background:#fdf4f2;border:1px solid #f0c9c5;border-radius:12px;padding:8px;font-size:13px;"></div>
-                <div class="field"><label>صنف العلف المستخدم اليوم</label><select id="d_feeditem" onchange="onFeedItemManualChange()"></select>
+                <div class="field"><label>صنف العلف نهارًا</label><select id="d_feeditem" onchange="onFeedItemManualChange()"></select>
                     <div id="d_feeditem_warn" style="display:none;font-size:11px;color:#b45309;background:#fff8ea;border:1px solid #e8d9ad;border-radius:8px;padding:6px 8px;margin-top:5px;"></div>
                 </div>
                 <div class="field full" id="feedTransitionBox" style="display:none;background:#eef6f0;border:1px solid #bfe0c8;border-radius:10px;padding:8px 10px;font-size:12.5px;"></div>
@@ -1822,6 +1822,9 @@
                         <div id="d_mortCauseHintNight" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
                     </div>
                     <div class="field"><label>علف ليلًا (كجم)</label><input id="d_feed_night" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
+                    <div class="field"><label>صنف العلف ليلًا (لو مختلف عن النهار)</label><select id="d_feeditem_night" onchange="onFeedItemNightManualChange()"></select>
+                        <div id="d_feeditem_night_hint" style="font-size:10.5px;color:var(--muted);margin-top:4px;">فاضي = هيتحسب نفس صنف علف النهار</div>
+                    </div>
                     <div class="field"><label>ماء ليلًا (لتر)</label><input id="d_water_night" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
                     <div class="field-group-title">🌡️ البيئة والتهوية</div>
                     <div class="field full"><button type="button" class="btn ghost sm" onclick="copyYesterdayEnv('night')" style="width:100%;">📋 نسخ قيم البيئة من سجل أمس (وعدّل الفرق بس)</button></div>
@@ -6007,6 +6010,21 @@
 
             sel.value = finalName;
         }
+        // ============ نسخة مبسطة لصنف علف الليل — بيسمح يكون مختلف عن صنف النهار (زي حالة تحويل بادئ↔نامي يدوي بين الفترتين) ============
+        // أول خيار فاضي = "زي النهار" (السلوك الافتراضي القديم قبل الإصلاح، فمفيش أي كسر فى البيانات القديمة)
+        function populateFeedItemNightSelect(selectedName) {
+            const b = getActiveBatch();
+            const sel = document.getElementById('d_feeditem_night');
+            if (!b || !sel) return;
+            const feedItems = b.inventory.filter(i => i.category === 'علف');
+            if (!feedItems.some(i => i.name === 'علف')) feedItems.unshift({ name: 'علف', balance: 0 });
+            sel.innerHTML = `<option value="">— نفس صنف النهار —</option>` + feedItems.map(i =>
+                `<option value="${esc(i.name)}">${esc(i.name)} (الرصيد: ${fmt(i.balance,1)} كجم)</option>`).join('');
+            sel.value = (selectedName && feedItems.some(i => i.name === selectedName)) ? selectedName : '';
+        }
+        function onFeedItemNightManualChange() {
+            feedItemNightManuallyOverridden = true;
+        }
         // بيتنادى لما المستخدم يغيّر صنف العلف يدويًا من القائمة — بنسجّل إنه اختيار صريح عشان منلغيهوش
         // تلقائيًا لو اتعمل recalcAge تاني (زي تغيير التاريخ)، لكن التحذير (لو فيه اختلاف) يفضل ظاهر.
         function onFeedItemManualChange() {
@@ -6062,8 +6080,7 @@
                     <span>NH₃: <b>${Math.round(refs.nh3)}</b> ppm</span>
                 </div>`;
             populateFeedItemSelect(document.getElementById('d_feeditem').value);
-
-            // ============ (جديد) لو فيه برنامج تحويل علف نشط لعمر اليوم ده، اعرض التقسيم التلقائي وعطّل الاختيار اليدوي ============
+            populateFeedItemNightSelect(document.getElementById('d_feeditem_night') ? document.getElementById('d_feeditem_night').value : '');
             const feedSel = document.getElementById('d_feeditem');
             const ftBox = document.getElementById('feedTransitionBox');
             const activeTrans = getActiveFeedTransition(b, age);
@@ -6215,6 +6232,7 @@
         // لو المستخدم غيّر صنف العلف يدويًا فى النموذج المفتوح حاليًا، منوقفش نحوّله تلقائيًا تاني
         // (زي تغيير التاريخ) عشان مانفرضش عليه اختيارنا فوق اختياره الصريح — بس التحذير لو فيه اختلاف يفضل ظاهر.
         let feedItemManuallyOverridden = false;
+        let feedItemNightManuallyOverridden = false;
 
         function setDailyModalMode(mode) {
             dailyModalMode = mode;
@@ -6398,6 +6416,7 @@
             const b = getActiveBatch();
             if (!b) { showToast('أضف دفعة أولاً'); return; }
             feedItemManuallyOverridden = false; // جلسة تسجيل جديدة — نسمح باقتراح الصنف المناسب تلقائيًا من جديد
+            feedItemNightManuallyOverridden = false;
             const date = todayStr();
             const existing = b.records.find(r => r.date === date);
             if (existing) {
@@ -7288,6 +7307,7 @@
             dailyPhotoDataArr = Array.isArray(r.photos) ? [...r.photos] : (r.photo ? [r.photo] : []);
             renderPhotoPreview();
             populateFeedItemSelect(r.feedItem || 'علف');
+            populateFeedItemNightSelect(r.feedItemNight || '');
             document.getElementById('d_weight').value = r.weight ?? '';
             document.getElementById('d_weightSample').value = Array.isArray(r.weightSample) ? r.weightSample.join(',') : '';
             document.getElementById('d_waterPh').value = r.waterPh ?? '';
@@ -7481,6 +7501,16 @@
             if (!b) { if (saveBtn) saveBtn.disabled = false; return; }
             const date = document.getElementById('d_date').value;
             const age = parseInt(document.getElementById('d_age').value);
+            // ============ 🔧 إصلاح: حالة "تم التسجيل" لكل فترة (نهار/ليل) لازم تتحدد صراحةً حسب أي وضع كان
+            // مفتوح وقت الحفظ (dailyModalMode) — مش استنتاجًا من إن mortDay/mortNight مش null، لأنهم دايمًا
+            // بيتحطوا 0 افتراضيًا (parseInt(...) || 0) حتى لو القسم ده أصلاً كان مخفي ومحدش لمسه، وده كان بيخلي
+            // الحالتين يظهروا "✅ تم التسجيل" مع بعض حتى لو المستخدم سجّل فترة واحدة بس. ============
+            const existingForFlags = b.records.find(r => r.date === date);
+            let dayEntered = existingForFlags ? !!existingForFlags.dayEntered : false;
+            let nightEntered = existingForFlags ? !!existingForFlags.nightEntered : false;
+            if (dailyModalMode === 'day') dayEntered = true;
+            else if (dailyModalMode === 'night') nightEntered = true;
+            else { dayEntered = true; nightEntered = true; } // وضع "السجل كامل" = المستخدم راجع/عدّل الفترتين معًا
             const mortDay = parseInt(document.getElementById('d_mort_day').value) || 0;
             const cullDay = parseInt(document.getElementById('d_cull_day').value) || 0;
             const mortNight = parseInt(document.getElementById('d_mort_night').value) || 0;
@@ -7510,8 +7540,16 @@
                 other: mortCausesDay.other + mortCausesNight.other,
             };
             const feedItem = document.getElementById('d_feeditem').value || 'علف';
+            // ============ 🔧 إصلاح: صنف علف الليل ممكن يبقى مختلف عن صنف النهار (مثال: بادئ نهارًا + نامي ليلًا) —
+            // قبل كده كان فيه اختيار واحد بس لصنف العلف بيتطبّق على إجمالي (نهار+ليل)، فلو الصنفين مختلفين كان
+            // بيخصم كل الكمية المجمّعة من صنف واحد بس (وده اللي بيسبب "الكمية غير كافية" غلط فى المخزون). ============
+            const feedItemNightSel = document.getElementById('d_feeditem_night');
+            const feedItemNightRaw = feedItemNightSel ? feedItemNightSel.value : '';
+            const feedItemNight = feedItemNightRaw || feedItem; // فاضي = نفس صنف النهار (سلوك متوافق مع القديم)
+            const feedItemsDiffer = feedItemNightRaw && feedItemNightRaw !== feedItem;
             // ============ (جديد) لو فيه برنامج تحويل علف نشط لعمر اليوم ده، بنقسّم إجمالي كمية العلف تلقائيًا بين الصنفين حسب النسبة المُعرَّفة فى الإعدادات، بدل صنف واحد يدوي ============
-            const activeFeedTrans = getActiveFeedTransition(b, age);
+            // ملحوظة: التحويل التلقائي بيفترض صنف واحد للنهار والليل معًا، فلو المستخدم حدّد صراحةً صنف ليل مختلف، نعطّل التحويل التلقائي ونحترم اختياره اليدوي.
+            const activeFeedTrans = feedItemsDiffer ? null : getActiveFeedTransition(b, age);
             const feedItem2 = activeFeedTrans ? activeFeedTrans.transition.toFeed : null;
             const finalFeedItem = activeFeedTrans ? activeFeedTrans.transition.fromFeed : feedItem;
             const feedDay = parseFloatOrNull(document.getElementById('d_feed_day').value);
@@ -7554,11 +7592,12 @@
             const nh3 = avgOf(nh3Day, nh3Night);
             const o2 = avgOf(o2Day, o2Night);
             const analysis = buildDayNightAnalysis({ tempDay, tempNight, humidityDay, humidityNight, feedDay, feedNight, waterDay, waterNight }).join(' | ');
-            // ============ تقسيم كمية العلف بين الصنفين حسب نسبة يوم التحويل النشط (لو موجود) ============
-            const feedItemQty = activeFeedTrans ? feed * (activeFeedTrans.fromPct / 100) : feed;
-            const feedItem2Qty = activeFeedTrans ? feed * (activeFeedTrans.toPct / 100) : 0;
+            // ============ تقسيم كمية العلف بين الصنفين — إما حسب نسبة يوم التحويل النشط، أو حسب صنف الليل المختلف يدويًا (الاثنان متبادلان ومتعارضان عمدًا) ============
+            const feedItemQty = activeFeedTrans ? feed * (activeFeedTrans.fromPct / 100) : (feedItemsDiffer ? (feedDay || 0) : feed);
+            const feedItem2Final = activeFeedTrans ? feedItem2 : (feedItemsDiffer ? feedItemNight : null);
+            const feedItem2Qty = activeFeedTrans ? feed * (activeFeedTrans.toPct / 100) : (feedItemsDiffer ? (feedNight || 0) : 0);
 
-            const newRecObj = { date, age, mort, cull, mortDay, mortNight, cullDay, cullNight, mortCauses, mortCausesDay, mortCausesNight, photo: dailyPhotoDataArr[0] || null, photos: dailyPhotoDataArr.slice(), feed, feedItem: finalFeedItem, feedItem2, feedItemQty, feedItem2Qty, water, weight, temp, humidity, airspeed, co2, nh3, o2, health,
+            const newRecObj = { date, age, mort, cull, mortDay, mortNight, cullDay, cullNight, mortCauses, mortCausesDay, mortCausesNight, dayEntered, nightEntered, photo: dailyPhotoDataArr[0] || null, photos: dailyPhotoDataArr.slice(), feed, feedItem: finalFeedItem, feedItem2: feedItem2Final, feedItemQty, feedItem2Qty, feedItemNight: feedItemsDiffer ? feedItemNight : null, water, weight, temp, humidity, airspeed, co2, nh3, o2, health,
                 light, dark, heatfuel, notes, notesDay, notesNight,
                 feedDay, feedNight, waterDay, waterNight, tempDay, tempNight, humidityDay, humidityNight,
                 airspeedDay, airspeedNight, co2Day, co2Night, nh3Day, nh3Night, o2Day, o2Night, analysis,
@@ -7590,7 +7629,7 @@
                     }
                 };
                 if (feed > 0) {
-                    commitFeedStockOut(b, date, [{ name: finalFeedItem, qty: feedItemQty }, { name: feedItem2, qty: feedItem2Qty }], finishSaveDaily);
+                    commitFeedStockOut(b, date, [{ name: finalFeedItem, qty: feedItemQty }, { name: feedItem2Final, qty: feedItem2Qty }], finishSaveDaily);
                 } else {
                     finishSaveDaily();
                 }
@@ -13197,8 +13236,12 @@
 
         function renderDailyTab(b, m) {
             const todayRec = b.records.find(r => r.date === todayStr());
-            const dayDone = !!(todayRec && (todayRec.feedDay != null || todayRec.mortDay != null));
-            const nightDone = !!(todayRec && (todayRec.feedNight != null || todayRec.mortNight != null));
+            // ============ 🔧 إصلاح: نعتمد على علم dayEntered/nightEntered الصريح (مُسجَّل وقت الحفظ حسب الوضع
+            // المفتوح فعليًا) بدل الاستنتاج من feedDay/mortDay مش null — لأنهم كانوا دايمًا أرقام (مش null) حتى
+            // لو القسم كان مخفي، فكانت الحالتين بيظهروا "تم التسجيل" مع بعض حتى لو اتسجلت فترة واحدة بس.
+            // لسجلات قديمة قبل الإصلاح (dayEntered/nightEntered غير معرَّفين)، نرجع للطريقة القديمة كتقدير احتياطي. ============
+            const dayDone = !!(todayRec && (todayRec.dayEntered !== undefined ? todayRec.dayEntered : (todayRec.feedDay != null || todayRec.mortDay != null)));
+            const nightDone = !!(todayRec && (todayRec.nightEntered !== undefined ? todayRec.nightEntered : (todayRec.feedNight != null || todayRec.mortNight != null)));
             const statusCard = `<div class="card" style="margin-bottom:10px;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:space-around;background:#f8f5ed;">
                 <div style="text-align:center;font-size:12.5px;">☀️ نهار اليوم<br><b style="color:${dayDone?'var(--green)':'var(--red)'};">${dayDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
                 <div style="text-align:center;font-size:12.5px;">🌙 ليل اليوم<br><b style="color:${nightDone?'var(--green)':'var(--red)'};">${nightDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
