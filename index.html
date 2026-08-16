@@ -1679,24 +1679,24 @@
         <div class="modal">
             <button class="close-x" aria-label="إغلاق" onclick="closeModal('dailyModalOverlay')">✕</button>
             <h3 id="d_modalTitle">تسجيل بيانات اليوم</h3>
-            <div class="row-actions" style="margin-bottom:4px;">
-                <button class="btn ghost sm" id="d_modePillDay" onclick="setDailyModalMode('day')" style="flex:1;">☀️ تسجيل النهار</button>
-                <button class="btn ghost sm" id="d_modePillNight" onclick="setDailyModalMode('night')" style="flex:1;">🌙 تسجيل الليل</button>
-                <button class="btn ghost sm" id="d_modePillFull" onclick="setDailyModalMode('full')" style="flex:1;">📋 السجل كامل</button>
+            <div class="row-actions" style="margin-bottom:4px;flex-wrap:wrap;">
+                <button class="btn ghost sm" id="d_modePillDay" onclick="setDailyModalMode('day')" style="flex:1;min-width:80px;">☀️ تسجيل النهار</button>
+                <button class="btn ghost sm" id="d_modePillNight" onclick="setDailyModalMode('night')" style="flex:1;min-width:80px;">🌙 تسجيل الليل</button>
+                <button class="btn ghost sm" id="d_modePillEssentials" onclick="setDailyModalMode('essentials')" style="flex:1;min-width:80px;">⚖️ الأساسيات</button>
+                <button class="btn ghost sm" id="d_modePillFull" onclick="setDailyModalMode('full')" style="flex:1;min-width:80px;">📋 السجل كامل</button>
             </div>
-            <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">💡 اضغط «تسجيل النهار» فى جولة الصباح و«تسجيل الليل» فى جولة المساء — كل زر يعرض حقول قسمه فقط. اضغط «السجل كامل» لو هتُدخل بيانات اليوم كله دفعة واحدة، أو لمراجعة/تعديل سجل يوم سابق.</p>
+            <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">💡 «تسجيل النهار» و«تسجيل الليل» لجولات الصباح/المساء (فيها إضافات ومعاملات كل فترة). «الأساسيات» لقياس واحد لليوم كله (الوزن، الصحة، جودة المياه، التدفئة). «السجل كامل» يعرض كل حاجة معًا لمراجعة أو تعديل يوم سابق.</p>
             <div class="form-grid">
                 <div class="field"><label>التاريخ</label><input id="d_date" type="date" onchange="recalcAge()"></div>
                 <div class="field"><label>عمر القطيع (يوم) — تلقائي</label><input id="d_age" type="number" inputmode="decimal" readonly style="background:#f3f1e8;"></div>
                 <div class="field full" id="stdRefBox" style="background:#f8f5ed;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;"></div>
-                <div class="field full" id="dailyDueBox" style="background:#fff8ea;border:1px solid #e8d9ad;border-radius:12px;padding:8px;font-size:13px;"></div>
                 <div class="field full" id="dailyWorkerBox" style="background:#fdf4f2;border:1px solid #f0c9c5;border-radius:12px;padding:8px;font-size:13px;"></div>
-                <div class="field"><label>صنف العلف نهارًا</label><select id="d_feeditem" onchange="onFeedItemManualChange()"></select>
-                    <div id="d_feeditem_warn" style="display:none;font-size:11px;color:#b45309;background:#fff8ea;border:1px solid #e8d9ad;border-radius:8px;padding:6px 8px;margin-top:5px;"></div>
-                </div>
-                <div class="field full" id="feedTransitionBox" style="display:none;background:#eef6f0;border:1px solid #bfe0c8;border-radius:10px;padding:8px 10px;font-size:12.5px;"></div>
                 <div class="field full" id="d_mortTotalBox" style="background:#f3f1e8;border-radius:10px;padding:8px 10px;font-size:12.5px;"></div>
-                <div class="field-group-title" style="margin-top:0;border-top:none;padding-top:0;">⚖️ الوزن والصحة (قياس واحد لليوم — لا يتبع النهار أو الليل)</div>
+            </div>
+
+            <div class="full dnSection" id="essentialsBox" style="margin-top:10px;background:#f5f0e6;border:1px solid #ddd0b0;border-radius:12px;padding:10px;">
+                <div style="font-weight:bold;color:#6B4226;margin-bottom:6px;">⚖️ الأساسيات (قياس واحد لليوم — لا يتبع النهار أو الليل)</div>
+                <div class="form-grid">
                 <div class="field"><label>متوسط وزن الطائر (جم)</label><input id="d_weight" type="number" inputmode="decimal" step="1" min="0"></div>
                 <div class="field full"><label>عيّنة أوزان فردية (جم، اختياري) — لحساب تجانس القطيع</label><input id="d_weightSample" type="text" inputmode="decimal" placeholder="مثال: 1180,1250,1090,1300,1210 (5-10 طائر)"></div>
                 <div class="field full"><label>تقييم الحالة الصحية والبيئة</label>
@@ -1715,11 +1715,17 @@
                 <div class="field-group-title">🔥 التدفئة</div>
                 <div class="field" id="d_heatfield"><label id="d_heatlabel">استهلاك التدفئة الفعلي</label><input id="d_heatfuel" type="number" inputmode="decimal" step="0.01" placeholder="تلقائي ← تقديري"></div>
                 <div class="full" id="d_heatestbox" style="background:#f0f7f4;border:1px solid #c8e0d5;border-radius:10px;padding:9px;font-size:12.5px;display:none;"></div>
+                </div>
             </div>
 
             <div class="full dnSection" id="dayBox" style="margin-top:10px;background:#fff6df;border:1px solid #e8d9ad;border-radius:12px;padding:10px;">
                 <div style="font-weight:bold;color:#6B4226;margin-bottom:6px;">☀️ قراءة النهار</div>
                 <div class="form-grid">
+                    <div class="field full" id="dailyDueBoxDay" style="background:#fff8ea;border:1px solid #e8d9ad;border-radius:12px;padding:8px;font-size:13px;"></div>
+                    <div class="field"><label>صنف العلف نهارًا</label><select id="d_feeditem" onchange="onFeedItemManualChange()"></select>
+                        <div id="d_feeditem_warn" style="display:none;font-size:11px;color:#b45309;background:#fff8ea;border:1px solid #e8d9ad;border-radius:8px;padding:6px 8px;margin-top:5px;"></div>
+                    </div>
+                    <div class="field full" id="feedTransitionBox" style="display:none;background:#eef6f0;border:1px solid #bfe0c8;border-radius:10px;padding:8px 10px;font-size:12.5px;"></div>
                     <div class="field-group-title" style="margin-top:0;border-top:none;padding-top:0;">📊 الإنتاج (نفوق / علف / ماء)</div>
                     <div class="field"><label>نفوق نهارًا (طائر)</label>
                         <div class="stepper">
@@ -1785,6 +1791,7 @@
             <div class="full dnSection" id="nightBox" style="margin-top:10px;background:#eef1f6;border:1px solid #cdd5e2;border-radius:12px;padding:10px;">
                 <div style="font-weight:bold;color:#2F4538;margin-bottom:6px;">🌙 قراءة الليل</div>
                 <div class="form-grid">
+                    <div class="field full" id="dailyDueBoxNight" style="background:#eef1f6;border:1px solid #cdd5e2;border-radius:12px;padding:8px;font-size:13px;"></div>
                     <div class="field-group-title" style="margin-top:0;border-top:none;padding-top:0;">📊 الإنتاج (نفوق / علف / ماء)</div>
                     <div class="field"><label>نفوق ليلًا (طائر)</label>
                         <div class="stepper">
@@ -1822,9 +1829,10 @@
                         <div id="d_mortCauseHintNight" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
                     </div>
                     <div class="field"><label>علف ليلًا (كجم)</label><input id="d_feed_night" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
-                    <div class="field"><label>صنف العلف ليلًا (لو مختلف عن النهار)</label><select id="d_feeditem_night" onchange="onFeedItemNightManualChange()"></select>
-                        <div id="d_feeditem_night_hint" style="font-size:10.5px;color:var(--muted);margin-top:4px;">فاضي = هيتحسب نفس صنف علف النهار</div>
+                    <div class="field full" id="feedNightDiffToggleBox" style="margin-top:-4px;">
+                        <a href="javascript:void(0)" onclick="revealFeedItemNight()" id="feedNightDiffLink" style="font-size:11px;color:var(--muted);">🔄 صنف علف مختلف عن النهار؟</a>
                     </div>
+                    <div class="field" id="feedNightSelectWrap" style="display:none;"><label>صنف العلف ليلًا</label><select id="d_feeditem_night" onchange="onFeedItemNightManualChange()"></select></div>
                     <div class="field"><label>ماء ليلًا (لتر)</label><input id="d_water_night" type="number" inputmode="decimal" step="0.1" oninput="updateDayNightPreview()" min="0"></div>
                     <div class="field-group-title">🌡️ البيئة والتهوية</div>
                     <div class="field full"><button type="button" class="btn ghost sm" onclick="copyYesterdayEnv('night')" style="width:100%;">📋 نسخ قيم البيئة من سجل أمس (وعدّل الفرق بس)</button></div>
@@ -6025,6 +6033,13 @@
         function onFeedItemNightManualChange() {
             feedItemNightManuallyOverridden = true;
         }
+        // الرابط الافتراضي مخفي عشان مايكترش المساحة — يظهر خانة اختيار الصنف بس لو المستخدم فعلاً محتاجها
+        function revealFeedItemNight() {
+            const wrap = document.getElementById('feedNightSelectWrap');
+            const link = document.getElementById('feedNightDiffToggleBox');
+            if (wrap) wrap.style.display = '';
+            if (link) link.style.display = 'none';
+        }
         // بيتنادى لما المستخدم يغيّر صنف العلف يدويًا من القائمة — بنسجّل إنه اختيار صريح عشان منلغيهوش
         // تلقائيًا لو اتعمل recalcAge تاني (زي تغيير التاريخ)، لكن التحذير (لو فيه اختلاف) يفضل ظاهر.
         function onFeedItemManualChange() {
@@ -6140,40 +6155,47 @@
         // ملاحظة: تنفيذ إضافات العلف/الماء يعتمد على تاريخ السجل المفتوح حالياً (d_date) وليس تاريخ
         // النظام الفعلي — هذا يسمح بإتمام تنفيذ الإضافات حتى عند تعبئة سجل متأخر (يوم أمس مثلاً)،
         // مع منع التنفيذ لتاريخ مستقبلي لأن الخصم من المخزن يجب أن يواكب الاستهلاك الفعلي فقط.
+        // ============ 🔧 مقسّمة لصندوقين (نهار/ليل) بدل صندوق واحد مشترك دايمًا ظاهر — كل مهمة بتتصنّف حسب
+        // فترتها الفعلية (a.period لإضافات العلف/الماء، وقت t.time للمعاملات: قبل الساعة 6 مساءً = نهار)
+        // بدل ما تتزاحم كلها فوق الصفحة فى كل الأوضاع. التحصينات بطبيعتها بتتنفذ فى جولة النهار عادةً. ============
+        function isTreatmentNight(t) {
+            if (!t || !t.time) return false;
+            const h = parseInt(String(t.time).split(':')[0]);
+            return !isNaN(h) && (h >= 18 || h < 6);
+        }
         function renderDailyDueTasks() {
-            const box = document.getElementById('dailyDueBox');
-            if (!box) return;
+            const boxDay = document.getElementById('dailyDueBoxDay');
+            const boxNight = document.getElementById('dailyDueBoxNight');
+            if (!boxDay && !boxNight) return;
             const b = getActiveBatch();
             const age = parseInt(document.getElementById('d_age').value);
-            if (!b || isNaN(age)) { box.innerHTML = ''; box.style.display = 'none'; return; }
+            if (!b || isNaN(age)) { if (boxDay) { boxDay.innerHTML = ''; boxDay.style.display = 'none'; } if (boxNight) { boxNight.innerHTML = ''; boxNight.style.display = 'none'; } return; }
             const date = document.getElementById('d_date').value || todayStr();
             const isFuture = date > todayStr();
-            const dueVacc = b.vaccineLog.filter(v => v.day === age);
-            const dueTreat = b.treatmentLog.filter(t => t.day === age);
-            const activeFeed = b.feedAdditives.filter(a => a.active && additiveActiveOnDay(a, age));
-            const activeWater = b.waterAdditives.filter(a => a.active && additiveActiveOnDay(a, age));
-            if (!dueVacc.length && !dueTreat.length && !activeFeed.length && !activeWater.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
-            box.style.display = '';
+            const dueVacc = b.vaccineLog.filter(v => v.day === age); // ✅ التحصينات دايمًا فى مهام النهار (جولة الصباح المعتادة)
+            const dueTreatAll = b.treatmentLog.filter(t => t.day === age);
+            const dueTreatDay = dueTreatAll.filter(t => !isTreatmentNight(t));
+            const dueTreatNight = dueTreatAll.filter(t => isTreatmentNight(t));
+            const activeFeedAll = b.feedAdditives.filter(a => a.active && additiveActiveOnDay(a, age));
+            const activeWaterAll = b.waterAdditives.filter(a => a.active && additiveActiveOnDay(a, age));
+            const activeFeedDay = activeFeedAll.filter(a => a.period !== 'night');
+            const activeFeedNight = activeFeedAll.filter(a => a.period === 'night' || a.period === 'both');
+            const activeWaterDay = activeWaterAll.filter(a => a.period !== 'night');
+            const activeWaterNight = activeWaterAll.filter(a => a.period === 'night' || a.period === 'both');
 
             const lockNote = isFuture ? '<span style="font-size:10.5px;color:var(--muted);">🔒 لا يمكن التنفيذ لتاريخ مستقبلي</span>' : '';
-
             const groupHtml = (title, rowsHtml) => rowsHtml ? `
                 <div style="font-weight:800;color:var(--barn);font-size:12px;margin:8px 0 3px;">${title}</div>
                 ${rowsHtml}` : '';
-
-            const vaccRows = dueVacc.map(v => `
-                <div class="check-row"><input type="checkbox" ${v.done?'checked':''} onchange="dailyToggleVaccine('${v.id}')">
+            const vaccRow = v => `<div class="check-row"><input type="checkbox" ${v.done?'checked':''} onchange="dailyToggleVaccine('${v.id}')">
                     <div class="txt"><div class="${v.done?'done-strike':''}">💉 ${esc(v.name)}</div>
                     <div class="day">يوم ${v.day}${v.doneDate?' · تم فى '+v.doneDate:''}${v.qty>0?' · '+v.qty+' '+(v.unit||''):''}</div></div>
-                </div>`).join('');
-
-            const treatRows = dueTreat.map(t => `
-                <div class="check-row"><input type="checkbox" ${t.done?'checked':''} onchange="dailyToggleTreatment('${t.id}')">
+                </div>`;
+            const treatRow = t => `<div class="check-row"><input type="checkbox" ${t.done?'checked':''} onchange="dailyToggleTreatment('${t.id}')">
                     <div class="txt"><div class="${t.done?'done-strike':''}">🧴 ${esc(t.name)}</div>
                     <div class="day">يوم ${t.day}${timeLabel(t.time)}${t.doneDate?' · تم فى '+t.doneDate:''}${t.qty>0?' · '+t.qty+' '+(t.unit||''):''}</div></div>
-                </div>`).join('');
-
-            const feedRows = activeFeed.map(a => {
+                </div>`;
+            const feedRow = a => {
                 const done = isAdditiveExecutedToday(b, a.id, date);
                 const action = isFuture ? lockNote : done
                     ? '<span class="pill ok" style="font-size:10px;">✅ نُفّذ</span>'
@@ -6182,9 +6204,8 @@
                     <div class="day">الجرعة: ${a.dose} ${a.unit}/${a.per}</div></div>
                     ${action}
                 </div>`;
-            }).join('');
-
-            const waterRows = activeWater.map(a => {
+            };
+            const waterRow = a => {
                 const done = isAdditiveExecutedToday(b, a.id, date);
                 const action = isFuture ? lockNote : done
                     ? '<span class="pill info" style="font-size:10px;">✅ نُفّذ</span>'
@@ -6193,14 +6214,31 @@
                     <div class="day">الجرعة: ${a.dose} ${a.unit}/${a.per}</div></div>
                     ${action}
                 </div>`;
-            }).join('');
+            };
 
-            box.innerHTML = `
-                <div style="font-weight:800;color:var(--barn);">📌 مهام وتنبيهات ليوم ${date} — علّم «تم التنفيذ» ليُخصم تلقائياً من المخزن بالاسم</div>
-                ${groupHtml('💉 تحصينات مستحقة', vaccRows)}
-                ${groupHtml('🧴 معاملات مستحقة', treatRows)}
-                ${groupHtml('🌾 إضافات علف مستحقة', feedRows)}
-                ${groupHtml('💧 إضافات ماء مستحقة', waterRows)}`;
+            if (boxDay) {
+                const has = dueVacc.length || dueTreatDay.length || activeFeedDay.length || activeWaterDay.length;
+                if (!has) { boxDay.innerHTML = ''; boxDay.style.display = 'none'; }
+                else {
+                    boxDay.style.display = '';
+                    boxDay.innerHTML = `<div style="font-weight:800;color:var(--barn);">📌 مهام نهار ${date} — علّم «تم التنفيذ» ليُخصم تلقائياً من المخزن بالاسم</div>
+                        ${groupHtml('💉 تحصينات مستحقة', dueVacc.map(vaccRow).join(''))}
+                        ${groupHtml('🧴 معاملات مستحقة (نهار)', dueTreatDay.map(treatRow).join(''))}
+                        ${groupHtml('🌾 إضافات علف مستحقة (نهار)', activeFeedDay.map(feedRow).join(''))}
+                        ${groupHtml('💧 إضافات ماء مستحقة (نهار)', activeWaterDay.map(waterRow).join(''))}`;
+                }
+            }
+            if (boxNight) {
+                const has = dueTreatNight.length || activeFeedNight.length || activeWaterNight.length;
+                if (!has) { boxNight.innerHTML = ''; boxNight.style.display = 'none'; }
+                else {
+                    boxNight.style.display = '';
+                    boxNight.innerHTML = `<div style="font-weight:800;color:var(--barn);">📌 مهام ليل ${date} — علّم «تم التنفيذ» ليُخصم تلقائياً من المخزن بالاسم</div>
+                        ${groupHtml('🧴 معاملات مستحقة (ليل)', dueTreatNight.map(treatRow).join(''))}
+                        ${groupHtml('🌾 إضافات علف مستحقة (ليل)', activeFeedNight.map(feedRow).join(''))}
+                        ${groupHtml('💧 إضافات ماء مستحقة (ليل)', activeWaterNight.map(waterRow).join(''))}`;
+                }
+            }
         }
 
         function dailyToggleVaccine(id) { toggleVaccine(id); renderDailyDueTasks(); }
@@ -6242,12 +6280,14 @@
         function applyDailyModalMode() {
             const dayBox = document.getElementById('dayBox');
             const nightBox = document.getElementById('nightBox');
+            const essentialsBox = document.getElementById('essentialsBox');
             const title = document.getElementById('d_modalTitle');
             const saveBtn = document.getElementById('d_saveBtn');
-            if (!dayBox || !nightBox) return;
-            dayBox.style.display = (dailyModalMode === 'night') ? 'none' : '';
-            nightBox.style.display = (dailyModalMode === 'day') ? 'none' : '';
-            ['d_modePillDay', 'd_modePillNight', 'd_modePillFull'].forEach(id => {
+            if (!dayBox || !nightBox || !essentialsBox) return;
+            dayBox.style.display = (dailyModalMode === 'night' || dailyModalMode === 'essentials') ? 'none' : '';
+            nightBox.style.display = (dailyModalMode === 'day' || dailyModalMode === 'essentials') ? 'none' : '';
+            essentialsBox.style.display = (dailyModalMode === 'essentials' || dailyModalMode === 'full') ? '' : 'none';
+            ['d_modePillDay', 'd_modePillNight', 'd_modePillEssentials', 'd_modePillFull'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.remove('gold');
             });
@@ -6259,12 +6299,17 @@
                 title.textContent = '🌙 تسجيل بيانات الليل';
                 saveBtn.textContent = 'حفظ تسجيل الليل';
                 document.getElementById('d_modePillNight').classList.add('gold');
+            } else if (dailyModalMode === 'essentials') {
+                title.textContent = '⚖️ تسجيل الأساسيات (وزن / صحة / مياه / تدفئة)';
+                saveBtn.textContent = 'حفظ الأساسيات';
+                document.getElementById('d_modePillEssentials').classList.add('gold');
             } else {
-                title.textContent = '📋 تعديل السجل الكامل لليوم (نهار + ليل)';
-                saveBtn.textContent = 'حفظ السجل الكامل';
+                title.textContent = '📋 تعديل السجل الكامل لليوم (نهار + ليل + أساسيات)';
+                saveBtn.textContent = 'حفظ السجل كامل';
                 document.getElementById('d_modePillFull').classList.add('gold');
             }
             updateMortTotalPreview();
+            renderDailyDueTasks();
         }
 
         // يعرض إجمالي النفوق/المستبعد لليوم (نهار + ليل مجتمعين، للقراءة فقط) فوق القسمين، حتى لو كان أحدهما مخفيًا حاليًا.
@@ -6442,6 +6487,10 @@
                 dailyPhotoDataArr = [];
                 if (document.getElementById('d_photo_input')) document.getElementById('d_photo_input').value = '';
                 renderPhotoPreview();
+                const wrap = document.getElementById('feedNightSelectWrap');
+                const link = document.getElementById('feedNightDiffToggleBox');
+                if (wrap) wrap.style.display = 'none';
+                if (link) link.style.display = '';
                 document.getElementById('d_date').value = date;
                 recalcAge();
                 updateDayNightPreview();
@@ -7308,6 +7357,10 @@
             renderPhotoPreview();
             populateFeedItemSelect(r.feedItem || 'علف');
             populateFeedItemNightSelect(r.feedItemNight || '');
+            const fnWrap = document.getElementById('feedNightSelectWrap');
+            const fnLink = document.getElementById('feedNightDiffToggleBox');
+            if (r.feedItemNight) { if (fnWrap) fnWrap.style.display = ''; if (fnLink) fnLink.style.display = 'none'; }
+            else { if (fnWrap) fnWrap.style.display = 'none'; if (fnLink) fnLink.style.display = ''; }
             document.getElementById('d_weight').value = r.weight ?? '';
             document.getElementById('d_weightSample').value = Array.isArray(r.weightSample) ? r.weightSample.join(',') : '';
             document.getElementById('d_waterPh').value = r.waterPh ?? '';
@@ -7510,7 +7563,8 @@
             let nightEntered = existingForFlags ? !!existingForFlags.nightEntered : false;
             if (dailyModalMode === 'day') dayEntered = true;
             else if (dailyModalMode === 'night') nightEntered = true;
-            else { dayEntered = true; nightEntered = true; } // وضع "السجل كامل" = المستخدم راجع/عدّل الفترتين معًا
+            else if (dailyModalMode === 'full') { dayEntered = true; nightEntered = true; } // "السجل كامل" = المستخدم راجع/عدّل الفترتين معًا
+            // ملحوظة: وضع "الأساسيات" مايغيّرش حالة تسجيل النهار/الليل خالص — بيسيبهم زي ما هما (وزن/صحة مش جزء من فترة إنتاج)
             const mortDay = parseInt(document.getElementById('d_mort_day').value) || 0;
             const cullDay = parseInt(document.getElementById('d_cull_day').value) || 0;
             const mortNight = parseInt(document.getElementById('d_mort_night').value) || 0;
@@ -9606,7 +9660,7 @@
         }
         // ============ اختبار Welch t التقريبي لفرق متوسطين (لمقارنات "قبل/بعد" أو "أثناء السريان/خارجه") ============
         // بيراعي إن التباين ممكن يختلف بين المجموعتين (بعكس t-test التقليدي بتباين واحد مفترض)
-        function welchSignificant(sampleA, sampleB) {
+        function welchSignificant(sampleA, sampleB, numComparisons) {
             const a = (sampleA || []).filter(v => v != null && !isNaN(v));
             const c = (sampleB || []).filter(v => v != null && !isNaN(v));
             if (a.length < 3 || c.length < 3) return { significant: false, reason: 'عينة صغيرة جدًا (أقل من 3 نقاط)' };
@@ -9619,8 +9673,15 @@
             // درجات حرية Welch–Satterthwaite (تقريب) — كل ما قلّت كل ما احتجنا فرق أوضح عشان نثق فى النتيجة
             const df = Math.pow((va / a.length) + (vc / c.length), 2) /
                 ((Math.pow(va / a.length, 2) / (a.length - 1)) + (Math.pow(vc / c.length, 2) / (c.length - 1)) || 1);
-            const critical = df <= 6 ? 2.6 : (df <= 12 ? 2.2 : 2.0);
-            return { significant: tStat >= critical, tStat, df, meanA: ma, meanC: mc };
+            let critical = df <= 6 ? 2.6 : (df <= 12 ? 2.2 : 2.0);
+            // ============ 🔴 إصلاح Red Team: تصحيح بونفيروني تقريبي عند فحص عدة بنود مع بعض (إضافات/معاملات/شحنات) ============
+            // كل ما زاد عدد الاختبارات المتزامنة، زاد احتمال ظهور "دلالة إحصائية" وهمية بالصدفة البحتة (Multiple Comparisons
+            // Problem) — بدون تصحيح، لو عندك 10 إضافات شغالة، فرصة إن واحدة منهم على الأقل تظهر "دالة" بالصدفة عالية جدًا حتى
+            // لو كلهم فعليًا بلا أثر. هنا بنرفع العتبة الحرجة تقريبيًا مع log2(عدد الاختبارات) — بديل عملي مبسّط لجدول
+            // بونفيروني الكامل، متسق مع أسلوب الثوابت التقريبية المستخدم أصلاً فى نفس الدالة (عتبات df).
+            const numTests = Math.max(1, numComparisons || 1);
+            if (numTests > 1) critical += Math.min(Math.log2(numTests) * 0.3, 1.4);
+            return { significant: tStat >= critical, tStat, df, meanA: ma, meanC: mc, critical, numComparisons: numTests };
         }
         // ============ فلترة القيم الشاذة (IQR) — بتحمي كل التحليلات من رقم إدخال غلط واحد بيقلب النتيجة ============
         function iqrBounds(values) {
@@ -9746,6 +9807,10 @@
             const b = getActiveBatch(); if (!b) return;
             if (!b.dismissedAlerts) b.dismissedAlerts = {};
             b.dismissedAlerts['alert_' + key] = todayStr();
+            // ============ 🔴 إصلاح Red Team: تتبّع تراكمي لعدد مرات كتم نفس التنبيه — أساس حلقة "إجهاد التنبيهات" =========
+            // (يُستخدم فى computeUnifiedPriorities عشان تنبيه اتكتم كتير قبل كده ياخد أولوية أقل فى "أهم 3 أفعال")
+            if (!b.alertDismissCount) b.alertDismissCount = {};
+            b.alertDismissCount[key] = (b.alertDismissCount[key] || 0) + 1;
             persist(); render();
             showToast('اتكتم لحد بكرة 🔕 — ولو المشكلة لسه موجودة هيظهر تاني بكرة');
         }
@@ -9771,7 +9836,15 @@
             });
             Object.keys(b.alertHistory).forEach(k => {
                 const h = b.alertHistory[k];
-                if (!activeKeys.has(k) && !h.resolved) { h.resolved = true; h.resolvedDate = today; }
+                if (!activeKeys.has(k) && !h.resolved) {
+                    h.resolved = true; h.resolvedDate = today;
+                    // ============ 🔴 إصلاح Red Team: لما تنبيه يتحل فعليًا (مش بس يتكتم)، نخفّف نصف "إجهاده" التراكمي =========
+                    // عشان لو رجع يظهر تاني بعد فترة طويلة كمشكلة جديدة فعلاً، ميفضلش مقموع بتاريخ كتم قديم غير ذي صلة.
+                    if (b.alertDismissCount && b.alertDismissCount[k]) {
+                        b.alertDismissCount[k] = Math.floor(b.alertDismissCount[k] / 2);
+                        if (!b.alertDismissCount[k]) delete b.alertDismissCount[k];
+                    }
+                }
             });
         }
         // بيجمّع تنبيهات "معلوماتية" (info) المتشابهة (نفس الأيقونة الأولى) تحت عنصر واحد قابل للفتح لو 3 أو أكتر،
@@ -9788,8 +9861,13 @@
             const actionBtn = a.planKey
                 ? `<button class="btn ghost sm" style="flex-shrink:0;padding:3px 8px;" onclick="markPlanDone('${a.planKey}')" title="نفّذتها">✓ نفّذتها</button>`
                 : `<button class="btn ghost sm" style="flex-shrink:0;padding:3px 8px;" onclick="dismissAlert('${a.key}')" title="كتم لحد بكرة">🔕</button>`;
+            // ============ 🔴 إصلاح Red Team: شارة شفافية — توضّح إن التنبيه ده أخذ أولوية أقل فى "أهم 3 أفعال" ============
+            // لأنك كتمته كتير قبل كده، بدل ما يبقى تصرّف مخفي فى الخوارزمية من غير ما تعرف السبب.
+            const fatigueBadge = (a.level === 'warn' && a.dismissCount >= 3)
+                ? `<span style="font-size:9.5px;color:var(--muted);flex-shrink:0;" title="كتمته ${a.dismissCount} مرة قبل كده — بياخد أولوية أقل فى أهم 3 أفعال">🔕×${a.dismissCount}</span>` : '';
             return `<div class="alert-item ${a.level}" style="display:flex;align-items:center;gap:6px;justify-content:space-between;">
                 <span style="flex:1;">${esc(a.text)}</span>
+                ${fatigueBadge}
                 ${actionBtn}
             </div>`;
         }
@@ -10505,8 +10583,10 @@
                             const a = allAdditives[idx];
                             const activeDays = dailyPerf.filter(d => additiveActiveOnDay(a, d.age));
                             const inactiveDays = dailyPerf.filter(d => !additiveActiveOnDay(a, d.age));
-                            const mortSig = welchSignificant(activeDays.map(d => d.mort), inactiveDays.map(d => d.mort));
-                            const devSig = welchSignificant(activeDays.map(d => d.devPct).filter(v => v != null), inactiveDays.map(d => d.devPct).filter(v => v != null));
+                            // ============ 🔴 إصلاح Red Team: تصحيح المقارنات المتعددة — عدد الاختبارات = كل إضافة × (نفوق + وزن) ============
+                            const additiveNumTests = allAdditives.length * 2;
+                            const mortSig = welchSignificant(activeDays.map(d => d.mort), inactiveDays.map(d => d.mort), additiveNumTests);
+                            const devSig = welchSignificant(activeDays.map(d => d.devPct).filter(v => v != null), inactiveDays.map(d => d.devPct).filter(v => v != null), additiveNumTests);
                             const reasons = [];
                             if (r.activeMortRate > (r.inactiveMortRate * 1.3 + 0.05) && mortSig.significant) reasons.push({ key: 'mort', size: r.activeMortRate - r.inactiveMortRate });
                             if (r.activeDev != null && r.inactiveDev != null && (r.inactiveDev - r.activeDev) >= 3 && devSig.significant) reasons.push({ key: 'weight', size: r.inactiveDev - r.activeDev });
@@ -10549,12 +10629,14 @@
                         const afterDailyPerf = dailyPerf.filter(d => d.age > doneAge && d.age <= doneAge + 3);
                         const beforePerf = perfPeriodStats(beforeDailyPerf);
                         const afterPerf = perfPeriodStats(afterDailyPerf);
-                        const mortSig = welchSignificant(before.map(r => (r.mort || 0) + (r.cull || 0)), after.map(r => (r.mort || 0) + (r.cull || 0)));
+                        // ============ 🔴 إصلاح Red Team: تصحيح المقارنات المتعددة — عدد الاختبارات = كل معاملة منفَّذة × (نفوق + أمونيا + وزن) ============
+                        const treatNumTests = doneTreatments.length * 3;
+                        const mortSig = welchSignificant(before.map(r => (r.mort || 0) + (r.cull || 0)), after.map(r => (r.mort || 0) + (r.cull || 0)), treatNumTests);
                         // ⚠️ إصلاح: الأمونيا والوزن كان بيتحكم فيهم نسبة مباشرة بس من غير أي اختبار دلالة —
                         // دلوقتي بنطبّق نفس اختبار Welch المستخدم أصلاً للنفوق. الـ FCR لسه مفيهوش سلسلة يومية
                         // طبيعية تصلح لاختبار تباين (شوف نفس الملاحظة فى additiveAnalysis)، فهيفضل نسبة وصفية بس.
-                        const nh3Sig = welchSignificant(nh3BeforeArr, nh3AfterArr);
-                        const devSig = welchSignificant(beforeDailyPerf.map(d => d.devPct).filter(v => v != null), afterDailyPerf.map(d => d.devPct).filter(v => v != null));
+                        const nh3Sig = welchSignificant(nh3BeforeArr, nh3AfterArr, treatNumTests);
+                        const devSig = welchSignificant(beforeDailyPerf.map(d => d.devPct).filter(v => v != null), afterDailyPerf.map(d => d.devPct).filter(v => v != null), treatNumTests);
                         return { name: t.name, doneAge, mortBefore, mortAfter, nh3Before, nh3After,
                             devBefore: beforePerf.avgDev, devAfter: afterPerf.avgDev, fcrBefore: beforePerf.periodFcr, fcrAfter: afterPerf.periodFcr,
                             mortStatSignificant: mortSig.significant, nh3StatSignificant: nh3Sig.significant, devStatSignificant: devSig.significant };
@@ -10611,8 +10693,10 @@
                         // الـ FCR (زي فى باقي التحليلات) مفيهوش سلسلة يومية طبيعية، فبيفضل نسبة وصفية بس.
                         const otherMort = (seg) => segs.filter(s => s !== seg).flatMap(s => s.mortDaily);
                         const otherDev = (seg) => segs.filter(s => s !== seg).flatMap(s => s.devDaily);
-                        const worstMortSig = welchSignificant(worstMort.mortDaily, otherMort(worstMort)).significant;
-                        const worstDevSig = worstDev ? welchSignificant(worstDev.devDaily, otherDev(worstDev)).significant : false;
+                        // ============ 🔴 إصلاح Red Team: تصحيح المقارنات المتعددة — عدد الاختبارات = كل شحنة × (نفوق + وزن) ============
+                        const lotNumTests = segs.length * 2;
+                        const worstMortSig = welchSignificant(worstMort.mortDaily, otherMort(worstMort), lotNumTests).significant;
+                        const worstDevSig = worstDev ? welchSignificant(worstDev.devDaily, otherDev(worstDev), lotNumTests).significant : false;
                         let flagged = null;
                         if (avgMortRate > 0 && worstMort.mortPerDay > avgMortRate * 1.5 && worstMortSig) flagged = { ...worstMort, reason: 'mort' };
                         else if (worstDev && avgDevAll != null && (avgDevAll - worstDev.avgDev) >= 3 && worstDevSig) flagged = { ...worstDev, reason: 'weight' };
@@ -12240,7 +12324,8 @@
                     }
                 }
             }
-            alerts.forEach(a => { if (!a.key) a.key = alertKeyFromText(a.text); a.dismissed = isDismissedToday(b, 'alert_' + a.key); });
+            alerts.forEach(a => { if (!a.key) a.key = alertKeyFromText(a.text); a.dismissed = isDismissedToday(b, 'alert_' + a.key);
+                a.dismissCount = (b.alertDismissCount && b.alertDismissCount[a.key]) || 0; });
             logAlertHistory(b, alerts);
             return alerts;
         }
@@ -12385,10 +12470,23 @@
         }
 
         function renderAlertBanner(alerts) {
-            const top = alerts.filter(a => (a.level === 'danger' || a.level === 'warn') && !a.dismissed).slice(0, 3);
+            // ============ 🔴 إصلاح Red Team/Gaps: الشريط العلوي كان بيعرض أول 3 تنبيهات بترتيب إدخالها الخام، ============
+            // من غير علاقة بترتيب الأولوية الحقيقي المستخدم فى "🎯 أهم 3 أفعال" بالداشبورد (اللي بياخد فى الاعتبار
+            // إجهاد التنبيهات/التكرار). النتيجة: تنبيه اتكتم كتير قبل كده وفقد أهميته كان لسه بيظهر بأعلى وضوح هنا
+            // فى باقي التبويبات — تناقض بين الشريط والقائمة الذكية. دلوقتي بنستخدم نفس معادلة الوزن بالظبط.
+            const scored = alerts.filter(a => (a.level === 'danger' || a.level === 'warn') && !a.dismissed)
+                .map(a => {
+                    let w = a.level === 'danger' ? 8 : 5;
+                    if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
+                    return { ...a, _w: w };
+                })
+                .sort((x, y) => y._w - x._w);
+            const top = scored.slice(0, 3);
             if (top.length === 0) return;
+            const extra = scored.length - top.length;
             document.getElementById('alertBanner').innerHTML = top.map(a =>
-                `<div class="alert-item ${a.level}">${esc(a.text)}</div>`).join('');
+                `<div class="alert-item ${a.level}">${esc(a.text)}</div>`).join('')
+                + (extra > 0 ? `<div style="font-size:10.5px;color:var(--muted);padding:3px 8px;">+${extra} تنبيه آخر — التفاصيل فى الداشبورد أو تبويب الإنتاج</div>` : '');
         }
 
         // ============ Dashboard ============
@@ -12552,7 +12650,13 @@
                 if (a.dismissed) return; // المستخدم كتمها اليوم بنفسه — منعرضهاش كأولوية عاجلة تانى
                 const rule = domainRules.find(r => r.re.test(a.text));
                 if (!rule) return;
-                push(rule.domain, rule.icon, a.text.replace(/^\S+\s*/, ''), a.level === 'danger' ? 8 : 5);
+                let w = a.level === 'danger' ? 8 : 5;
+                // ============ 🔴 إصلاح Red Team: حلقة تغذية راجعة لإجهاد التنبيهات (Alert Fatigue) ============
+                // تنبيه من نوع "تحذير" اتكتم كتير قبل كده (يعني المستخدم شافه وقرر إنه مش عاجل بالنسبالُه مرارًا)
+                // ياخد أولوية أقل فى "أهم 3 أفعال" — بدون ما يختفي خالص من قائمة التنبيهات الكاملة. تنبيهات
+                // "الخطر" (danger) مستثناة عمدًا وبتفضل بأولويتها الكاملة دايمًا لأنها سلامة/مخاطرة حرجة.
+                if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
+                push(rule.domain, rule.icon, a.text.replace(/^\S+\s*/, ''), w);
             });
 
             const seen = new Set();
@@ -13032,7 +13136,11 @@
             const groupForecastArr = [epefProjHtml, saleHtml, liveProfitHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
             const groupPerformanceArr = [effScoreHtml, mortCostHtml, addImpactHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
             const groupBenchmarkArr = [seasonalHtml, globalBenchHtml, blendedCurveHtml, farmBenchHtml, bestCyclesHtml].filter(Boolean);
-            const insightGroup = (title, icon, desc, arr, openByDefault) => !arr.length ? '' : `
+            // ============ 🔴 إصلاح Gaps: مجموعات التحليلات ممكن توصل لأكتر من 30 كارت مجتمعة (حتى مع التجميع فى 4 فئات) ============
+            // — بعض المزارعين مش مهتم مثلاً بـ"مقارنات ومعايير" وعايز يشيلها نهائيًا بدل ما يطويها كل مرة. أضفنا إخفاء
+            // على مستوى الفئة نفسها (منفصل عن إخفاء القسم كله)، يتحكم فيه من نفس صفحة "تخصيص ترتيب لوحة التحكم".
+            const hiddenInsightGroups = (state.appSettings && state.appSettings.insightGroupsHidden) || [];
+            const insightGroup = (gkey, title, icon, desc, arr, openByDefault) => (!arr.length || hiddenInsightGroups.includes(gkey)) ? '' : `
                 <details ${openByDefault ? 'open' : ''} style="border-bottom:1px solid var(--line);">
                     <summary style="padding:10px 12px;cursor:pointer;background:#faf8f2;">
                         <div style="display:flex;flex-direction:column;gap:1px;">
@@ -13042,15 +13150,16 @@
                     </summary>
                     <div>${arr.join('')}</div>
                 </details>`;
-            const totalInsights = groupAttentionArr.length + groupForecastArr.length + groupPerformanceArr.length + groupBenchmarkArr.length;
+            const totalInsights = ['attention','forecast','performance','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
+                .reduce((s, k) => s + ({attention: groupAttentionArr, forecast: groupForecastArr, performance: groupPerformanceArr, benchmark: groupBenchmarkArr}[k].length), 0);
             const insightsSection = !totalInsights ? '' : `<div class="section"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
-                <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">اضغط على أي مجموعة بالأسفل لعرض تفاصيلها — "يحتاج انتباه" مفتوحة افتراضيًا لأنها الأهم.</p>
+                <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">اضغط على أي مجموعة بالأسفل لعرض تفاصيلها — "يحتاج انتباه" مفتوحة افتراضيًا لأنها الأهم. تقدر تخفي فئة كاملة نهائيًا من "الإعدادات ← تخصيص ترتيب لوحة التحكم".</p>
                 ${perfScoreCardHtml}
                 <div class="card" style="padding:0;overflow:hidden;">
-                    ${insightGroup('يحتاج انتباه الآن', '⚠️', 'مخاطر ومؤشرات تستاهل تتصرف فيها دلوقتي', groupAttentionArr, true)}
-                    ${insightGroup('توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, false)}
-                    ${insightGroup('أداء وكفاءة', '📊', 'تحليل وصفي لأداء الدورة الحالية (تكلفة، تجانس، أثر الإضافات)', groupPerformanceArr, false)}
-                    ${insightGroup('مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
+                    ${insightGroup('attention', 'يحتاج انتباه الآن', '⚠️', 'مخاطر ومؤشرات تستاهل تتصرف فيها دلوقتي', groupAttentionArr, true)}
+                    ${insightGroup('forecast', 'توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, false)}
+                    ${insightGroup('performance', 'أداء وكفاءة', '📊', 'تحليل وصفي لأداء الدورة الحالية (تكلفة، تجانس، أثر الإضافات)', groupPerformanceArr, false)}
+                    ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
                 </div>
                 <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
             </div>`;
@@ -19374,7 +19483,36 @@
                         </span>
                     </div>`).join('')}
             </div>
-            <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الترتيب والإخفاء يُطبَّق على أقسام الرسوم البيانية والتحليلات فى لوحة التحكم (الكروت الرئيسية بأعلى الصفحة ثابتة دايمًا).</p>`;
+            <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الترتيب والإخفاء يُطبَّق على أقسام الرسوم البيانية والتحليلات فى لوحة التحكم (الكروت الرئيسية بأعلى الصفحة ثابتة دايمًا).</p>
+            ${renderInsightGroupsSettings()}`;
+        }
+        // ============ 🔴 إصلاح Gaps: إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو "مقارنات ومعايير" ============
+        // مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
+        function renderInsightGroupsSettings() {
+            const groups = [
+                { key: 'attention', label: '⚠️ يحتاج انتباه الآن' },
+                { key: 'forecast', label: '🔮 توقعات' },
+                { key: 'performance', label: '📊 أداء وكفاءة' },
+                { key: 'benchmark', label: '🌍 مقارنات ومعايير' },
+            ];
+            const hidden = (state.appSettings && state.appSettings.insightGroupsHidden) || [];
+            return `<div class="card" style="padding:0;margin-top:10px;">
+                <div style="padding:8px 12px 4px;font-size:11.5px;font-weight:800;color:var(--muted);">فئات "🔬 تحليلات ذكية" — إظهار/إخفاء</div>
+                ${groups.map(g => `
+                    <div class="dash-order-row">
+                        <input type="checkbox" ${hidden.includes(g.key) ? '' : 'checked'} onchange="toggleInsightGroupHidden('${g.key}', this.checked)" title="إظهار/إخفاء">
+                        <div style="flex:1;font-size:12.5px;">${g.label}</div>
+                    </div>`).join('')}
+            </div>`;
+        }
+        function toggleInsightGroupHidden(key, visible) {
+            if (!state.appSettings) state.appSettings = {};
+            let hidden = state.appSettings.insightGroupsHidden || [];
+            hidden = visible ? hidden.filter(k => k !== key) : [...new Set([...hidden, key])];
+            state.appSettings.insightGroupsHidden = hidden;
+            persist();
+            const container = document.getElementById('dashOrderSettingsBox');
+            if (container) container.innerHTML = renderDashboardOrderSettings();
         }
         function saveDashboardOrder(order) {
             if (!state.appSettings) state.appSettings = {};
