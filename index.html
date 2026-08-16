@@ -2054,39 +2054,112 @@
         </div>
     </div>
 
-    <!-- Modal: Quick/Emergency Intervention (feed or water outside the day/night schedule) -->
+    <!-- Modal: Quick/Emergency Additive (given on feed or in water outside the scheduled additives program) -->
     <div class="modal-overlay" id="quickIntModalOverlay">
         <div class="modal">
             <button class="close-x" aria-label="إغلاق" onclick="closeModal('quickIntModalOverlay')">✕</button>
-            <h3>➕ إضافة علف أو مياه خارج الجدول</h3>
-            <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px;line-height:1.6;">لإضافة كمية علف أو مياه فعلية فى وقت غير مواعيد تسجيل النهار/الليل المعتادة. تُخصم كمية العلف من المخزون فورًا، وتُسجَّل بوقتها الفعلي منفصلة عن السجل اليومي.</p>
+            <h3>➕ إضافة/مكمل خارج الجدول</h3>
+            <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px;line-height:1.6;">لتسجيل إضافة أو مكمل (فيتامين، إلكتروليت، دواء...) توضعه على العلف أو فى الماء بشكل طارئ خارج برنامج الإضافات المجدول — مثال: فيتامين سي قبل موجة إجهاد حراري. تُخصم الكمية من المخزون فورًا، وتُسجَّل بوقتها الفعلي منفصلة عن السجل اليومي.</p>
             <div class="form-grid">
                 <div class="field full">
-                    <label>نوع التدخل</label>
+                    <label>توضع على</label>
                     <div class="row-actions" style="margin:0;">
-                        <button type="button" class="btn gold" id="qi_btn_feed" style="flex:1;" onclick="setQuickIntType('feed')">🌾 علف</button>
-                        <button type="button" class="btn ghost" id="qi_btn_water" style="flex:1;" onclick="setQuickIntType('water')">💧 مياه</button>
+                        <button type="button" class="btn gold" id="qi_btn_feed" style="flex:1;" onclick="setQuickIntType('feed')">🌾 العلف</button>
+                        <button type="button" class="btn ghost" id="qi_btn_water" style="flex:1;" onclick="setQuickIntType('water')">💧 الماء</button>
                     </div>
                 </div>
-                <div class="field full" id="qi_feedItemField"><label>صنف العلف</label><select id="qi_feedItem"></select></div>
-                <div class="field"><label>الكمية</label><input id="qi_qty" type="number" inputmode="decimal" step="0.1" min="0" placeholder="مثال: 25"></div>
-                <div class="field"><label>الوحدة</label><select id="qi_unit"><option value="كجم">كجم</option><option value="لتر">لتر</option></select></div>
+                <div class="field full"><label>اسم الإضافة/المكمل</label><input id="qi_name" list="dl_invItems" placeholder="مثال: فيتامين سي"></div>
+                <div class="field"><label>الكمية المُعطاة فعليًا</label><input id="qi_qty" type="number" inputmode="decimal" step="0.01" min="0" placeholder="مثال: 25"></div>
+                <div class="field"><label>الوحدة</label><select id="qi_unit"><option>جم</option><option>كجم</option><option>مل</option><option>لتر</option><option>سم</option></select></div>
                 <div class="field full"><label>وقت الإضافة</label><input id="qi_datetime" type="datetime-local"></div>
                 <div class="field full">
                     <label>السبب (اختياري)</label>
                     <select id="qi_reason" onchange="document.getElementById('qi_reasonOtherField').style.display = this.value === 'أخرى' ? '' : 'none';">
-                        <option value="زيادة عن الكمية المعتادة">زيادة عن الكمية المعتادة</option>
-                        <option value="نفاد قبل ميعاده">نفاد قبل ميعاده</option>
-                        <option value="ارتفاع حرارة مفاجئ">ارتفاع حرارة مفاجئ</option>
-                        <option value="عطل فى خط التغذية/السقاية">عطل فى خط التغذية/السقاية</option>
-                        <option value="زيارة إضافية خارج الجدول">زيارة إضافية خارج الجدول</option>
+                        <option value="موجة إجهاد حراري">موجة إجهاد حراري</option>
+                        <option value="حالة مرضية طارئة">حالة مرضية طارئة</option>
+                        <option value="قبل/بعد تحصين أو نقل">قبل/بعد تحصين أو نقل</option>
+                        <option value="نصيحة بيطرية">نصيحة بيطرية</option>
                         <option value="أخرى">أخرى</option>
                     </select>
                 </div>
                 <div class="field full" id="qi_reasonOtherField" style="display:none;"><label>تفاصيل السبب</label><input id="qi_reasonOther" placeholder="اكتب السبب..."></div>
-                <div class="field full"><label>ملاحظة إضافية (اختياري)</label><input id="qi_note"></div>
+                <div class="field full"><label>فترة سحب قبل الذبح (أيام) — اتركها 0 لو مكمّل غذائي عادي (فيتامين/بروبيوتك) وليست دواء/مضاد حيوي</label><input id="qi_withdrawal" type="number" inputmode="numeric" min="0" step="1" placeholder="0"></div>
+                <div class="field full"><label>ملاحظة إضافية (اختياري)</label>
+                    <div style="display:flex;gap:6px;">
+                        <input id="qi_note" style="flex:1;">
+                        <button type="button" class="btn ghost sm" onclick="voiceInput('qi_note', this)" title="إدخال صوتي">🎤</button>
+                    </div>
+                </div>
             </div>
             <div class="row-actions"><button class="btn block" onclick="saveQuickIntervention()">حفظ الإضافة</button></div>
+        </div>
+    </div>
+
+    <!-- Modal: Manual Incident (مشكلة/حادثة أثّرت سلبًا أو إيجابيًا) -->
+    <div class="modal-overlay" id="incidentModalOverlay">
+        <div class="modal">
+            <button class="close-x" aria-label="إغلاق" onclick="closeModal('incidentModalOverlay')">✕</button>
+            <h3>📓 تسجيل حادثة/مشكلة</h3>
+            <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px;line-height:1.6;">سجّل أي حادثة أثّرت على الدفعة (سلبًا أو إيجابًا) والحل اللي استخدمته ونتيجته — يدخل ده فى "قاعدة معرفة الحوادث" عشان ينبّهك تلقائيًا فى الدورات الجاية قبل حدوث نفس المشكلة، ويقترح نفس الحل لو نجح.</p>
+            <div class="form-grid">
+                <div class="field full"><label>تاريخ الحادثة</label><input id="ic_date" type="date"></div>
+                <div class="field full"><label>نوع الحادثة</label>
+                    <select id="ic_category">
+                        <option>نفوق مرتفع</option>
+                        <option>مشكلة تنفسية</option>
+                        <option>مشكلة هضمية/إسهال</option>
+                        <option>إجهاد حراري</option>
+                        <option>إجهاد برودة</option>
+                        <option>ضعف شهية/نقص استهلاك علف</option>
+                        <option>مشكلة جودة مياه</option>
+                        <option>مشكلة فرشة/أمونيا</option>
+                        <option>مشكلة نمو/تجانس</option>
+                        <option>أخرى</option>
+                    </select>
+                </div>
+                <div class="field full"><label>الأثر</label>
+                    <select id="ic_severity">
+                        <option value="negative_high">🔴 سلبي كبير</option>
+                        <option value="negative_med">🟠 سلبي متوسط</option>
+                        <option value="negative_low">🟡 سلبي بسيط</option>
+                        <option value="positive">🟢 إيجابي (نتيجة جيدة تستحق التكرار)</option>
+                    </select>
+                </div>
+                <div class="field full"><label>وصف مختصر</label>
+                    <div style="display:flex;gap:6px;">
+                        <input id="ic_title" placeholder="مثال: نفوق مفاجئ بعد موجة حر" style="flex:1;">
+                        <button type="button" class="btn ghost sm" onclick="voiceInput('ic_title', this)" title="إدخال صوتي">🎤</button>
+                    </div>
+                </div>
+                <div class="field full"><label>الحل المستخدم (لو فيه)</label><input id="ic_solution" list="dl_invItems" placeholder="مثال: فيتامين سي + إلكتروليت فى الماء"></div>
+                <div class="field full"><label>نتيجة الحل</label>
+                    <select id="ic_outcome">
+                        <option value="improved">✅ تحسّن ملحوظ</option>
+                        <option value="mild_improved">🙂 تحسّن بسيط</option>
+                        <option value="no_change">➖ لم يتغيّر</option>
+                        <option value="worsened">❌ ساء الوضع</option>
+                        <option value="unknown">❓ لسه مبكر / غير معروف</option>
+                    </select>
+                </div>
+                <div class="field full"><label>ملاحظات إضافية (اختياري)</label>
+                    <div style="display:flex;gap:6px;">
+                        <textarea id="ic_notes" rows="2" style="flex:1;"></textarea>
+                        <button type="button" class="btn ghost sm" onclick="voiceInput('ic_notes', this)" title="إدخال صوتي">🎤</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row-actions"><button class="btn block" onclick="saveIncident()">حفظ الحادثة</button></div>
+        </div>
+    </div>
+
+    <!-- Modal: Incident Knowledge Base (قاعدة معرفة الحوادث عبر الدورات) -->
+    <div class="modal-overlay" id="incidentKbModalOverlay">
+        <div class="modal">
+            <button class="close-x" aria-label="إغلاق" onclick="closeModal('incidentKbModalOverlay')">✕</button>
+            <h3>🧠 قاعدة معرفة الحوادث</h3>
+            <p style="font-size:11.5px;color:var(--muted);margin-top:-6px;">أنماط اتكررت عبر دوراتك المؤرشفة (مُكتشفة تلقائيًا من الأرقام + الحوادث المُسجَّلة يدويًا) — مع أفضل حل أثبت نجاحه فى كل حالة.</p>
+            <div id="incidentKbContent"></div>
+            <div class="row-actions"><button class="btn ghost block" onclick="closeModal('incidentKbModalOverlay');openIncidentModal();">📓 تسجيل حادثة جديدة</button></div>
         </div>
     </div>
 
@@ -2461,20 +2534,22 @@
         }
 
         // ============ تقييم أداء العمال (Worker Performance) ============
-        // مبني على enteredBy/enteredAt المُسجَّلة تلقائيًا مع كل سجل يومي (بداية من تفعيل هذه الميزة —
-        // السجلات القديمة قبلها هتظهر كـ"غير محدد" لعدم توفر بيانات تاريخية عنها)، بالإضافة لسجل
-        // التدقيق العام (globalAuditLog) لرصد عدد التعديلات/الحذف المرتبطة بكل اسم.
+        // مبني على enteredBy/enteredAt المُسجَّلة تلقائيًا مع كل سجل يومي + إضافة خارج الجدول + حادثة + تنفيذ برنامج
+        // إضافات (بداية من تفعيل هذه الميزة — السجلات القديمة قبلها هتظهر كـ"غير محدد")، بالإضافة لسجل التدقيق
+        // العام (globalAuditLog) لرصد عدد التعديلات/الحذف. الأنواع الأربعة بتتجمع فى مجهود واحد بدل ما السجل
+        // اليومي بس هو المحسوب — عامل بيتعامل صح مع الطوارئ (حادثة/جرعة استباقية/تنفيذ إضافة) ياخد نقاط له.
         function computeWorkerPerformance() {
-            const groups = {}; // name -> { records:[], edits:0 }
-            (state.batches || []).forEach(b => (b.records || []).forEach(r => {
-                if (!r.enteredBy) return;
-                if (!groups[r.enteredBy]) groups[r.enteredBy] = { records: [], edits: 0 };
-                groups[r.enteredBy].records.push(r);
-            }));
+            const groups = {}; // name -> { records:[], quickInts:0, incidents:0, execs:0, edits:0 }
+            const ensure = (name) => { if (!groups[name]) groups[name] = { records: [], quickInts: 0, incidents: 0, execs: 0, edits: 0 }; return groups[name]; };
+            (state.batches || []).forEach(b => {
+                (b.records || []).forEach(r => { if (r.enteredBy) ensure(r.enteredBy).records.push(r); });
+                (b.quickInterventions || []).forEach(qi => { if (qi.enteredBy) ensure(qi.enteredBy).quickInts++; });
+                (b.incidents || []).forEach(inc => { if (inc.enteredBy) ensure(inc.enteredBy).incidents++; });
+                (b.additiveExecLog || []).forEach(e => { if (e.enteredBy) ensure(e.enteredBy).execs++; });
+            });
             (state.globalAuditLog || []).forEach(e => {
                 if (!e.who) return;
-                if (!groups[e.who]) groups[e.who] = { records: [], edits: 0 };
-                if (/حذف|تعديل/.test(e.text || '')) groups[e.who].edits++;
+                if (/حذف|تعديل/.test(e.text || '')) ensure(e.who).edits++;
             });
             const names = Object.keys(groups);
             if (!names.length) return null;
@@ -2494,12 +2569,14 @@
                 });
                 return {
                     name, recordsCount: n, edits: g.edits,
+                    quickInts: g.quickInts, incidents: g.incidents, execs: g.execs,
+                    totalEffort: n + g.quickInts + g.incidents + g.execs,
                     onTimePct: n ? (onTime / n) * 100 : null,
                     avgDelayDays: n ? totalDelay / n : null,
                     completenessPct: n ? completenessSum / n : null,
                 };
             });
-            rows.sort((a, c) => c.recordsCount - a.recordsCount);
+            rows.sort((a, c) => c.totalEffort - a.totalEffort);
             return rows;
         }
 
@@ -5351,6 +5428,7 @@
             if (b.location === undefined) b.location = '';
             if (!b.outageLog) b.outageLog = [];
             if (!b.quickInterventions) b.quickInterventions = [];
+            if (!b.incidents) b.incidents = [];
             b.records.forEach(r => {
                 if (r.humidity === undefined) r.humidity = null;
                 if (r.airspeed === undefined) r.airspeed = null;
@@ -6578,7 +6656,8 @@
                 feedTransitions: [],
                 aiRecommendationLog: [],
                 outageLog: [],
-                quickInterventions: []
+                quickInterventions: [],
+                incidents: []
             };
             state.batches.push(batch);
             state.activeId = batch.id;
@@ -8428,11 +8507,16 @@
         function computeAntibioticStats(b, m) {
             const totalDays = Math.max(0, (b.status === 'مؤرشفة' ? (m.age || 0) : (m.todayAge || 0)));
             if (totalDays <= 0) return { totalDays: 0, antibioticDays: 0, freeDays: 0, freePct: 100 };
+            // جرعات خارج الجدول (quickInterventions) بفترة سحب > 0 بتتحسب كمان كـ"يوم مضاد حيوي" — نفس منطق البند المجدول
+            const qiAntibioticAges = new Set((b.quickInterventions || [])
+                .filter(qi => (qi.withdrawalDays || 0) > 0)
+                .map(qi => daysBetween(b.startDate, qi.date)));
             let antibioticDays = 0;
             for (let d = 1; d <= totalDays; d++) {
                 const hasAntibiotic =
                     (b.feedAdditives || []).some(a => a.active && (a.withdrawalDays || 0) > 0 && additiveActiveOnDay(a, d)) ||
-                    (b.waterAdditives || []).some(a => a.active && (a.withdrawalDays || 0) > 0 && additiveActiveOnDay(a, d));
+                    (b.waterAdditives || []).some(a => a.active && (a.withdrawalDays || 0) > 0 && additiveActiveOnDay(a, d)) ||
+                    qiAntibioticAges.has(d);
                 if (hasAntibiotic) antibioticDays++;
             }
             const freeDays = totalDays - antibioticDays;
@@ -8609,12 +8693,43 @@
             const provenTreatments = (treatEff || []).filter(r => r.verdict === 'improve');
             if (!provenItems.length && !provenTreatments.length) { showToast('⚠️ محدش من البنود المتكررة أثبت فايدة واضحة (دايمًا بيحسّن) عبر كل دوراتك حتى الآن — لسه معندكش "أفضل ممارسات" واضحة تتجمع فى بروتوكول'); return; }
 
+            // --- تقاطع مع "قاعدة معرفة الحوادث": بند ضار دايمًا وقت الحوادث (اتسجّل ساء الوضع وميعرفش تحسّن ولا مرة) بيتستبعد،
+            // وبند "حساس للتوقيت" (مفيد فى نطاق، ضار فى نطاق تاني) بيتحط عليه ملحوظة توقيت بدل ما يتستبعد بالكامل ---
+            const allIncSolutions = mineAllIncidentRecords(species).filter(inc => inc.solutionName);
+            const solutionOutcomeStats = {};
+            allIncSolutions.forEach(inc => {
+                if (!solutionOutcomeStats[inc.solutionName]) solutionOutcomeStats[inc.solutionName] = { improved: 0, worsened: 0 };
+                if (inc.outcome === 'improved') solutionOutcomeStats[inc.solutionName].improved++;
+                else if (inc.outcome === 'worsened') solutionOutcomeStats[inc.solutionName].worsened++;
+            });
+            const incidentBlacklist = new Set(Object.entries(solutionOutcomeStats)
+                .filter(([, s]) => s.worsened > 0 && s.improved === 0).map(([n]) => n));
+            const sensitivity = computeSolutionContextSensitivity(species);
+            const sensitivityByName = {};
+            sensitivity.forEach(s => { sensitivityByName[s.name] = s; });
+            const excludedByIncidents = [];
+            const timingNoteFor = (name) => {
+                const s = sensitivityByName[name];
+                if (!s) return '';
+                return ` ⚡ ملحوظة توقيت (من قاعدة معرفة الحوادث): مفيد قرب ${s.goodContexts.map(c=>`يوم ${c.ageCenter}`).join('/')} — تجنّبه قرب ${s.badContexts.map(c=>`يوم ${c.ageCenter}`).join('/')}.`;
+            };
+
             // بيدوّر على أفضل دورة (EPEF) من بين الدورات اللى استخدمت البند ده بالتحديد، عشان ناخد منها قيمه الفعلية (جرعة/توقيت)
             function bestSourceFor(itemName, kind) {
                 let best = null, bestScore = -Infinity, bestBatchName = null;
                 archived.forEach(x => {
-                    const arr = kind === 'treatment' ? (x.treatmentLog || []).filter(t => t.done && t.name === itemName)
-                        : (kind === 'علف' ? (x.feedAdditives || []) : (x.waterAdditives || [])).filter(a => a.name === itemName);
+                    let arr;
+                    if (kind === 'treatment') {
+                        arr = (x.treatmentLog || []).filter(t => t.done && t.name === itemName);
+                    } else {
+                        arr = (kind === 'علف' ? (x.feedAdditives || []) : (x.waterAdditives || [])).filter(a => a.name === itemName);
+                        if (!arr.length) {
+                            // مفيش جدول مُعرَّف مسبقًا لهذا البند فى هذه الدورة — جرّب مصدر "إضافة خارج الجدول" (جرعة لحظية بدل جدول)
+                            const qiType = kind === 'علف' ? 'feed' : 'water';
+                            arr = (x.quickInterventions || []).filter(qi => qi.name === itemName && qi.type === qiType)
+                                .map(qi => ({ name: qi.name, from: daysBetween(x.startDate, qi.date), to: daysBetween(x.startDate, qi.date), dose: qi.qty, unit: qi.unit, notes: `أُخذت أصلاً كإضافة خارج الجدول (${qi.reason || ''}) — راجع الجرعة والتوقيت قبل التطبيق كبرنامج ثابت` }));
+                        }
+                    }
                     if (!arr.length) return;
                     const xm = computeMetrics(x);
                     const score = xm.epef != null ? xm.epef : (xm.fcr != null ? (10 - xm.fcr) * 100 : 0);
@@ -8629,25 +8744,31 @@
                 const mm = r.name.match(/^(.*) \((علف|ماء)\) · .*$/);
                 if (!mm) return;
                 const itemName = mm[1], kind = mm[2];
+                if (incidentBlacklist.has(itemName)) { excludedByIncidents.push(itemName); return; }
                 const src = bestSourceFor(itemName, kind);
                 if (!src) return;
                 const a = src.item;
                 const target = kind === 'علف' ? kept.feed : kept.water;
                 if (target.some(x => x.name === a.name)) return; // نفس البند ظهر أكتر من مرة (مراحل مختلفة) — نكتفي بأول ظهور
-                target.push({ name: a.name, from: a.from, to: a.to, days: (a.days && a.days.length) ? [...a.days] : null, dose: a.dose, unit: a.unit, per: a.per, notes: a.notes || '' });
+                target.push({ name: a.name, from: a.from, to: a.to, days: (a.days && a.days.length) ? [...a.days] : null, dose: a.dose, unit: a.unit, per: a.per, notes: (a.notes || '') + timingNoteFor(a.name) });
                 sources.push({ name: a.name, kind, cycles: r.cycles, sourceBatch: src.sourceBatch });
             });
             provenTreatments.forEach(r => {
+                if (incidentBlacklist.has(r.name)) { excludedByIncidents.push(r.name); return; }
                 const src = bestSourceFor(r.name, 'treatment');
                 if (!src) return;
                 const t = src.item;
                 if (kept.treatments.some(x => x.name === t.name)) return;
-                kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: t.notes || '' });
+                kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: (t.notes || '') + timingNoteFor(t.name) });
                 sources.push({ name: t.name, kind: 'فرشة', cycles: r.cycles, sourceBatch: src.sourceBatch });
             });
 
             if (!kept.feed.length && !kept.water.length && !kept.treatments.length) {
-                showToast('⚠️ حصل تعارض فى مطابقة أسماء البنود بين التحليل والدورات — جرّب تاني، ولو استمرت المشكلة راجع تناسق أسماء الإضافات بين دوراتك');
+                if (excludedByIncidents.length) {
+                    showToast(`⚠️ كل البنود المُثبتة الفايدة (${excludedByIncidents.join('، ')}) اتستبعدت لأنها اتربطت بـ"ساء الوضع" فى حوادث سابقة من غير أي تحسّن مسجَّل — مفيش بروتوكول موثوق يتبني حاليًا`);
+                } else {
+                    showToast('⚠️ حصل تعارض فى مطابقة أسماء البنود بين التحليل والدورات — جرّب تاني، ولو استمرت المشكلة راجع تناسق أسماء الإضافات بين دوراتك');
+                }
                 return;
             }
 
@@ -8665,6 +8786,9 @@
             const uniqueSourceBatches = [...new Set(sources.map(s => s.sourceBatch))];
             let report = `بروتوكول جديد اتصمم من جمع أفضل بند مُثبت الفايدة من كل دورة على حدة — مش نسخة من دورة واحدة بعينها، لكن توليفة من ${uniqueSourceBatches.length} دورة مختلفة (من إجمالي ${archived.length} دورة مؤرشفة اتفحصت من نفس النوع).<br><br>`;
             report += `🏆 البنود المُجمّعة (${sources.length}):<br>` + sources.map(s => `• ${esc(s.name)} (${s.kind}) — من دورة "${esc(s.sourceBatch)}"، أثبت فايدته عبر ${s.cycles} دورة`).join('<br>');
+            if (excludedByIncidents.length) {
+                report += `<br><br>🚫 اتستبعد رغم إثباته فايدة عامة (لأنه اتربط بـ"ساء الوضع" فى حادثة سابقة من غير أي تحسّن مسجَّل معاه): ${excludedByIncidents.map(esc).join('، ')}. راجعه فى "🧠 قاعدة معرفة الحوادث".`;
+            }
             report += `<br><br>💾 اتحفظ باسم "${esc(protoName)}" فى قائمة البروتوكولات بالأسفل، جاهز يتطبّق على أى دفعة/دورة جديدة.`;
             showInfo('🏆 بروتوكول الأفضل من كل دورة', report);
         }
@@ -9013,7 +9137,8 @@
             }
             const finalize = () => {
                 stockOutByItem(b, it.id, convQty, date, `تنفيذ يومي - ${label}: ${a.name} (${additivePeriodLabel(a)})`);
-                b.additiveExecLog.push({ id: uid(), date, additiveId: a.id, type, name: a.name, qty, unit: doseUnit });
+                b.additiveExecLog.push({ id: uid(), date, additiveId: a.id, type, name: a.name, qty, unit: doseUnit,
+                    enteredBy: currentRole === 'worker' && currentWorker ? currentWorker.name : 'المالك', enteredAt: new Date().toISOString() });
                 persist();
                 render();
                 showToast(`✅ تم تنفيذ "${a.name}" وخصم ${fmt(convQty,2)} ${it.unit} من المخزن (${date})${periodFallbackNote}`);
@@ -10399,6 +10524,16 @@
                     reasons.push(`"${additiveAnalysis.flagged.name}" مرتبطة بـ${r0 === 'weight' ? 'وزن أضعف' : r0 === 'fcr' ? 'معدل تحويل أسوأ' : 'نفوق أعلى'} وقت سريانها`);
                 }
                 if (vaccineImpact && vaccineImpact.flagged) { score += 10; reasons.push(`نفوق مرتفع بعد تحصين "${vaccineImpact.flagged.name}" (يوم ${vaccineImpact.flagged.doneAge})`); }
+                // --- إشارة إضافية: عمر النهاردة واقع فى نطاق نمط معروف من "قاعدة معرفة الحوادث" (تكرر فى دورتين سابقتين فأكتر) ---
+                {
+                    const kbNow = computeIncidentKnowledgeBase(b.species);
+                    const hit = kbNow && kbNow.filter(e => e.ageCenter <= m.todayAge && e.ageCenter >= m.todayAge - 2).sort((a, c) => c.cyclesAffected - a.cyclesAffected)[0];
+                    if (hit) {
+                        score += hit.cyclesAffected >= 3 ? 20 : 12;
+                        const solTxt = hit.bestSolution ? ` — جرّب "${hit.bestSolution.name}" (نجح سابقًا فى ${fmt(hit.bestSolution.successRate*100,0)}%)` : '';
+                        reasons.push(`عمر النهاردة قريب من نمط "${hit.category}" اللي تكرر فى ${hit.cyclesAffected} دورة سابقة${solTxt}`);
+                    }
+                }
                 score = Math.min(score, 100);
                 const level = score >= 50 ? 'danger' : score >= 25 ? 'warn' : 'ok';
                 riskIndex = { score, level, reasons };
@@ -10686,6 +10821,13 @@
                 const { to } = additiveDayRange(a);
                 const candidate = to + a.withdrawalDays;
                 if (withdrawalSafeDay == null || candidate > withdrawalSafeDay) { withdrawalSafeDay = candidate; withdrawalItemName = a.name; }
+            });
+            // إضافات/جرعات خارج الجدول بفترة سحب > 0 — نفس منطق السلامة الغذائية بس الجرعة نقطية (يوم واحد) مش نطاق
+            (b.quickInterventions || []).forEach(qi => {
+                if (!qi.withdrawalDays) return;
+                const doseAge = daysBetween(b.startDate, qi.date);
+                const candidate = doseAge + qi.withdrawalDays;
+                if (withdrawalSafeDay == null || candidate > withdrawalSafeDay) { withdrawalSafeDay = candidate; withdrawalItemName = qi.name; }
             });
             const withdrawalOverride = withdrawalSafeDay != null && withdrawalSafeDay > rawOptimalDay;
             const finalOptimalDay = withdrawalOverride ? withdrawalSafeDay : rawOptimalDay;
@@ -11313,9 +11455,12 @@
             const rules = state.conflictRules || [];
             if (!rules.length) return alerts;
             const age = m.todayAge;
+            const todayDateStr = todayStr();
             const activeItems = [
                 ...(b.feedAdditives || []).filter(a => a.active && additiveActiveOnDay(a, age)).map(a => ({ label: `${esc(a.name)} (إضافة علف)`, text: `${a.name} ${a.notes || ''}` })),
                 ...(b.waterAdditives || []).filter(a => a.active && additiveActiveOnDay(a, age)).map(a => ({ label: `${esc(a.name)} (إضافة ماء)`, text: `${a.name} ${a.notes || ''}` })),
+                // إضافات خارج الجدول المُعطاة النهاردة بالذات — جرعة نقطية فبنعتبرها "سارية" ليوم إعطائها فقط
+                ...(b.quickInterventions || []).filter(qi => qi.date === todayDateStr).map(qi => ({ label: `${esc(qi.name)} (${qi.type === 'water' ? 'إضافة ماء' : 'إضافة علف'} — خارج الجدول)`, text: `${qi.name} ${qi.note || ''}` })),
             ];
             if (activeItems.length < 2) return alerts;
             const today = todayStr();
@@ -11605,6 +11750,12 @@
             }
             (b.feedAdditives || []).forEach(a => checkWithdrawal(a, 'علف'));
             (b.waterAdditives || []).forEach(a => checkWithdrawal(a, 'ماء'));
+            // جرعات خارج الجدول بفترة سحب > 0 — بتتحول لبند نقطي (from=to=يوم الجرعة) وتدخل نفس فحص السلامة الغذائية
+            (b.quickInterventions || []).forEach(qi => {
+                if (!qi.withdrawalDays) return;
+                const doseAge = daysBetween(b.startDate, qi.date);
+                checkWithdrawal({ active: true, name: qi.name, withdrawalDays: qi.withdrawalDays, from: doseAge, to: doseAge }, qi.type === 'water' ? 'ماء (خارج الجدول)' : 'علف (خارج الجدول)');
+            });
             // ===== تنبيه استباقي بالنمط: انخفاض العلف عن المعيار 3 أيام متتالية (إنذار مبكر قبل تفاقم المشكلة) =====
             {
                 // بنستبعد أي يوم لسه نهاره وليله مش مكتملين مع بعض (مثلاً نهار اليوم اتسجل ولسه
@@ -11678,6 +11829,22 @@
                     const ri = insForAlerts.riskIndex;
                     alerts.push({ level: ri.level,
                         text: `🧭 احتمالية مشكلة قادمة ${ri.level === 'danger' ? 'مرتفعة' : 'متوسطة'} (${ri.score}/100) — الأسباب: ${ri.reasons.join('، ') || 'عدة إشارات مجتمعة'}` });
+                }
+            }
+            // ===== تنبيه استباقي من "قاعدة معرفة الحوادث": نمط مشكلة تكرر عبر دوراتك السابقة قريب من العمر الحالي =====
+            {
+                const kb = computeIncidentKnowledgeBase(b.species);
+                if (kb && kb.length) {
+                    const upcoming = kb.filter(e => e.ageCenter >= m.todayAge && e.ageCenter <= m.todayAge + 5)
+                        .sort((a, c) => a.ageCenter - c.ageCenter)[0];
+                    if (upcoming) {
+                        const daysAway = upcoming.ageCenter - m.todayAge;
+                        const solTxt = upcoming.bestSolution
+                            ? ` — الحل اللي نجح غالبًا سابقًا: "${upcoming.bestSolution.name}" (نجح فى ${fmt(upcoming.bestSolution.successRate*100,0)}% من ${upcoming.bestSolution.timesUsed} محاولة)`
+                            : ' — لسه مفيش حل مُثبت مرتبط بهذا النمط فى بياناتك';
+                        alerts.push({ level: 'warn',
+                            text: `🧠 تنبيه من خبرة دوراتك السابقة: "${upcoming.category}" حصل فى ${upcoming.cyclesAffected} من دوراتك حوالي يوم ${upcoming.ageCenter}${daysAway > 0 ? ' (بعد ' + daysAway + ' يوم من عمر النهاردة)' : ' (زي عمر النهاردة تقريبًا)'}${solTxt}` });
+                    }
                 }
             }
             // ===== مؤشر "الاتجاه" خلال آخر أيام: فرق كبير بين مؤشر "مرتفع ومستقر" ومؤشر "مرتفع وبيزيد" — نفس القيمة الحالية ممكن يكون معناها مختلف تمامًا =====
@@ -12808,6 +12975,16 @@
         }
 
         // ============ Daily Tab ============
+        let dailyEventsSubTab = 'additives';
+        function setDailyEventsSubTab(id) { dailyEventsSubTab = id; render(); }
+        // فتح قسم "سجلات وأحداث إضافية" على تبويب فرعي مُحدَّد من زرار إجراء سريع — لازم كمان نجبر القسم يكون مفتوح
+        // (مش بس نبدّل التبويب الداخلي) لأن قسم الأحداث ثاني قسم فى الصفحة وبيتقفل تلقائيًا افتراضيًا لو المستخدم لسه ماخصصش حاجة
+        function openDailyEventsSubTab(id) {
+            dailyEventsSubTab = id;
+            toggleSectionOpen('daily', DAILY_EVENTS_SECTION_KEY, true, 'السجل اليومي (نهار / ليل)');
+            render();
+        }
+
         function renderDailyTab(b, m) {
             const todayRec = b.records.find(r => r.date === todayStr());
             const dayDone = !!(todayRec && (todayRec.feedDay != null || todayRec.mortDay != null));
@@ -12816,17 +12993,16 @@
                 <div style="text-align:center;font-size:12.5px;">☀️ نهار اليوم<br><b style="color:${dayDone?'var(--green)':'var(--red)'};">${dayDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
                 <div style="text-align:center;font-size:12.5px;">🌙 ليل اليوم<br><b style="color:${nightDone?'var(--green)':'var(--red)'};">${nightDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
             </div>`;
-            const quickBtns = statusCard + `<div class="row-actions" style="margin:0 0 12px;">
-                <button class="btn gold" style="flex:1;" onclick="openDailyModal('day')">☀️ تسجيل النهار</button>
-                <button class="btn ghost" style="flex:1;background:#eef1f6;" onclick="openDailyModal('night')">🌙 تسجيل الليل</button>
-            </div>
-            <div class="row-actions" style="margin:0 0 12px;">
-                <button class="btn ghost block" style="background:#e7f5ec;color:#1c6b3f;" onclick="shareWhatsapp()">📲 مشاركة ملخص اليوم على واتساب</button>
-            </div>
-            <div class="row-actions" style="margin:0 0 12px;">
-                <button class="btn" style="flex:1;background:#fff4e0;color:#8a5a12;border:1.5px solid #e0b45c;" onclick="openQuickIntModal()">➕ إضافة علف أو مياه خارج الجدول</button>
+            // إجراءات سريعة مجمّعة فى بطاقة واحدة بدل صفوف منفصلة متناثرة
+            const quickBtns = statusCard + `<div class="card" style="margin:0 0 12px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <button class="btn gold" onclick="openDailyModal('day')">☀️ تسجيل النهار</button>
+                <button class="btn ghost" style="background:#eef1f6;" onclick="openDailyModal('night')">🌙 تسجيل الليل</button>
+                <button class="btn" style="background:#fff4e0;color:#8a5a12;border:1.5px solid #e0b45c;" onclick="openQuickIntModal()">➕ إضافة خارج الجدول</button>
+                <button class="btn" style="background:#fdecec;color:#9c2b2b;border:1.5px solid #e5a3a3;" onclick="openIncidentModal()">📓 تسجيل حادثة</button>
+                <button class="btn ghost" onclick="openDailyEventsSubTab('biosecurity')">🛡️ أمان حيوي سريع</button>
+                <button class="btn ghost" style="background:#e7f5ec;color:#1c6b3f;" onclick="shareWhatsapp()">📲 مشاركة واتساب</button>
             </div>`;
-            if (b.records.length === 0) return quickBtns + renderQuickInterventionsSection(b) + `<div class="card empty"><div class="ico">📋</div>لا توجد سجلات يومية بعد. سجّل قراءة النهار أو الليل من الأزرار أعلاه.</div>`;
+            if (b.records.length === 0) return quickBtns + renderDailyEventsSection(b) + `<div class="card empty"><div class="ico">📋</div>لا توجد سجلات يومية بعد. سجّل قراءة النهار أو الليل من الأزرار أعلاه.</div>`;
             const realDates = new Set(b.records.map(r => r.date));
             const dn = (d, n, unit) => (d == null && n == null) ? '—' : `☀️${d != null ? fmt(d,1) : '—'} / 🌙${n != null ? fmt(n,1) : '—'}${unit ? ' ' + unit : ''}`;
             const dnInt = (d, n) => (d == null && n == null) ? '—' : `☀️${d ?? 0} / 🌙${n ?? 0}`;
@@ -12847,16 +13023,101 @@
                     <span id="dailyRecordsBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
                 </div>
                 <div class="card scroll-x"><table><thead><tr><th>العمر</th><th>التاريخ</th><th>نفوق ☀️/🌙</th><th>المتبقي</th><th>علف ☀️/🌙</th><th>ماء ☀️/🌙</th><th>وزن</th><th>FCR</th><th>حرارة ☀️/🌙</th><th>رطوبة ☀️/🌙</th><th>صحة</th><th>إضاءة</th><th>تحليل تلقائي</th><th>ملاحظات</th><th></th></tr></thead>
-                <tbody id="dailyRecordsBody">${rows}</tbody></table></div></div>
-                <div class="section"><div class="card"><div class="formula-box">
+                <tbody id="dailyRecordsBody">${rows}</tbody></table></div>
+                <details style="margin-top:8px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;font-size:12.5px;">ℹ️ الصيغ وطريقة التسجيل</summary>
+                <div class="formula-box">
                     FCR = إجمالي العلف ÷ (الكتلة الحيوية الحالية − الكتلة الحيوية الابتدائية)<br>
                     ADG = (الوزن الحالي − وزن البداية) ÷ عمر القطيع بالأيام<br>
                     💡 برنامج الإضاءة المُوصى به عمومًا: الأسبوع الأول 23 ساعة إضاءة / 1 ساعة إظلام، ثم تدريجيًا حتى 18-20 ساعة إضاءة / 4-6 ساعات إظلام.<br>
                     كل كمية علف تُسجَّل هنا (نهار + ليل) تُخصم تلقائيًا من مخزون "علف". التحليل التلقائي يقارن قراءتى النهار والليل لرصد أى تفاوت قد يشير لمشكلة تهوية أو تدفئة.<br>
                     💡 سجّل النهار عند جولة الصباح، وسجّل الليل عند جولة المساء — كل زر يفتح نموذجًا مختصرًا بحقول القسم المطلوب فقط، وتُجمَّع البيانات تلقائيًا فى سجل يوم واحد. اضغط "تعديل" لعرض/تصحيح السجل الكامل (نهار + ليل معًا).
-                </div></div></div>
-                <div class="section" style="margin-top:0;">${renderQuickInterventionsSection(b)}</div>
-                <div class="section" style="margin-top:0;">${renderOpsSections(b, m)}</div>`;
+                </div></details>
+            </div>
+            ${renderDailyEventsSection(b)}`;
+        }
+
+        // ============ سجلات وأحداث إضافية اليوم (إضافات خارج الجدول / حوادث / أمان حيوي) — قسم واحد بتبويبات فرعية ============
+        // بديل عن 3 أقسام منفصلة متناثرة، كل واحد بعنوانه ومقدمته وزرّاره — دلوقتي كله فى مكان واحد
+        const DAILY_EVENTS_SECTION_KEY = '📓 سجلات وأحداث إضافية';
+        function renderDailyEventsSection(b) {
+            const tabs = [
+                { id: 'additives', label: `➕ إضافات خارج الجدول (${(b.quickInterventions||[]).length})` },
+                { id: 'incidents', label: `📓 حوادث (${(b.incidents||[]).length})` },
+                { id: 'biosecurity', label: `🛡️ أمان حيوي (${(b.biosecurityLog||[]).length})` },
+            ];
+            const nav = `<div class="settings-subnav">${tabs.map(t => `<button class="ssnav-btn ${dailyEventsSubTab===t.id?'active':''}" onclick="setDailyEventsSubTab('${t.id}')">${t.label}</button>`).join('')}</div>`;
+            let body = '';
+            if (dailyEventsSubTab === 'additives') {
+                const list = [...(b.quickInterventions || [])].sort((a, c) => c.dateTime.localeCompare(a.dateTime)).slice(0, 20);
+                const rows = list.map(it => `<div class="check-row"><div class="txt">
+                        <div style="font-weight:800;">${it.type === 'feed' ? '🌾' : '💧'} ${esc(it.name || '')} — ${fmt(it.qty,2)} ${it.unit}</div>
+                        <div class="day">${it.dateTime.replace('T',' الساعة ')} · ${esc(it.reason || '')}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
+                        ${it.note ? `<div style="font-size:11px;color:var(--muted);">${esc(it.note)}</div>` : ''}
+                    </div>
+                    <button class="btn danger sm" onclick="deleteQuickIntervention('${it.id}')">حذف</button>
+                </div>`).join('');
+                body = `<p style="font-size:11px;color:var(--muted);margin:8px 0;line-height:1.6;">أي إضافة أو مكمل تضيفه فعليًا على العلف أو فى الماء بشكل طارئ خارج برنامج الإضافات المجدول.</p>
+                    <button class="btn gold block" onclick="openQuickIntModal()">➕ إضافة الآن</button>
+                    ${list.length ? `<div class="card" style="margin-top:8px;">${rows}</div>` : `<div class="card empty" style="padding:14px;margin-top:8px;"><div class="ico">➕</div>لا توجد إضافات خارج الجدول مسجَّلة بعد.</div>`}`;
+            } else if (dailyEventsSubTab === 'incidents') {
+                const list = [...(b.incidents || [])].sort((a, c) => c.date.localeCompare(a.date)).slice(0, 15);
+                const rows = list.map(it => `<div class="check-row"><div class="txt">
+                        <div style="font-weight:800;">${INCIDENT_SEVERITY_LABEL[it.severity] || ''} ${esc(it.category)} — ${esc(it.title)}</div>
+                        <div class="day">يوم ${it.age} (${it.date})${it.solution ? ' · الحل: ' + esc(it.solution) : ''} · ${INCIDENT_OUTCOME_LABEL[it.outcome] || ''}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
+                        ${it.notes ? `<div style="font-size:11px;color:var(--muted);">${esc(it.notes)}</div>` : ''}
+                    </div>
+                    <button class="btn danger sm" onclick="deleteIncident('${it.id}')">حذف</button>
+                </div>`).join('');
+                body = `<p style="font-size:11px;color:var(--muted);margin:8px 0;line-height:1.6;">سجّل أي حادثة أثّرت على الدفعة والحل ونتيجته — تدخل تلقائيًا فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
+                    <div class="row-actions" style="margin:0;">
+                        <button class="btn gold" style="flex:1;" onclick="openIncidentModal()">📓 تسجيل حادثة</button>
+                        <button class="btn ghost" style="flex:1;" onclick="openIncidentKbModal()">🧠 قاعدة المعرفة</button>
+                    </div>
+                    ${list.length ? `<div class="card" style="margin-top:8px;">${rows}</div>` : `<div class="card empty" style="padding:14px;margin-top:8px;"><div class="ico">📓</div>لا توجد حوادث مُسجَّلة بعد.</div>`}`;
+            } else if (dailyEventsSubTab === 'biosecurity') {
+                const today = todayStr();
+                const bioTypes = ['👨‍⚕️ زيارة طبيب بيطري', '🚗 دخول زائر', '🚙 دخول مركبة/سيارة', '🧴 تطهير ورش مطهرات', '🚪 تعقيم مدخل العنبر', '🐀 مكافحة قوارض/حشرات', '📌 أخرى'];
+                const bioRows = [...b.biosecurityLog].sort((a,c)=>c.date.localeCompare(a.date)).slice(0, 15).map(e => `
+                    <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}" style="font-size:9.5px;">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td style="text-align:right;">${esc(e.type)}${e.photo ? ` <button class="btn ghost sm" style="padding:2px 6px;" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td style="text-align:right;font-size:11px;color:var(--muted);">${esc(e.note)||''}</td>
+                    <td><button class="btn ghost sm owner-only" onclick="editBiosecurity('${e.id}')">✏️</button> <button class="btn danger sm owner-only" onclick="deleteBiosecurity('${e.id}')">حذف</button></td></tr>`).join('');
+                const bioBeforePhotos = b.biosecurityLog.filter(e => e.stage === 'before' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
+                const bioAfterPhotos = b.biosecurityLog.filter(e => e.stage === 'after' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
+                const cleaningCompareHtml = (bioBeforePhotos.length && bioAfterPhotos.length) ? `
+                    <div class="card" style="margin-top:10px;">
+                        <div style="font-weight:800;font-size:13px;margin-bottom:8px;">🧽 آخر مقارنة قبل/بعد التنظيف والتطهير</div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <div style="text-align:center;"><img src="${bioBeforePhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">قبل — ${bioBeforePhotos[0].date}</div></div>
+                            <div style="text-align:center;"><img src="${bioAfterPhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">بعد — ${bioAfterPhotos[0].date}</div></div>
+                        </div>
+                    </div>` : '';
+                body = `<p style="font-size:11px;color:var(--muted);margin:8px 0;">سجّل زيارة طبيب، دخول زوار/مركبة، أو حدث تطهير بضغطة واحدة.</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                        ${bioTypes.map((t,i) => `<button type="button" class="btn ghost sm bio-chip" data-idx="${i}" onclick="selectBioChip(${i})" style="border-radius:20px;">${t}</button>`).join('')}
+                    </div>
+                    <select id="bio_type" style="display:none;">${bioTypes.map(t => `<option>${t.replace(/^\S+\s/,'')}</option>`).join('')}</select>
+                    <div id="bioExtraFields" style="display:none;">
+                        <div class="form-grid" style="margin-top:8px;">
+                            <div class="field"><label>التاريخ</label><input id="bio_date" type="date" value="${today}"></div>
+                            <div class="field"><label>المرحلة (لو تنظيف/تطهير)</label>
+                                <select id="bio_stage"><option value="">غير محدد</option><option value="before">📷 قبل التنظيف</option><option value="after">📷 بعد التنظيف</option></select>
+                            </div>
+                            <div class="field full"><label>ملاحظة</label><input id="bio_note" placeholder="اختياري"></div>
+                            <div class="field full"><label>صورة توثيقية (اختياري)</label>
+                                <input type="file" id="bio_photo_input" accept="image/*" capture="environment" onchange="handleBioPhotoUpload(event)">
+                                <div id="bio_photo_preview" style="margin-top:6px;"></div>
+                            </div>
+                        </div>
+                        <button class="btn gold block" id="bioSaveBtn" style="margin-top:8px;" onclick="saveBiosecurity()">+ تسجيل الحدث</button>
+                    </div>
+                    <div class="card scroll-x" style="margin-top:8px;">
+                        ${bioRows ? `<table><thead><tr><th>التاريخ</th><th>النوع</th><th>ملاحظة</th><th></th></tr></thead><tbody>${bioRows}</tbody></table>`
+                        : `<div class="empty"><div class="ico">🛡️</div>لا توجد سجلات أمان حيوي بعد.</div>`}
+                        ${cleaningCompareHtml}
+                    </div>`;
+            }
+            return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>${DAILY_EVENTS_SECTION_KEY}</h2></div>
+                ${nav}${body}
+            </div>`;
         }
 
         // ============ Inventory + Purchases + Sales (مدمج) ============
@@ -13037,6 +13298,9 @@
                 <div class="row-actions" style="margin:0 0 12px;">
                     <button class="btn ghost sm owner-only" style="flex:1;" onclick="document.getElementById('feedCalcModalOverlay').classList.add('show')">🧮 حاسبة تكوين العلف</button>
                     <button class="btn ghost sm owner-only" style="flex:1;" onclick="openProtocolModal()">🧬 بروتوكولات محفوظة</button>
+                </div>
+                <div class="row-actions" style="margin:0 0 12px;">
+                    <button class="btn ghost sm owner-only block" onclick="openIncidentKbModal()">🧠 قاعدة معرفة الحوادث</button>
                 </div>
             </div>
             ${feedStageCard}
@@ -13284,6 +13548,26 @@
             { key: 'mulard', label: 'بط مولر', icon: '🦆' },
         ];
         function expansionSpeciesLabel(key) { const s = EXPANSION_SPECIES_LIST.find(x => x.key === key); return s ? `${s.icon} ${s.label}` : (key || '—'); }
+
+        // ============ تحذيرات من "قاعدة معرفة الحوادث" قبل الدخول/التوسع فى نوع مُعيّن — بتظهر أعلى تبويب التوسع ============
+        function renderExpansionIncidentWarnings(species) {
+            const kb = computeIncidentKnowledgeBase(species);
+            if (!kb || !kb.length) return '';
+            const top = kb.slice(0, 5);
+            return `<div class="section">
+                <div class="section-head"><h2>⚠️ خبرة دوراتك السابقة قبل ما تكمّل التوسع فى ${expansionSpeciesLabel(species)}</h2></div>
+                <div class="card" style="padding:0;">` + top.map(e => {
+                    const solTxt = e.bestSolution
+                        ? `الحل اللي نجح غالبًا: <b>${esc(e.bestSolution.name)}</b> (${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة)`
+                        : 'لسه مفيش حل مُثبت مرتبط بهذا النمط';
+                    return `<div class="check-row"><div class="txt">
+                        <div style="font-weight:800;">${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
+                        <div class="day">تكرر فى ${e.cyclesAffected} من دوراتك المؤرشفة — ${solTxt}</div>
+                    </div></div>`;
+                }).join('') + `</div>
+                <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 قبل ما تحجز عنبر/رأس مال إضافي لهذا النوع، جهّز خطة لمواجهة هذه الأنماط — التفاصيل الكاملة فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
+            </div>`;
+        }
 
         const DEFAULT_EXPANSION_INPUTS = {
             minHouseCapacity: 10000, targetHouseCount: 10, stockingIntervalDays: 3, capacityMultiplier: 2,
@@ -13668,6 +13952,7 @@
                     <p style="font-size:10.5px;color:var(--muted);margin:0;">💾 كل الأرقام تحت (سعة العنبر/رأس المال/الأمهات/العلف...) بتتحفظ لكل نوع لوحده — تقدر تنقّل بين الأنواع من غير ما تفقد بيانات أي نوع تاني.</p>
                 </div>
             </div>
+            ${renderExpansionIncidentWarnings(species)}
             <div class="section">
                 <div class="section-head"><h2>📋 الأساسيات — ${expansionSpeciesLabel(species)}</h2></div>
                 <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -14185,66 +14470,6 @@
 
 
         // ============ Operations & Biosecurity Tab ============
-        function renderOpsSections(b, m) {
-            const today = todayStr();
-
-            const bioRows = [...b.biosecurityLog].sort((a,c)=>c.date.localeCompare(a.date)).map(e => `
-                <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}" style="font-size:9.5px;">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td style="text-align:right;">${esc(e.type)}${e.photo ? ` <button class="btn ghost sm" style="padding:2px 6px;" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td style="text-align:right;font-size:11px;color:var(--muted);">${esc(e.note)||''}</td>
-                <td><button class="btn ghost sm owner-only" onclick="editBiosecurity('${e.id}')">✏️</button> <button class="btn danger sm owner-only" onclick="deleteBiosecurity('${e.id}')">حذف</button></td></tr>`).join('');
-            // مقارنة "قبل/بعد" التنظيف — لو فيه صورتين موسومتين لنفس دورة التنظيف قريبتين زمنيًا
-            const bioBeforePhotos = b.biosecurityLog.filter(e => e.stage === 'before' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
-            const bioAfterPhotos = b.biosecurityLog.filter(e => e.stage === 'after' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
-            const cleaningCompareHtml = (bioBeforePhotos.length && bioAfterPhotos.length) ? `
-                <div class="card" style="margin-top:10px;">
-                    <div style="font-weight:800;font-size:13px;margin-bottom:8px;">🧽 آخر مقارنة قبل/بعد التنظيف والتطهير</div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <div style="text-align:center;"><img src="${bioBeforePhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">قبل — ${bioBeforePhotos[0].date}</div></div>
-                        <div style="text-align:center;"><img src="${bioAfterPhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">بعد — ${bioAfterPhotos[0].date}</div></div>
-                    </div>
-                </div>` : '';
-
-            const bioTypes = ['👨‍⚕️ زيارة طبيب بيطري', '🚗 دخول زائر', '🚙 دخول مركبة/سيارة', '🧴 تطهير ورش مطهرات', '🚪 تعقيم مدخل العنبر', '🐀 مكافحة قوارض/حشرات', '📌 أخرى'];
-
-            return `
-            <div class="section" style="margin-top:0;"><div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-                <div style="font-size:12.5px;">🌾 العلف والماء والبيئة والصحة بقوا فى تبويب "🌾 الإنتاج"</div>
-                <button class="btn gold sm" onclick="setTab('production')">فتح تبويب الإنتاج →</button>
-            </div></div>
-
-            <div class="section"><div class="card">
-                <h2 style="margin:0 0 8px;color:var(--barn-dark);">🛡️ نقطة أمان حيوي سريعة</h2>
-                <p style="font-size:11.5px;color:var(--muted);margin-top:0 0 8px;">سجّل زيارة طبيب، دخول زوار/مركبة، أو حدث تطهير بضغطة واحدة.</p>
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-                    ${bioTypes.map((t,i) => `<button type="button" class="btn ghost sm bio-chip" data-idx="${i}" onclick="selectBioChip(${i})" style="border-radius:20px;">${t}</button>`).join('')}
-                </div>
-                <select id="bio_type" style="display:none;">${bioTypes.map(t => `<option>${t.replace(/^\S+\s/,'')}</option>`).join('')}</select>
-                <div id="bioExtraFields" style="display:none;">
-                    <div class="form-grid" style="margin-top:8px;">
-                        <div class="field"><label>التاريخ</label><input id="bio_date" type="date" value="${today}"></div>
-                        <div class="field"><label>المرحلة (لو تنظيف/تطهير)</label>
-                            <select id="bio_stage"><option value="">غير محدد</option><option value="before">📷 قبل التنظيف</option><option value="after">📷 بعد التنظيف</option></select>
-                        </div>
-                        <div class="field full"><label>ملاحظة</label><input id="bio_note" placeholder="اختياري"></div>
-                        <div class="field full"><label>صورة توثيقية (اختياري)</label>
-                            <input type="file" id="bio_photo_input" accept="image/*" capture="environment" onchange="handleBioPhotoUpload(event)">
-                            <div id="bio_photo_preview" style="margin-top:6px;"></div>
-                        </div>
-                    </div>
-                    <button class="btn gold block" id="bioSaveBtn" style="margin-top:8px;" onclick="saveBiosecurity()">+ تسجيل الحدث</button>
-                </div>
-            </div></div>
-            <div class="section"><div class="card scroll-x">
-                ${b.biosecurityLog.length ? `<table><thead><tr><th>التاريخ</th><th>النوع</th><th>ملاحظة</th><th></th></tr></thead><tbody>${bioRows}</tbody></table>`
-                : `<div class="empty"><div class="ico">🛡️</div>لا توجد سجلات أمان حيوي بعد.</div>`}
-                ${cleaningCompareHtml}
-            </div></div>
-
-            <div class="section"><div class="card">
-                <h2 style="margin:0 0 8px;color:var(--barn-dark);">✅ تشيك ليست العمليات اليومية</h2>
-                <p style="font-size:11.5px;color:var(--muted);margin-top:0;">تنفيذ بنود اليوم بقى فى "تسجيل بيانات اليوم" مباشرة — وتعديل/إضافة بنود القالب بقى فى ⚙️ الإعدادات ← 🐔 المزرعة.</p>
-            </div></div>`;
-        }
-
         // اختيار نوع حدث الأمان الحيوي من الأزرار السريعة (chips) وفتح باقي الحقول تلقائيًا
         function selectBioChip(idx) {
             const sel = document.getElementById('bio_type');
@@ -14648,10 +14873,28 @@
                 const items = [
                     ...(b.feedAdditives || []).map(a => ({ ...a, kind: 'علف' })),
                     ...(b.waterAdditives || []).map(a => ({ ...a, kind: 'ماء' })),
+                    // إضافات/مكملات خارج الجدول (جرعة لحظية) — بتتحول لنافذة 3 أيام (يوم الجرعة + يومين بعدها)
+                    // عشان تدخل نفس محرك تحليل الفايدة اللي بيقارن أيام السريان بأيام عدم السريان
+                    ...(b.quickInterventions || []).filter(qi => qi.name).map(qi => {
+                        const age = daysBetween(b.startDate, qi.date);
+                        return { name: qi.name, from: age, to: age + 2, kind: qi.type === 'water' ? 'ماء' : 'علف' };
+                    }),
                 ];
                 items.forEach(a => {
-                    const activeDays = dailyPerf.filter(d => additiveActiveOnDay(a, d.age));
-                    const inactiveDays = dailyPerf.filter(d => !additiveActiveOnDay(a, d.age));
+                    // ============ سريان فعلي (من additiveExecLog) بدل السريان المخطط، لو متاح كفاية بيانات ============
+                    // البند المجدول (feedAdditives/waterAdditives) وليه id بنقارن أيام السريان الحقيقية (تنفيذ فعلي مسجَّل)
+                    // بدل افتراض إن كل يوم داخل نطاق الجدول = سريان. لو التنفيذ الفعلي أقل من عتبة موثوقة (تأخير/تفويت/دفعة
+                    // قديمة قبل وجود سجل تنفيذ)، نرجع لسلوك النطاق المخطط القديم كـfallback بدل ما البند يختفي من التحليل.
+                    let activeAges = null;
+                    if (a.id) {
+                        const execAges = [...new Set((b.additiveExecLog || [])
+                            .filter(e => e.additiveId === a.id)
+                            .map(e => daysBetween(b.startDate, e.date)))];
+                        if (execAges.length >= 3) activeAges = new Set(execAges);
+                    }
+                    const isActive = activeAges ? (age => activeAges.has(age)) : (age => additiveActiveOnDay(a, age));
+                    const activeDays = dailyPerf.filter(d => isActive(d.age));
+                    const inactiveDays = dailyPerf.filter(d => !isActive(d.age));
                     if (activeDays.length < 3 || inactiveDays.length < 3) return; // مش كفاية بيانات فى هذه الدورة تحديدًا
                     const stage = dominantStageLabel(activeDays) || '—';
                     const key = a.name + ' (' + a.kind + ') · ' + stage;
@@ -15352,33 +15595,26 @@
         // (تمت إزالة نظام "المعدات وساعات التشغيل والصيانة" بالكامل — كان يشمل عداد ساعات تشغيل يدوي
         // وجدولة صيانة دورية بالساعات/التاريخ. الميزة كانت مستقلة ولا يعتمد عليها أي تبويب آخر.)
 
-        // ============ إضافة علف/مياه خارج الجدول: تسجيل كمية بوقت فعلي غير مواعيد النهار/الليل المعتادة ============
+        // ============ إضافة/مكمل خارج الجدول: تسجيل إضافة (فيتامين/إلكتروليت/دواء...) توضع على العلف أو فى الماء
+        // بشكل طارئ خارج برنامج الإضافات المجدول — بوقت فعلي، مع خصم من المخزون مثل البرنامج المجدول ============
         let quickIntType = 'feed';
         function setQuickIntType(type) {
             quickIntType = type;
             document.getElementById('qi_btn_feed').className = 'btn ' + (type === 'feed' ? 'gold' : 'ghost');
             document.getElementById('qi_btn_water').className = 'btn ' + (type === 'water' ? 'gold' : 'ghost');
-            document.getElementById('qi_feedItemField').style.display = type === 'feed' ? '' : 'none';
-            document.getElementById('qi_unit').value = type === 'feed' ? 'كجم' : 'لتر';
-        }
-        function populateQuickIntFeedSelect() {
-            const b = getActiveBatch();
-            const sel = document.getElementById('qi_feedItem');
-            if (!b || !sel) return;
-            const feedItems = b.inventory.filter(i => i.category === 'علف');
-            if (!feedItems.some(i => i.name === 'علف')) feedItems.unshift({ name: 'علف', balance: 0 });
-            sel.innerHTML = feedItems.map(i => `<option value="${esc(i.name)}">${esc(i.name)} (الرصيد: ${fmt(i.balance,1)} كجم)</option>`).join('');
         }
         function openQuickIntModal() {
             const b = getActiveBatch();
             if (!b) { showToast('⚠️ فعّل دفعة نشطة أولاً'); return; }
-            populateQuickIntFeedSelect();
             setQuickIntType('feed');
+            document.getElementById('qi_name').value = '';
             document.getElementById('qi_qty').value = '';
-            document.getElementById('qi_reason').value = 'زيادة عن الكمية المعتادة';
+            document.getElementById('qi_unit').value = 'جم';
+            document.getElementById('qi_reason').value = 'موجة إجهاد حراري';
             document.getElementById('qi_reasonOther').value = '';
             document.getElementById('qi_reasonOtherField').style.display = 'none';
             document.getElementById('qi_note').value = '';
+            document.getElementById('qi_withdrawal').value = 0;
             // وقت الإضافة يتعبّى تلقائيًا باللحظة الحالية (محليًا) — قابل للتعديل لو كان التسجيل بأثر رجعي بعد الإضافة الفعلية
             const now = new Date();
             const tzOffsetMs = now.getTimezoneOffset() * 60000;
@@ -15389,6 +15625,8 @@
         function saveQuickIntervention() {
             const b = getActiveBatch();
             if (!b) return;
+            const name = document.getElementById('qi_name').value.trim();
+            if (!name) { showToast('⚠️ اكتب اسم الإضافة/المكمل'); return; }
             const qty = parseFloat(document.getElementById('qi_qty').value) || 0;
             if (qty <= 0) { showToast('⚠️ اكتب كمية أكبر من صفر'); return; }
             const unit = document.getElementById('qi_unit').value;
@@ -15397,60 +15635,313 @@
             const reasonSel = document.getElementById('qi_reason').value;
             const reason = reasonSel === 'أخرى' ? (document.getElementById('qi_reasonOther').value.trim() || 'أخرى') : reasonSel;
             const note = document.getElementById('qi_note').value.trim();
-            const feedItem = document.getElementById('qi_feedItem').value || 'علف';
+            const withdrawalDays = parseInt(document.getElementById('qi_withdrawal').value) || 0;
             const dateOnly = dtVal.slice(0, 10);
-            const finish = () => {
+            const finish = (finalUnit) => {
                 const rec = {
-                    id: uid(), type: quickIntType, dateTime: dtVal, date: dateOnly, qty, unit,
-                    feedItem: quickIntType === 'feed' ? feedItem : null, reason, note,
+                    id: uid(), type: quickIntType, dateTime: dtVal, date: dateOnly, qty, unit: finalUnit || unit,
+                    name, reason, note, withdrawalDays,
                     enteredBy: currentRole === 'worker' && currentWorker ? currentWorker.name : 'المالك',
                     enteredAt: new Date().toISOString(),
                 };
                 b.quickInterventions.push(rec);
-                logAudit(b, `➕ إضافة خارج الجدول: ${quickIntType === 'feed' ? '🌾 علف' : '💧 مياه'} ${fmt(qty,1)} ${unit}${quickIntType==='feed'?' ('+feedItem+')':''} — ${reason}`);
+                logAudit(b, `➕ إضافة/مكمل خارج الجدول: ${name} ${fmt(qty,2)} ${unit} — ${quickIntType === 'feed' ? '🌾 على العلف' : '💧 فى الماء'} — ${reason}${withdrawalDays > 0 ? ` — ⚠️ فترة سحب ${withdrawalDays} يوم` : ''}`);
                 persist();
                 closeModal('quickIntModalOverlay');
                 showToast('✅ تم تسجيل الإضافة');
                 render();
             };
-            if (quickIntType === 'feed') {
-                const it = ensureInvItem(b, feedItem, 'علف', 'كجم');
-                confirmIfShort(feedItem, 'كجم', it.balance, qty, 'كإضافة خارج الجدول', () => {
-                    stockOutByItem(b, it.id, qty, dateOnly, 'إضافة خارج الجدول');
-                    finish();
-                });
-            } else {
-                finish();
+            // الخصم من المخزون بنفس منطق برنامج الإضافات المجدول (تصنيف "إضافات" + تحويل وحدات تلقائي)
+            const { it, qty: convQty } = resolveInvQty(b, name, 'إضافات', qty, unit);
+            if (convQty == null) {
+                showToast(`⚠️ وحدة "${unit}" لا تتوافق مع وحدة "${it.name}" المسجلة بالمخزن "${it.unit}" — لا يمكن الخصم تلقائيًا. صحّح الوحدة أو راجع المخزون.`);
+                return;
             }
+            confirmIfShort(name, it.unit, it.balance, convQty, 'كإضافة خارج الجدول', () => {
+                stockOutByItem(b, it.id, convQty, dateOnly, `إضافة خارج الجدول - ${name}`);
+                finish(unit);
+            });
         }
         function deleteQuickIntervention(id) {
             const b = getActiveBatch();
             if (!b) return;
             const it = (b.quickInterventions || []).find(x => x.id === id);
-            showConfirm('حذف هذه الإضافة؟ يمكن استرجاعها لاحقًا من سلة المهملات (لن تُعاد كمية العلف المخصومة تلقائيًا للمخزون).', () => {
+            showConfirm('حذف هذه الإضافة؟ يمكن استرجاعها لاحقًا من سلة المهملات (لن تُعاد الكمية المخصومة تلقائيًا للمخزون).', () => {
                 b.quickInterventions = b.quickInterventions.filter(x => x.id !== id);
-                if (it) softDeleteToTrash(b, 'quickIntervention', it, `🗑️ حذف إضافة خارج الجدول (${it.type === 'feed' ? 'علف' : 'مياه'} ${fmt(it.qty,1)} ${it.unit})`);
+                if (it) softDeleteToTrash(b, 'quickIntervention', it, `🗑️ حذف إضافة خارج الجدول (${esc(it.name || '')} ${fmt(it.qty,1)} ${it.unit})`);
                 persist();
                 render();
             });
         }
-        // آخر 20 إضافة علف/مياه خارج الجدول — تُعرض فى تبويب التسجيل اليومي منفصلة عن جدول النهار/الليل المعتاد
-        function renderQuickInterventionsSection(b) {
-            const list = [...(b.quickInterventions || [])].sort((a, c) => c.dateTime.localeCompare(a.dateTime)).slice(0, 20);
-            const rows = list.map(it => `<div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">${it.type === 'feed' ? '🌾 علف' : '💧 مياه'} ${fmt(it.qty,1)} ${it.unit}${it.type==='feed' && it.feedItem ? ' — ' + esc(it.feedItem) : ''}</div>
-                    <div class="day">${it.dateTime.replace('T',' الساعة ')} · ${esc(it.reason || '')}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
-                    ${it.note ? `<div style="font-size:11px;color:var(--muted);">${esc(it.note)}</div>` : ''}
-                </div>
-                <button class="btn danger sm" onclick="deleteQuickIntervention('${it.id}')">حذف</button>
-            </div>`).join('');
-            return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>➕ إضافات علف/مياه خارج الجدول</h2><span class="tag">${(b.quickInterventions||[]).length}</span></div>
-                <div class="card" style="padding:8px 10px;margin-bottom:8px;">
-                    <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">أي كمية علف أو مياه تضيفها فعليًا فى وقت غير مواعيد تسجيل النهار/الليل المعتادة — تُسجَّل هنا بوقتها الحقيقي منفصلة عن السجل اليومي.</p>
-                    <button class="btn gold block" onclick="openQuickIntModal()">➕ إضافة الآن</button>
-                </div>
-                ${list.length ? `<div class="card">${rows}</div>` : `<div class="card empty" style="padding:14px;"><div class="ico">➕</div>لا توجد إضافات خارج الجدول مسجَّلة بعد.</div>`}
-            </div>`;
+        // (تعرض قائمة آخر إضافات/حوادث خارج الجدول دلوقتي جوه القسم الموحّد renderDailyEventsSection فى تبويب التسجيل اليومي)
+
+        // ============ تسجيل الحوادث اليدوي + قاعدة معرفة الحوادث (اكتشاف تلقائي من الأرقام + حوادث يدوية) ============
+        // الفكرة: نبني من دوراتك المؤرشفة "بنود خبرة" — نمط تكرر عبر أكتر من دورة (نوع مشكلة + نطاق عمر) مع
+        // أفضل حل أثبت نجاحه فيها — ونستخدمها لتنبيهك قبل الوقت المتوقع للمشكلة فى الدفعة الحالية.
+        function openIncidentModal() {
+            const b = getActiveBatch();
+            if (!b) { showToast('⚠️ فعّل دفعة نشطة أولاً'); return; }
+            document.getElementById('ic_date').value = todayStr();
+            document.getElementById('ic_date').max = todayStr();
+            document.getElementById('ic_category').value = 'نفوق مرتفع';
+            document.getElementById('ic_severity').value = 'negative_med';
+            document.getElementById('ic_title').value = '';
+            document.getElementById('ic_solution').value = '';
+            document.getElementById('ic_outcome').value = 'unknown';
+            document.getElementById('ic_notes').value = '';
+            openModal('incidentModalOverlay');
+        }
+        function saveIncident() {
+            const b = getActiveBatch();
+            if (!b) return;
+            const date = document.getElementById('ic_date').value;
+            if (!date) { showToast('⚠️ حدّد تاريخ الحادثة'); return; }
+            const title = document.getElementById('ic_title').value.trim();
+            if (!title) { showToast('⚠️ اكتب وصف مختصر للحادثة'); return; }
+            const category = document.getElementById('ic_category').value;
+            const severity = document.getElementById('ic_severity').value;
+            const solution = document.getElementById('ic_solution').value.trim();
+            const outcome = document.getElementById('ic_outcome').value;
+            const notes = document.getElementById('ic_notes').value.trim();
+            const age = Math.max(0, daysBetween(b.startDate, date));
+            const rec = {
+                id: uid(), source: 'manual', date, age, category, severity, title, solution: solution || null, outcome, notes,
+                enteredBy: currentRole === 'worker' && currentWorker ? currentWorker.name : 'المالك',
+                enteredAt: new Date().toISOString(),
+            };
+            b.incidents.push(rec);
+            logAudit(b, `📓 حادثة مُسجَّلة: ${category} (يوم ${age}) — ${title}${solution ? ' — الحل: ' + solution : ''}`);
+            persist();
+            closeModal('incidentModalOverlay');
+            showToast('✅ تم تسجيل الحادثة — هتدخل قاعدة المعرفة وتساعد فى تنبيهك مبكرًا فى الدورات الجاية');
+            render();
+        }
+        function deleteIncident(id) {
+            const b = getActiveBatch();
+            if (!b) return;
+            const it = (b.incidents || []).find(x => x.id === id);
+            showConfirm('حذف هذه الحادثة؟ يمكن استرجاعها لاحقًا من سلة المهملات.', () => {
+                b.incidents = b.incidents.filter(x => x.id !== id);
+                if (it) softDeleteToTrash(b, 'incident', it, `🗑️ حذف حادثة (${esc(it.title || '')})`);
+                persist();
+                render();
+            });
+        }
+        const INCIDENT_SEVERITY_LABEL = { negative_high: '🔴 سلبي كبير', negative_med: '🟠 سلبي متوسط', negative_low: '🟡 سلبي بسيط', positive: '🟢 إيجابي' };
+        const INCIDENT_OUTCOME_LABEL = { improved: '✅ تحسّن ملحوظ', mild_improved: '🙂 تحسّن بسيط', no_change: '➖ لم يتغيّر', worsened: '❌ ساء الوضع', unknown: '❓ غير معروف' };
+        // (تعرض قائمة آخر الحوادث دلوقتي جوه القسم الموحّد renderDailyEventsSection فى تبويب التسجيل اليومي)
+
+        // ============ اكتشاف تلقائي لحوادث سلبية عبر سلسلة دورة مؤرشفة (شذوذ Z-score فى النفوق أو استهلاك العلف) ============
+        // بيرجع نقاط شذوذ مُجمَّعة (الأيام المتتالية لنفس النوع تتوحّد فى حادثة واحدة بعمر أسوأ نقطة فيها)
+        function mineAutoIncidentsForCycle(x) {
+            const xm = computeMetrics(x);
+            const series = xm.series.filter(r => r.age > 0);
+            if (series.length < 10) return [];
+            const raw = [];
+            // --- شذوذ نفوق: مقارنة نسبة النفوق اليومية بخط أساس متحرك (آخر 7 أيام سابقة لنفس الدورة) ---
+            for (let i = 7; i < series.length; i++) {
+                const window = series.slice(i - 7, i).map(r => r.liveCount > 0 ? (((r.mort || 0) + (r.cull || 0)) / r.liveCount) * 100 : null).filter(v => v != null);
+                if (window.length < 5) continue;
+                const mean = window.reduce((s, v) => s + v, 0) / window.length;
+                const sd = stdDev(window);
+                if (!sd || sd < 0.0001) continue;
+                const today = series[i].liveCount > 0 ? (((series[i].mort || 0) + (series[i].cull || 0)) / series[i].liveCount) * 100 : null;
+                if (today == null) continue;
+                const z = (today - mean) / sd;
+                if (z >= 2.5) raw.push({ age: series[i].age, date: series[i].date, category: 'نفوق مرتفع', z, metric: 'mort' });
+            }
+            // --- شذوذ هبوط استهلاك العلف: مقارنة انحراف العلف عن المعيار المرجعي بخط أساس متحرك لنفس الدورة ---
+            for (let i = 7; i < series.length; i++) {
+                const window = series.slice(i - 7, i).map(r => {
+                    const refs = getRefsForDay(x, r.age);
+                    const std = (refs.feed * (r.liveCount || 0)) / 1000;
+                    return (r.feed != null && std > 0) ? r.feed - std : null;
+                }).filter(v => v != null);
+                if (window.length < 5) continue;
+                const mean = window.reduce((s, v) => s + v, 0) / window.length;
+                const sd = stdDev(window);
+                if (!sd || sd < 0.0001) continue;
+                const refsToday = getRefsForDay(x, series[i].age);
+                const stdToday = (refsToday.feed * (series[i].liveCount || 0)) / 1000;
+                if (series[i].feed == null || stdToday <= 0) continue;
+                const z = ((series[i].feed - stdToday) - mean) / sd;
+                if (z <= -2.5) raw.push({ age: series[i].age, date: series[i].date, category: 'هبوط استهلاك العلف', z: Math.abs(z), metric: 'feed' });
+            }
+            if (!raw.length) return [];
+            // تجميع النقاط المتتالية (فرق يوم واحد أو يومين) من نفس النوع فى حادثة واحدة — نحتفظ بأسوأ يوم فيها كمركز
+            raw.sort((a, c) => a.category === c.category ? a.age - c.age : a.category.localeCompare(c.category));
+            const merged = [];
+            raw.forEach(pt => {
+                const last = merged[merged.length - 1];
+                if (last && last.category === pt.category && pt.age - last.lastAge <= 2) {
+                    last.lastAge = pt.age;
+                    if (pt.z > last.z) { last.age = pt.age; last.date = pt.date; last.z = pt.z; }
+                } else {
+                    merged.push({ category: pt.category, age: pt.age, date: pt.date, z: pt.z, lastAge: pt.age, metric: pt.metric });
+                }
+            });
+            return merged.map(m2 => ({ age: m2.age, date: m2.date, category: m2.category, metric: m2.metric,
+                severity: m2.z >= 4 ? 'negative_high' : 'negative_med' }));
+        }
+
+        // يبحث عن أقرب تدخل (معاملة/إضافة مُنفَّذة/إضافة خارج الجدول) اتسجّل فى نافذة 0-4 أيام بعد عمر الحادثة
+        function findNearbyInterventionForIncident(x, inc) {
+            const from = inc.age, to = inc.age + 4;
+            const candidates = [];
+            (x.treatmentLog || []).forEach(t => { if (t.done && t.day >= from && t.day <= to) candidates.push({ name: t.name, day: t.day }); });
+            (x.additiveExecLog || []).forEach(e => {
+                const age = daysBetween(x.startDate, e.date);
+                if (age >= from && age <= to) candidates.push({ name: e.name, day: age });
+            });
+            (x.quickInterventions || []).forEach(qi => {
+                const age = daysBetween(x.startDate, qi.date);
+                if (age >= from && age <= to) candidates.push({ name: qi.name || '', day: age });
+            });
+            if (!candidates.length) return null;
+            candidates.sort((a, c) => a.day - c.day);
+            return candidates[0];
+        }
+
+        // يقيس هل تحسّن المؤشر (نفوق/علف) بعد التدخل مقارنة بقبله، باستخدام نفس اختبار Welch المستخدم فى باقي التحليلات
+        function assessIncidentOutcome(x, inc, intervention) {
+            const xm = computeMetrics(x);
+            const series = xm.series.filter(r => r.age > 0);
+            const before = series.filter(r => r.age >= inc.age - 3 && r.age < intervention.day);
+            const after = series.filter(r => r.age > intervention.day && r.age <= intervention.day + 3);
+            if (before.length < 2 || after.length < 2) return 'unknown';
+            const valOf = r => inc.metric === 'mort'
+                ? (r.liveCount > 0 ? (((r.mort || 0) + (r.cull || 0)) / r.liveCount) * 100 : null)
+                : (() => { const refs = getRefsForDay(x, r.age); const std = (refs.feed * (r.liveCount || 0)) / 1000; return (r.feed != null && std > 0) ? r.feed - std : null; })();
+            const beforeVals = before.map(valOf).filter(v => v != null);
+            const afterVals = after.map(valOf).filter(v => v != null);
+            if (beforeVals.length < 2 || afterVals.length < 2) return 'unknown';
+            const test = welchSignificant(beforeVals, afterVals);
+            // للنفوق: تحسّن يعنى انخفاض بعد التدخل. لهبوط العلف: تحسّن يعنى انخفاض الانحراف السلبي (رقم أقرب للصفر/موجب)
+            const improvedDirection = inc.metric === 'mort' ? (test.meanC < test.meanA) : (test.meanC > test.meanA);
+            if (!test.significant) return 'no_change';
+            return improvedDirection ? 'improved' : 'worsened';
+        }
+
+        // ============ تجميع خام لكل الحوادث (تلقائية + يدوية) عبر الدورات المؤرشفة لنوع مُعيّن ============
+        // دالة مشتركة تُستخدم فى: قاعدة معرفة الحوادث، مؤشر "احتمالية مشكلة قادمة"، بروتوكول الأفضل من كل دورة،
+        // خطة التوسع لنوع جديد، وتحليل "نفس الحل ضار فى توقيت ومفيد فى توقيت تاني" — بدل تكرار نفس المسح فى كل مكان
+        function mineAllIncidentRecords(species) {
+            const archived = state.batches.filter(x => x.species === species && x.status === 'مؤرشفة' && x.records && x.records.length >= 8);
+            if (archived.length < 2) return [];
+            const allIncidents = [];
+            archived.forEach(x => {
+                mineAutoIncidentsForCycle(x).forEach(inc => {
+                    const linked = findNearbyInterventionForIncident(x, inc);
+                    const outcome = linked ? assessIncidentOutcome(x, inc, linked) : 'unknown';
+                    allIncidents.push({ source: 'auto', batchName: x.name, age: inc.age, category: inc.category, solutionName: linked ? linked.name : null, outcome });
+                });
+                (x.incidents || []).filter(mi => mi.severity !== 'positive').forEach(mi => {
+                    allIncidents.push({ source: 'manual', batchName: x.name, age: mi.age, category: mi.category,
+                        solutionName: mi.solution || null, outcome: mi.outcome === 'mild_improved' ? 'improved' : mi.outcome });
+                });
+            });
+            return allIncidents;
+        }
+
+        // ============ بناء قاعدة معرفة الحوادث لنوع مُعيّن — تجميع حوادث تلقائية + يدوية عبر كل الدورات المؤرشفة ============
+        // بترجع بنود متكررة فقط (حصلت فى دورتين مختلفتين على الأقل بنفس النوع ونطاق العمر) — نمط حقيقي مش حادثة عرضية مرة واحدة
+        function computeIncidentKnowledgeBase(species) {
+            const allIncidents = mineAllIncidentRecords(species);
+            if (allIncidents.length < 2) return null;
+            // تجميع فى نطاقات عمرية (كتلة ±1.5 يوم تقريبًا) لكل نوع مشكلة
+            const buckets = {};
+            allIncidents.forEach(inc => {
+                const bucketAge = Math.round(inc.age / 3) * 3;
+                const key = inc.category + '_' + bucketAge;
+                if (!buckets[key]) buckets[key] = { category: inc.category, ageCenter: bucketAge, items: [] };
+                buckets[key].items.push(inc);
+            });
+            return Object.values(buckets)
+                .filter(bk => new Set(bk.items.map(i => i.batchName)).size >= 2) // لازم يتكرر فى دورتين مختلفتين على الأقل
+                .map(bk => {
+                    const solStats = {};
+                    bk.items.forEach(it => {
+                        if (!it.solutionName) return;
+                        if (!solStats[it.solutionName]) solStats[it.solutionName] = { count: 0, improved: 0 };
+                        solStats[it.solutionName].count++;
+                        if (it.outcome === 'improved') solStats[it.solutionName].improved++;
+                    });
+                    const ranked = Object.entries(solStats).sort((a, c) =>
+                        (c[1].improved / c[1].count) - (a[1].improved / a[1].count) || c[1].count - a[1].count);
+                    const best = ranked[0];
+                    return {
+                        category: bk.category, ageCenter: bk.ageCenter, frequency: bk.items.length,
+                        cyclesAffected: new Set(bk.items.map(i => i.batchName)).size,
+                        bestSolution: best ? { name: best[0], successRate: best[1].improved / best[1].count, timesUsed: best[1].count } : null,
+                    };
+                })
+                .sort((a, c) => c.cyclesAffected - a.cyclesAffected || c.frequency - a.frequency);
+        }
+
+        // ============ حساسية نفس الحل للتوقيت: بند استُخدم فى أكتر من نطاق عمر/نوع مشكلة بنتيجة متضادة ============
+        // مثال: "فيتامين سي" نجح فى نطاق عمر 5-8 (إجهاد حراري) لكن سجّل "ساء الوضع" فى نطاق عمر 20-25 (مشكلة هضمية)
+        // — ده فرق عن verdict عام فى بروتوكول "الأفضل من كل دورة" لأنه بيوضّح متى بالظبط الحل مفيد ومتى مش مفيد
+        function computeSolutionContextSensitivity(species) {
+            const allIncidents = mineAllIncidentRecords(species).filter(inc => inc.solutionName && (inc.outcome === 'improved' || inc.outcome === 'worsened'));
+            if (allIncidents.length < 2) return [];
+            const bySolution = {};
+            allIncidents.forEach(inc => {
+                if (!bySolution[inc.solutionName]) bySolution[inc.solutionName] = [];
+                bySolution[inc.solutionName].push(inc);
+            });
+            const results = [];
+            Object.entries(bySolution).forEach(([name, items]) => {
+                if (items.length < 2) return;
+                // تجميع نفس البند فى نطاقات (نوع مشكلة + كتلة عمرية ±1.5 يوم)، ثم فحص هل فيه نطاقين مختلفين بنتيجة متضادة
+                const buckets = {};
+                items.forEach(it => {
+                    const bucketAge = Math.round(it.age / 3) * 3;
+                    const key = it.category + '_' + bucketAge;
+                    if (!buckets[key]) buckets[key] = { category: it.category, ageCenter: bucketAge, improved: 0, worsened: 0 };
+                    if (it.outcome === 'improved') buckets[key].improved++; else buckets[key].worsened++;
+                });
+                const bucketList = Object.values(buckets).map(bk => ({ ...bk, verdict: bk.improved > bk.worsened ? 'improved' : (bk.worsened > bk.improved ? 'worsened' : 'mixed') }));
+                const goodContexts = bucketList.filter(bk => bk.verdict === 'improved');
+                const badContexts = bucketList.filter(bk => bk.verdict === 'worsened');
+                if (goodContexts.length && badContexts.length) {
+                    results.push({ name, goodContexts, badContexts });
+                }
+            });
+            return results;
+        }
+
+        function openIncidentKbModal() {
+            const b = getActiveBatch();
+            if (!b) { showToast('⚠️ فعّل دفعة نشطة أولاً (لتحديد النوع)'); return; }
+            const kb = computeIncidentKnowledgeBase(b.species);
+            const sensitivity = computeSolutionContextSensitivity(b.species);
+            const el = document.getElementById('incidentKbContent');
+            let html = '';
+            if (!kb || !kb.length) {
+                html += `<div class="card empty" style="padding:14px;"><div class="ico">🧠</div>محتاج دورتين مؤرشفتين على الأقل من نفس النوع بينهم نمط متكرر (حادثة تلقائية أو مُسجَّلة يدويًا فى نفس نطاق العمر) عشان تظهر هنا بنود.<br><br>سجّل حوادثك يدويًا كل ما تحصل عشان تبني القاعدة أسرع.</div>`;
+            } else {
+                html += `<div class="card" style="padding:0;">` + kb.map(e => {
+                    const solTxt = e.bestSolution
+                        ? `🏆 أفضل حل: <b>${esc(e.bestSolution.name)}</b> — نجح فى ${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة`
+                        : `لسه مفيش حل مُثبت مرتبط بهذا النمط فى بياناتك`;
+                    return `<div class="check-row"><div class="txt">
+                        <div style="font-weight:800;">⚠️ ${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
+                        <div class="day">حصل فى ${e.cyclesAffected} دورة مختلفة (${e.frequency} مرة إجمالاً)</div>
+                        <div style="font-size:12px;margin-top:2px;">${solTxt}</div>
+                    </div></div>`;
+                }).join('') + `</div>`;
+            }
+            if (sensitivity.length) {
+                html += `<div class="section-head" style="margin-top:12px;"><h2>⚡ حلول حساسة للتوقيت</h2></div>
+                    <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">نفس البند طلع مفيد فى نطاق ومضر/غير مجدي فى نطاق تاني — الجرعة مش المشكلة، التوقيت هو الفارق.</p>
+                    <div class="card" style="padding:0;">` + sensitivity.map(s => `<div class="check-row"><div class="txt">
+                        <div style="font-weight:800;">${esc(s.name)}</div>
+                        <div class="day" style="color:var(--green);">✅ مفيد قرب: ${s.goodContexts.map(c => `${esc(c.category)} (يوم ${c.ageCenter})`).join('، ')}</div>
+                        <div class="day" style="color:var(--red);">❌ ضار/غير مجدي قرب: ${s.badContexts.map(c => `${esc(c.category)} (يوم ${c.ageCenter})`).join('، ')}</div>
+                    </div></div>`).join('') + `</div>`;
+            }
+            el.innerHTML = html;
+            openModal('incidentKbModalOverlay');
         }
 
         // ============ سجل انقطاع الكهرباء/أعطال المولد ============
@@ -15987,6 +16478,10 @@
                                 <div style="font-weight:800;">${r.name === 'المالك' ? '👑' : '👷'} ${esc(r.name)}</div>
                                 <div class="day" style="margin-top:4px;">
                                     <div class="stat-line"><span class="k">عدد السجلات المُدخَلة</span><span class="v">${fmt(r.recordsCount,0)}</span></div>
+                                    <div class="stat-line"><span class="k">إضافات خارج الجدول</span><span class="v">${fmt(r.quickInts,0)}</span></div>
+                                    <div class="stat-line"><span class="k">حوادث مُسجَّلة</span><span class="v">${fmt(r.incidents,0)}</span></div>
+                                    <div class="stat-line"><span class="k">تنفيذ برنامج إضافات</span><span class="v">${fmt(r.execs,0)}</span></div>
+                                    <div class="stat-line"><span class="k">إجمالي المجهود المُسجَّل</span><span class="v" style="font-weight:800;">${fmt(r.totalEffort,0)}</span></div>
                                     <div class="stat-line"><span class="k">الالتزام بالتوقيت (نفس اليوم)</span><span class="v" style="color:${onTimeColor};">${r.onTimePct!=null?fmt(r.onTimePct,0)+'%':'—'}${r.avgDelayDays?` (متوسط تأخير ${fmt(r.avgDelayDays,1)} يوم)`:''}</span></div>
                                     <div class="stat-line"><span class="k">اكتمال البيانات المُدخَلة</span><span class="v">${r.completenessPct!=null?fmt(r.completenessPct,0)+'%':'—'}</span></div>
                                     <div class="stat-line"><span class="k">تعديلات/حذف مسجَّلة</span><span class="v">${fmt(r.edits,0)}</span></div>
@@ -15994,7 +16489,7 @@
                             </div></div>`;
                         }).join('');
                     })()}
-                    <p style="font-size:10.5px;color:var(--muted);padding:10px;margin:0;">💡 "الالتزام بالتوقيت" = نسبة السجلات التى اتسجلت فى نفس يوم البيانات المُدخَلة. "اكتمال البيانات" = متوسط تعبئة الحقول الاختيارية المهمة (ماء/حرارة/وزن/تقييم صحي). المقياس تراكمي منذ تفعيله ولا يشمل سجلات قديمة.</p>
+                    <p style="font-size:10.5px;color:var(--muted);padding:10px;margin:0;">💡 "إجمالي المجهود" = مجموع السجلات اليومية + الإضافات خارج الجدول + الحوادث المُسجَّلة + تنفيذ برنامج الإضافات (الترتيب مبني عليه). "الالتزام بالتوقيت" و"اكتمال البيانات" بيتحسبوا من السجل اليومي فقط. المقياس تراكمي منذ تفعيله ولا يشمل سجلات قديمة.</p>
                 </div>
             </div>`;
 
@@ -18103,6 +18598,7 @@
             waterAdditive: (b, item) => { b.waterAdditives.push(item); },
             outage: (b, item) => { b.outageLog.push(item); },
             quickIntervention: (b, item) => { b.quickInterventions.push(item); },
+            incident: (b, item) => { b.incidents.push(item); },
         };
         function softDeleteToTrash(b, type, item, auditText, note) {
             logAudit(b, auditText);
