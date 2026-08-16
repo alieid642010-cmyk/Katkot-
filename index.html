@@ -2152,6 +2152,15 @@
         </div>
     </div>
 
+    <!-- Modal: Biosecurity Quick Log (نفس محتوى القسم القديم، بس بيتفتح فورًا كمودال بدل ما يتضم فى تبويبات "سجلات وأحداث إضافية") -->
+    <div class="modal-overlay" id="bioModalOverlay">
+        <div class="modal" style="max-width:480px;max-height:85vh;overflow-y:auto;">
+            <button class="close-x" aria-label="إغلاق" onclick="closeModal('bioModalOverlay')">✕</button>
+            <h3 id="bioModalTitle">🛡️ أمان حيوي</h3>
+            <div id="bioModalBody"></div>
+        </div>
+    </div>
+
     <!-- Modal: Incident Knowledge Base (قاعدة معرفة الحوادث عبر الدورات) -->
     <div class="modal-overlay" id="incidentKbModalOverlay">
         <div class="modal">
@@ -5924,6 +5933,7 @@
             if (id === 'feedAddModalOverlay') { editingFeedAdditiveId = null; document.getElementById('feedAddModalTitle').textContent = '➕ إضافة علفية'; document.getElementById('feedAddModalBtn').textContent = 'إضافة'; }
             if (id === 'waterAddModalOverlay') { editingWaterAdditiveId = null; document.getElementById('waterAddModalTitle').textContent = '➕ إضافة مائية'; document.getElementById('waterAddModalBtn').textContent = 'إضافة'; }
             if (id === 'stockModalOverlay') { editingMovementId = null; }
+            if (id === 'bioModalOverlay') { editingBiosecurityId = null; bioPhotoData = null; }
         }
 
         // ============ Heating Estimation ============
@@ -7999,6 +8009,7 @@
                 bioPhotoData = null; document.getElementById('bio_photo_preview').innerHTML = ''; document.getElementById('bio_photo_input').value = '';
                 document.getElementById('bioSaveBtn').textContent = '+ تسجيل حدث';
                 render();
+                refreshBiosecurityModalIfOpen();
                 showToast('تم تحديث السجل ✅');
                 return;
             }
@@ -8007,6 +8018,7 @@
             document.getElementById('bio_note').value = '';
             bioPhotoData = null; document.getElementById('bio_photo_preview').innerHTML = ''; document.getElementById('bio_photo_input').value = '';
             render();
+            refreshBiosecurityModalIfOpen();
             showToast('تم تسجيل الحدث 🛡️');
         }
 
@@ -8040,6 +8052,7 @@
                 if (e) softDeleteToTrash(b, 'biosecurity', e, `🗑️ حذف سجل أمان حيوي: ${e.type || ''}`);
                 persist();
                 render();
+                refreshBiosecurityModalIfOpen();
                 showToast('تم الحذف');
             });
         }
@@ -13171,6 +13184,15 @@
             dailyEventsSubTab = id;
             toggleSectionOpen('daily', DAILY_EVENTS_SECTION_KEY, true, 'السجل اليومي (نهار / ليل)');
             render();
+            // ============ 🔧 إصلاح: القسم ده غالبًا تحت التاب/الجدول اليومي وبعيد عن الشاشة الظاهرة —
+            // من غير scrollIntoView الزرار كان بيغيّر الحالة فعليًا (والقسم بيتفتح) لكن المستخدم مش شايف
+            // أي تغيير على الشاشة لو كان لسه فوق فى الصفحة، فحاسس إن الزرار "مش شغال" خالص. ============
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const el = document.getElementById('dailyEventsSection');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
         }
 
         function renderDailyTab(b, m) {
@@ -13187,7 +13209,7 @@
                 <button class="btn ghost" style="background:#eef1f6;" onclick="openDailyModal('night')">🌙 تسجيل الليل</button>
                 <button class="btn" style="background:#fff4e0;color:#8a5a12;border:1.5px solid #e0b45c;" onclick="openQuickIntModal()">➕ إضافة خارج الجدول</button>
                 <button class="btn" style="background:#fdecec;color:#9c2b2b;border:1.5px solid #e5a3a3;" onclick="openIncidentModal()">📓 تسجيل حادثة</button>
-                <button class="btn ghost" onclick="openDailyEventsSubTab('biosecurity')">🛡️ أمان حيوي سريع</button>
+                <button class="btn ghost" onclick="openBiosecurityModal()">🛡️ أمان حيوي سريع</button>
                 <button class="btn ghost" style="background:#e7f5ec;color:#1c6b3f;" onclick="shareWhatsapp()">📲 مشاركة واتساب</button>
             </div>`;
             if (b.records.length === 0) return quickBtns + renderDailyEventsSection(b) + `<div class="card empty"><div class="ico">📋</div>لا توجد سجلات يومية بعد. سجّل قراءة النهار أو الليل من الأزرار أعلاه.</div>`;
@@ -13224,14 +13246,13 @@
             ${renderDailyEventsSection(b)}`;
         }
 
-        // ============ سجلات وأحداث إضافية اليوم (إضافات خارج الجدول / حوادث / أمان حيوي) — قسم واحد بتبويبات فرعية ============
-        // بديل عن 3 أقسام منفصلة متناثرة، كل واحد بعنوانه ومقدمته وزرّاره — دلوقتي كله فى مكان واحد
+        // ============ سجلات وأحداث إضافية اليوم (إضافات خارج الجدول / حوادث) — قسم واحد بتبويبات فرعية ============
+        // ملحوظة: "الأمان الحيوي" اتشال من هنا وبقى زرار مستقل بيفتح مودال منفصل (openBiosecurityModal) — نفس المكان زي ما كان، بس عرضه بقى فورًا بدون الحاجة تلف لتحت الصفحة.
         const DAILY_EVENTS_SECTION_KEY = '📓 سجلات وأحداث إضافية';
         function renderDailyEventsSection(b) {
             const tabs = [
                 { id: 'additives', label: `➕ إضافات خارج الجدول (${(b.quickInterventions||[]).length})` },
                 { id: 'incidents', label: `📓 حوادث (${(b.incidents||[]).length})` },
-                { id: 'biosecurity', label: `🛡️ أمان حيوي (${(b.biosecurityLog||[]).length})` },
             ];
             const nav = `<div class="settings-subnav">${tabs.map(t => `<button class="ssnav-btn ${dailyEventsSubTab===t.id?'active':''}" onclick="setDailyEventsSubTab('${t.id}')">${t.label}</button>`).join('')}</div>`;
             let body = '';
@@ -13262,50 +13283,69 @@
                         <button class="btn ghost" style="flex:1;" onclick="openIncidentKbModal()">🧠 قاعدة المعرفة</button>
                     </div>
                     ${list.length ? `<div class="card" style="margin-top:8px;">${rows}</div>` : `<div class="card empty" style="padding:14px;margin-top:8px;"><div class="ico">📓</div>لا توجد حوادث مُسجَّلة بعد.</div>`}`;
-            } else if (dailyEventsSubTab === 'biosecurity') {
-                const today = todayStr();
-                const bioTypes = ['👨‍⚕️ زيارة طبيب بيطري', '🚗 دخول زائر', '🚙 دخول مركبة/سيارة', '🧴 تطهير ورش مطهرات', '🚪 تعقيم مدخل العنبر', '🐀 مكافحة قوارض/حشرات', '📌 أخرى'];
-                const bioRows = [...b.biosecurityLog].sort((a,c)=>c.date.localeCompare(a.date)).slice(0, 15).map(e => `
-                    <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}" style="font-size:9.5px;">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td style="text-align:right;">${esc(e.type)}${e.photo ? ` <button class="btn ghost sm" style="padding:2px 6px;" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td style="text-align:right;font-size:11px;color:var(--muted);">${esc(e.note)||''}</td>
-                    <td><button class="btn ghost sm owner-only" onclick="editBiosecurity('${e.id}')">✏️</button> <button class="btn danger sm owner-only" onclick="deleteBiosecurity('${e.id}')">حذف</button></td></tr>`).join('');
-                const bioBeforePhotos = b.biosecurityLog.filter(e => e.stage === 'before' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
-                const bioAfterPhotos = b.biosecurityLog.filter(e => e.stage === 'after' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
-                const cleaningCompareHtml = (bioBeforePhotos.length && bioAfterPhotos.length) ? `
-                    <div class="card" style="margin-top:10px;">
-                        <div style="font-weight:800;font-size:13px;margin-bottom:8px;">🧽 آخر مقارنة قبل/بعد التنظيف والتطهير</div>
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                            <div style="text-align:center;"><img src="${bioBeforePhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">قبل — ${bioBeforePhotos[0].date}</div></div>
-                            <div style="text-align:center;"><img src="${bioAfterPhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">بعد — ${bioAfterPhotos[0].date}</div></div>
-                        </div>
-                    </div>` : '';
-                body = `<p style="font-size:11px;color:var(--muted);margin:8px 0;">سجّل زيارة طبيب، دخول زوار/مركبة، أو حدث تطهير بضغطة واحدة.</p>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-                        ${bioTypes.map((t,i) => `<button type="button" class="btn ghost sm bio-chip" data-idx="${i}" onclick="selectBioChip(${i})" style="border-radius:20px;">${t}</button>`).join('')}
-                    </div>
-                    <select id="bio_type" style="display:none;">${bioTypes.map(t => `<option>${t.replace(/^\S+\s/,'')}</option>`).join('')}</select>
-                    <div id="bioExtraFields" style="display:none;">
-                        <div class="form-grid" style="margin-top:8px;">
-                            <div class="field"><label>التاريخ</label><input id="bio_date" type="date" value="${today}"></div>
-                            <div class="field"><label>المرحلة (لو تنظيف/تطهير)</label>
-                                <select id="bio_stage"><option value="">غير محدد</option><option value="before">📷 قبل التنظيف</option><option value="after">📷 بعد التنظيف</option></select>
-                            </div>
-                            <div class="field full"><label>ملاحظة</label><input id="bio_note" placeholder="اختياري"></div>
-                            <div class="field full"><label>صورة توثيقية (اختياري)</label>
-                                <input type="file" id="bio_photo_input" accept="image/*" capture="environment" onchange="handleBioPhotoUpload(event)">
-                                <div id="bio_photo_preview" style="margin-top:6px;"></div>
-                            </div>
-                        </div>
-                        <button class="btn gold block" id="bioSaveBtn" style="margin-top:8px;" onclick="saveBiosecurity()">+ تسجيل الحدث</button>
-                    </div>
-                    <div class="card scroll-x" style="margin-top:8px;">
-                        ${bioRows ? `<table><thead><tr><th>التاريخ</th><th>النوع</th><th>ملاحظة</th><th></th></tr></thead><tbody>${bioRows}</tbody></table>`
-                        : `<div class="empty"><div class="ico">🛡️</div>لا توجد سجلات أمان حيوي بعد.</div>`}
-                        ${cleaningCompareHtml}
-                    </div>`;
             }
-            return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>${DAILY_EVENTS_SECTION_KEY}</h2></div>
+            return `<div class="section" id="dailyEventsSection" style="margin-top:0;"><div class="section-head"><h2>${DAILY_EVENTS_SECTION_KEY}</h2></div>
                 ${nav}${body}
             </div>`;
+        }
+
+        // ============ 🛡️ الأمان الحيوي — بقى مودال مستقل (نفس المحتوى بالظبط، بس بيتفتح فورًا فوق الشاشة بدل ما يتضم لتبويبات "سجلات وأحداث إضافية") ============
+        function renderBiosecurityModalBody(b) {
+            const today = todayStr();
+            const bioTypes = ['👨‍⚕️ زيارة طبيب بيطري', '🚗 دخول زائر', '🚙 دخول مركبة/سيارة', '🧴 تطهير ورش مطهرات', '🚪 تعقيم مدخل العنبر', '🐀 مكافحة قوارض/حشرات', '📌 أخرى'];
+            const bioRows = [...(b.biosecurityLog || [])].sort((a,c)=>c.date.localeCompare(a.date)).slice(0, 15).map(e => `
+                <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}" style="font-size:9.5px;">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td style="text-align:right;">${esc(e.type)}${e.photo ? ` <button class="btn ghost sm" style="padding:2px 6px;" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td style="text-align:right;font-size:11px;color:var(--muted);">${esc(e.note)||''}</td>
+                <td><button class="btn ghost sm owner-only" onclick="editBiosecurity('${e.id}')">✏️</button> <button class="btn danger sm owner-only" onclick="deleteBiosecurity('${e.id}')">حذف</button></td></tr>`).join('');
+            const bioBeforePhotos = (b.biosecurityLog || []).filter(e => e.stage === 'before' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
+            const bioAfterPhotos = (b.biosecurityLog || []).filter(e => e.stage === 'after' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
+            const cleaningCompareHtml = (bioBeforePhotos.length && bioAfterPhotos.length) ? `
+                <div class="card" style="margin-top:10px;">
+                    <div style="font-weight:800;font-size:13px;margin-bottom:8px;">🧽 آخر مقارنة قبل/بعد التنظيف والتطهير</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <div style="text-align:center;"><img src="${bioBeforePhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">قبل — ${bioBeforePhotos[0].date}</div></div>
+                        <div style="text-align:center;"><img src="${bioAfterPhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">بعد — ${bioAfterPhotos[0].date}</div></div>
+                    </div>
+                </div>` : '';
+            return `<p style="font-size:11px;color:var(--muted);margin:8px 0;">سجّل زيارة طبيب، دخول زوار/مركبة، أو حدث تطهير بضغطة واحدة.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                    ${bioTypes.map((t,i) => `<button type="button" class="btn ghost sm bio-chip" data-idx="${i}" onclick="selectBioChip(${i})" style="border-radius:20px;">${t}</button>`).join('')}
+                </div>
+                <select id="bio_type" style="display:none;">${bioTypes.map(t => `<option>${t.replace(/^\S+\s/,'')}</option>`).join('')}</select>
+                <div id="bioExtraFields" style="display:none;">
+                    <div class="form-grid" style="margin-top:8px;">
+                        <div class="field"><label>التاريخ</label><input id="bio_date" type="date" value="${today}"></div>
+                        <div class="field"><label>المرحلة (لو تنظيف/تطهير)</label>
+                            <select id="bio_stage"><option value="">غير محدد</option><option value="before">📷 قبل التنظيف</option><option value="after">📷 بعد التنظيف</option></select>
+                        </div>
+                        <div class="field full"><label>ملاحظة</label><input id="bio_note" placeholder="اختياري"></div>
+                        <div class="field full"><label>صورة توثيقية (اختياري)</label>
+                            <input type="file" id="bio_photo_input" accept="image/*" capture="environment" onchange="handleBioPhotoUpload(event)">
+                            <div id="bio_photo_preview" style="margin-top:6px;"></div>
+                        </div>
+                    </div>
+                    <button class="btn gold block" id="bioSaveBtn" style="margin-top:8px;" onclick="saveBiosecurity()">+ تسجيل الحدث</button>
+                </div>
+                <div class="card scroll-x" style="margin-top:8px;">
+                    ${bioRows ? `<table><thead><tr><th>التاريخ</th><th>النوع</th><th>ملاحظة</th><th></th></tr></thead><tbody>${bioRows}</tbody></table>`
+                    : `<div class="empty"><div class="ico">🛡️</div>لا توجد سجلات أمان حيوي بعد.</div>`}
+                    ${cleaningCompareHtml}
+                </div>`;
+        }
+        function openBiosecurityModal() {
+            const b = getActiveBatch();
+            if (!b) { showToast('⚠️ فعّل دفعة نشطة أولاً'); return; }
+            document.getElementById('bioModalTitle').textContent = `🛡️ أمان حيوي (${(b.biosecurityLog||[]).length})`;
+            document.getElementById('bioModalBody').innerHTML = renderBiosecurityModalBody(b);
+            openModal('bioModalOverlay');
+        }
+        // بعد أي حفظ/تعديل/حذف فى سجل الأمان الحيوي، لو المودال مفتوح لسه، نعيد رسم محتواه فورًا (بدل إغلاقه) عشان المستخدم يشوف النتيجة فى نفس الشاشة
+        function refreshBiosecurityModalIfOpen() {
+            const overlay = document.getElementById('bioModalOverlay');
+            const b = getActiveBatch();
+            if (overlay && overlay.classList.contains('show') && b) {
+                document.getElementById('bioModalTitle').textContent = `🛡️ أمان حيوي (${(b.biosecurityLog||[]).length})`;
+                document.getElementById('bioModalBody').innerHTML = renderBiosecurityModalBody(b);
+            }
         }
 
         // ============ Inventory + Purchases + Sales (مدمج) ============
@@ -19199,9 +19239,11 @@
                 const head = sec.querySelector(':scope > .section-head');
                 const h2 = head ? head.querySelector('h2') : null;
                 if (!head || !h2) return; // كروت ملخص بدون عنوان قسم تفضل زي ما هي، دايمًا ظاهرة
-                if (sec.querySelector(':scope > details')) return; // قسم بيستخدم <details> جاهزة للطي الداخلي أصلاً — سيبه زي ما هو
                 const key = h2.textContent.trim();
-                if (firstKey === null) firstKey = key;
+                if (firstKey === null) firstKey = key; // ============ 🔧 إصلاح: لازم تتحسب هنا قبل أي return تاني، وإلا لو أول قسم عنده <details>
+                // (زي "السجل اليومي") بيتخطى بالكامل، القسم اللي بعده كان بيتحسب غلط إنه هو "الأول" فيفتح
+                // افتراضيًا بدل ما يقفل، وده كان بيسبب سلوك عكسي/غير متوقع لأقسام زي "سجلات وأحداث إضافية" ============
+                if (sec.querySelector(':scope > details')) return; // قسم بيستخدم <details> جاهزة للطي الداخلي أصلاً — سيبه زي ما هو
                 sec.dataset.skey = key;
                 const bodyEls = [...sec.children].filter(c => c !== head);
                 if (!bodyEls.length) return;
