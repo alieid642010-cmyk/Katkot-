@@ -4509,6 +4509,12 @@
                 <p style="font-size:10.5px;color:var(--muted);margin:0 0 6px;">كود جهازك (لو صاحب التطبيق طلبه منك تليفونيًا): <b>${dc}</b></p>
                 <input type="text" id="activationCodeInput" placeholder="اكتب كود التفعيل" style="text-align:center;letter-spacing:2px;font-weight:800;">
                 <button class="btn ghost" style="margin-top:6px;" onclick="submitManualActivation()">تفعيل بالكود</button>
+            </div>
+            <div style="text-align:center;margin-top:8px;"><a href="javascript:void(0)" onclick="toggleRecoverySignIn()" style="font-size:11.5px;color:var(--muted);">🛡️ أنا صاحب التطبيق وعندي حساب استرداد</a></div>
+            <div id="recoverySignInBox" style="display:none;margin-top:10px;">
+                <input type="email" id="recSignInEmail" placeholder="إيميل الاسترداد" autocomplete="email">
+                <input type="password" id="recSignInPass" placeholder="كلمة المرور" autocomplete="current-password" style="margin-top:8px;">
+                <button class="btn ghost" style="margin-top:6px;" onclick="submitRecoverySignIn()">🔓 دخول واسترجاع صلاحية المالك</button>
             </div>`;
         }
         function activationManualOnlyHtml() {
@@ -4518,7 +4524,13 @@
             <p style="font-size:10.5px;color:var(--muted);margin:0 0 6px;">كود جهازك: <b>${dc}</b></p>
             <input type="text" id="activationCodeInput" placeholder="اكتب كود التفعيل" style="text-align:center;letter-spacing:2px;font-weight:800;">
             <div class="auth-err" id="activationErr"></div>
-            <button class="btn gold" onclick="submitManualActivation()">تفعيل بالكود</button>`;
+            <button class="btn gold" onclick="submitManualActivation()">تفعيل بالكود</button>
+            <div style="text-align:center;margin-top:8px;"><a href="javascript:void(0)" onclick="toggleRecoverySignIn()" style="font-size:11.5px;color:var(--muted);">🛡️ أنا صاحب التطبيق وعندي حساب استرداد</a></div>
+            <div id="recoverySignInBox" style="display:none;margin-top:10px;">
+                <input type="email" id="recSignInEmail" placeholder="إيميل الاسترداد" autocomplete="email">
+                <input type="password" id="recSignInPass" placeholder="كلمة المرور" autocomplete="current-password" style="margin-top:8px;">
+                <button class="btn ghost" style="margin-top:6px;" onclick="submitRecoverySignIn()">🔓 دخول واسترجاع صلاحية المالك</button>
+            </div>`;
         }
         function statusPill(s) {
             if (s === 'pending') return '<span class="pill" style="font-size:10px;background:#fff3cd;color:#997404;">⏳ معلّق</span>';
@@ -4729,6 +4741,93 @@
             const uid = getFbUid();
             if (!uid) { showToast('⚠️ لسه مش متصل بالسيرفر، جرّب تاني بعد شوية'); return; }
             navigator.clipboard?.writeText(uid).then(() => showToast('✅ اتنسخ الـ UID')).catch(() => showToast(uid));
+        }
+        // ============ 🛡️ تأمين هوية المالك (حل خطر: anonymous auth بيضيع لو اتمسحت بيانات المتصفح/الجهاز اتغيّر) ============
+        // الفكرة: نربط حساب Firebase المجهول الحالي (اللي isOwner() فى firestore.rules معتمدة على uid بتاعه) بإيميل/كلمة مرور
+        // حقيقيين عبر linkWithCredential. الـ uid ميتغيّرش بعد الربط، لكن دلوقتي بقى فيه طريقة "يرجع" لنفس الـ uid من أي جهاز
+        // تانى عن طريق signInWithEmailAndPassword — عكس الحساب المجهول اللي مربوط بجلسة المتصفح بس ومفيش له مسار استرجاع.
+        function hasRecoveryLinked() {
+            try {
+                const u = firebase.auth().currentUser;
+                return !!(u && u.providerData && u.providerData.some(p => p.providerId === 'password'));
+            } catch (e) { return false; }
+        }
+        function getRecoveryEmail() {
+            try {
+                const u = firebase.auth().currentUser;
+                const p = u && u.providerData && u.providerData.find(p => p.providerId === 'password');
+                return p ? p.email : null;
+            } catch (e) { return null; }
+        }
+        function linkOwnerRecoveryAccount() {
+            const email = ((document.getElementById('rec_email') || {}).value || '').trim();
+            const pass = (document.getElementById('rec_pass') || {}).value || '';
+            const pass2 = (document.getElementById('rec_pass2') || {}).value || '';
+            const err = document.getElementById('recoveryErr');
+            if (err) err.textContent = '';
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if (err) err.textContent = '❌ اكتب إيميل صحيح'; return; }
+            if (!pass || pass.length < 6) { if (err) err.textContent = '❌ كلمة المرور لازم تكون 6 حروف/أرقام على الأقل'; return; }
+            if (pass !== pass2) { if (err) err.textContent = '❌ كلمتا المرور مش متطابقتين'; return; }
+            let user = null;
+            try { user = firebase.auth().currentUser; } catch (e) {}
+            if (!user) { if (err) err.textContent = '❌ لسه مش متصل بالسيرفر — جرّب تاني بعد شوية'; return; }
+            const cred = firebase.auth.EmailAuthProvider.credential(email, pass);
+            user.linkWithCredential(cred).then(() => {
+                showToast('✅ اترَبط حساب الاسترداد بنجاح — احتفظ بالإيميل وكلمة المرور دول فى مكان آمن');
+                render();
+            }).catch(e => {
+                console.error('فشل ربط حساب الاسترداد', e);
+                let msg = '❌ فشل الربط — حاول تاني';
+                if (e.code === 'auth/email-already-in-use' || e.code === 'auth/credential-already-in-use') msg = '❌ الإيميل ده مربوط بحساب تاني بالفعل — استخدم إيميل مختلف';
+                else if (e.code === 'auth/weak-password') msg = '❌ كلمة المرور ضعيفة — جرّب كلمة أطول وأقوى';
+                else if (e.code === 'auth/invalid-email') msg = '❌ الإيميل غير صحيح';
+                else if (e.code === 'auth/provider-already-linked') msg = '⚠️ عندك حساب استرداد مربوط بالفعل';
+                if (err) err.textContent = msg; else showToast(msg);
+            });
+        }
+        function updateRecoveryPassword() {
+            const pass = ((document.getElementById('rec_newpass') || {}).value || '');
+            const err = document.getElementById('recoveryErr');
+            if (err) err.textContent = '';
+            if (!pass || pass.length < 6) { if (err) err.textContent = '❌ كلمة المرور لازم تكون 6 حروف/أرقام على الأقل'; return; }
+            let user = null;
+            try { user = firebase.auth().currentUser; } catch (e) {}
+            if (!user) { if (err) err.textContent = '❌ لسه مش متصل بالسيرفر'; return; }
+            user.updatePassword(pass).then(() => {
+                showToast('✅ اتحدّثت كلمة المرور');
+                render();
+            }).catch(e => {
+                console.error('فشل تحديث كلمة المرور', e);
+                let msg = '❌ فشل التحديث';
+                if (e.code === 'auth/requires-recent-login') msg = '⚠️ لازم تسجّل دخول تانى بحساب الاسترداد الأول (من شاشة إذن الاستخدام) قبل ما تقدر تغيّر كلمة المرور';
+                else if (e.code === 'auth/weak-password') msg = '❌ كلمة المرور ضعيفة';
+                if (err) err.textContent = msg; else showToast(msg);
+            });
+        }
+        // ===== تسجيل دخول باستخدام حساب الاسترداد (بيستخدم فى شاشة "إذن الاستخدام" لما جهاز يكون جديد/اتمسحت بياناته) =====
+        function toggleRecoverySignIn() {
+            const box = document.getElementById('recoverySignInBox');
+            if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        }
+        function submitRecoverySignIn() {
+            const email = ((document.getElementById('recSignInEmail') || {}).value || '').trim();
+            const pass = (document.getElementById('recSignInPass') || {}).value || '';
+            const err = document.getElementById('activationErr');
+            if (!email || !pass) { if (err) err.textContent = 'اكتب الإيميل وكلمة المرور'; return; }
+            if (!window.firebase) { if (err) err.textContent = '❌ فايربيز مش متاح — تأكد من الإنترنت'; return; }
+            firebase.auth().signInWithEmailAndPassword(email, pass).then(() => {
+                try { localStorage.setItem(SOURCE_DEVICE_KEY, '1'); } catch (e) {}
+                setActivated(true);
+                location.reload();
+            }).catch(e => {
+                console.error('فشل تسجيل الدخول باسترداد الحساب', e);
+                let msg = '❌ فشل تسجيل الدخول';
+                if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = '❌ كلمة المرور غلط';
+                else if (e.code === 'auth/user-not-found') msg = '❌ مفيش حساب مربوط بالإيميل ده';
+                else if (e.code === 'auth/invalid-email') msg = '❌ الإيميل غير صحيح';
+                else if (e.code === 'auth/too-many-requests') msg = '❌ محاولات كتير غلط — حاول تاني بعد شوية';
+                if (err) err.textContent = msg;
+            });
         }
         // ============ QR لمعرّف الجهاز — يسهّل نقل الـUID لشخص تاني (يفتحه بكاميرا موبايله بدل ما يكتبه يدويًا) ============
         let deviceUidQrShown = false;
@@ -16264,6 +16363,28 @@
                         <div id="genActivationCodeOutput" style="font-size:20px;font-weight:900;letter-spacing:2px;color:var(--barn-dark);min-height:26px;"></div>
                     </div>
                     <button class="btn ghost sm" style="margin-top:8px;" onclick="copyGeneratedCode()">📋 نسخ كود التفعيل</button>
+                </div>
+                <div class="card" style="margin-top:10px;">
+                    <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:4px;">🛡️ تأمين حساب المالك (استرداد الوصول)</label>
+                    <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                        صلاحية المالك (isOwner) على السيرفر مربوطة بمعرّف جهازك (UID) فوق. لو مسحت بيانات المتصفح، غيّرت الجهاز، أو مسحت التطبيق ورَكّبته تانى من غير ما تربط حساب استرداد — هتفقد صلاحية المالك على كل مزارعك نهائيًا ومفيش مسار رجوع.
+                        ${hasRecoveryLinked() ? ` اتربط حساب استرداد بالفعل على: <b>${esc(getRecoveryEmail() || '')}</b>. احتفظ بالإيميل وكلمة المرور فى مكان آمن، ولو عايز تغيّر كلمة المرور استخدم الحقل تحت.` : ' اربط إيميل وكلمة مرور دلوقتي (مرة واحدة بس) عشان لو حصل وفقدت الوصول للجهاز ده، تقدر ترجع لنفس صلاحيتك من أي جهاز تانى عن طريق "أنا صاحب التطبيق وعندي حساب استرداد" فى شاشة إذن الاستخدام.'}
+                    </p>
+                    ${hasRecoveryLinked() ? `
+                    <div class="form-grid">
+                        <div class="field full"><label>كلمة مرور جديدة (6 حروف على الأقل)</label><input type="password" id="rec_newpass" placeholder="كلمة مرور جديدة" autocomplete="new-password"></div>
+                    </div>
+                    <div class="auth-err" id="recoveryErr" style="color:var(--red,#c0392b);font-size:11.5px;margin-top:4px;"></div>
+                    <button class="btn ghost sm" style="margin-top:8px;" onclick="updateRecoveryPassword()">🔄 تحديث كلمة المرور</button>
+                    ` : `
+                    <div class="form-grid">
+                        <div class="field full"><label>إيميل الاسترداد</label><input type="email" id="rec_email" placeholder="example@email.com" autocomplete="email"></div>
+                        <div class="field"><label>كلمة المرور</label><input type="password" id="rec_pass" placeholder="6 حروف على الأقل" autocomplete="new-password"></div>
+                        <div class="field"><label>تأكيد كلمة المرور</label><input type="password" id="rec_pass2" placeholder="اكتبها تانى" autocomplete="new-password"></div>
+                    </div>
+                    <div class="auth-err" id="recoveryErr" style="color:var(--red,#c0392b);font-size:11.5px;margin-top:4px;"></div>
+                    <button class="btn gold sm" style="margin-top:8px;" onclick="linkOwnerRecoveryAccount()">🔗 ربط حساب الاسترداد</button>
+                    `}
                 </div>` : '';
 
             // ============ فئة 1: المزرعة والدفعات ============
