@@ -4211,6 +4211,21 @@
             cloudConnected = false;
         }
 
+        // ============ 🔒 تحصين (Red Team fix — Firestore Document Size Guard) ============
+        // المشكلة: كنا برفع state كله كـ JSON string واحد فى حقل stateJson بمستند واحد.
+        // Firestore بيرفض أي مستند أكبر من 1 ميجابايت (1,048,576 بايت) ويفشل الرفع بالكامل.
+        // الكود القديم كان بيلقط الفشل بصمت (console.error فقط) — يعني بعد سنين من الدورات
+        // المؤرشفة، المزامنة السحابية ممكن توقف من غير أي تنبيه واضح للمالك، وهو مايكتشفش إلا
+        // لما يفتح جهاز تاني ويلاقي بيانات قديمة. الحل: نتحقق من الحجم *قبل* الرفع، ونحذّر
+        // المالك مبكرًا (عند 80% من الحد) بدل ما نفاجأ بفشل صامت عند 100%.
+        const FIRESTORE_DOC_MAX_BYTES = 1048576; // حد Firestore الفعلي لحجم المستند الواحد
+        const FIRESTORE_DOC_WARN_RATIO = 0.8; // نحذّر عند الوصول لـ 80% من الحد
+        let _lastSizeWarnAt = 0; // نمنع تكرار نفس التحذير كل ثانيتين لو المستخدم بيكتب بسرعة
+        function estimateStateJsonBytes(jsonStr) {
+            // نستخدم TextEncoder لحساب البايتات الفعلية (UTF-8) مش طول النص فقط — العربي بيتحسب
+            // بأكتر من بايت للحرف، وده فرق حقيقي فى تطبيق كل نصوصه عربي.
+            try { return new TextEncoder().encode(jsonStr).length; } catch (e) { return jsonStr.length * 3; } // تقدير احتياطي متحفّظ لو TextEncoder غير متاح
+        }
         function pushStateToCloud(immediate) {
             if (_applyingRemoteUpdate || !cloudSyncEnabled || !farmId || !fbDb) return Promise.resolve();
             clearTimeout(_cloudPushTimer);
@@ -4220,9 +4235,25 @@
             // اتقطع لحظتها، التعديلات دي كانت بتضيع نهائيًا بصمت. دلوقتي بترجّع Promise حقيقي يقدر
             // الكود اللي بينادّيها يستناه فعلاً قبل ما يكمل.
             const doPush = () => {
+                const jsonStr = JSON.stringify(state);
+                const bytes = estimateStateJsonBytes(jsonStr);
+                // ============ فحص الحجم قبل الرفع ============
+                if (bytes >= FIRESTORE_DOC_MAX_BYTES) {
+                    // تجاوزنا الحد فعليًا — الرفع هيفشل من Firestore نفسه، فنمنعه من الأساس
+                    // ونوضّح للمالك المشكلة بدل رسالة خطأ تقنية غامضة.
+                    cloudConnected = false;
+                    showToast('❌ حجم بيانات المزرعة تجاوز الحد المسموح للمزامنة السحابية (1 ميجابايت) — المزامنة متوقفة! تواصل مع الدعم الفني لترتيب أرشفة/تقسيم البيانات القديمة.');
+                    console.error(`فشل الرفع: حجم المستند ${bytes} بايت يتجاوز حد Firestore (${FIRESTORE_DOC_MAX_BYTES})`);
+                    return Promise.reject(new Error('document-too-large'));
+                }
+                if (bytes >= FIRESTORE_DOC_MAX_BYTES * FIRESTORE_DOC_WARN_RATIO && Date.now() - _lastSizeWarnAt > 120000) {
+                    _lastSizeWarnAt = Date.now();
+                    const pct = Math.round((bytes / FIRESTORE_DOC_MAX_BYTES) * 100);
+                    showToast(`⚠️ بيانات المزرعة وصلت ${pct}% من حد المزامنة السحابية — فكّر فى أرشفة الدورات القديمة جدًا أو تصدير نسخة والاحتفاظ بيها محليًا`);
+                }
                 _lastPushedRev = Date.now();
                 return fbDb.collection('farms').doc(farmId).set({
-                    stateJson: JSON.stringify(state),
+                    stateJson: jsonStr,
                     lastWriter: getDeviceId(),
                     rev: _lastPushedRev,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -4231,6 +4262,7 @@
             if (immediate) return doPush();
             return new Promise((resolve) => { _cloudPushTimer = setTimeout(() => { doPush().catch(() => {}).finally(resolve); }, 1200); }); // تجميع التعديلات المتتالية فى رفعة واحدة بدل ما نرفع مع كل حرف يتكتب
         }
+
 
         function copyFarmCode() {
             if (!farmId) return;
@@ -4989,6 +5021,7 @@
         }
 
         function editWorkerStart(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix: منع عامل من قراءة بيانات/صلاحيات عامل آخر
             const auth = getAuth();
             const w = (auth.workers || []).find(x => x.id === id);
             if (!w) return;
@@ -5149,6 +5182,26 @@
             const perms = (currentWorker && Array.isArray(currentWorker.permissions) && currentWorker.permissions.length)
                 ? currentWorker.permissions : DEFAULT_WORKER_PERMISSIONS;
             return perms.includes(action);
+        }
+
+        // ============ 🔒 تحصين أمني (Red Team fix — Action-Level Authorization Bypass) ============
+        // المشكلة المكتشفة: كثير من دوال الحذف/الحفظ الحساسة (مبيعات، مشتريات، تحصينات،
+        // علاجات، إضافات، مخزون...) كانت تتحقق من الصلاحية فقط عند *رسم* الزرار فى الواجهة
+        // (class="owner-only" بيخفي الزرار بـ CSS، أو تبويب كامل مخفي عن العامل). لكن الدالة
+        // نفسها اللي بتنفذ التعديل الفعلي على البيانات ما كانتش بتعيد نفس التحقق — فأي عامل
+        // (شخص له دخول فعلي على نفس الجهاز، وهو بالظبط الـ Threat Model هنا) يقدر يفتح
+        // Console المتصفح (F12) وينادي الدالة بالاسم مباشرة (مثلاً deleteSale('id'))
+        // متجاوزًا القيد تمامًا، حتى لو الزرار نفسه مخفي عنه أو التبويب كله مقفول أمامه.
+        // الحل: نقطة تحقق مركزية واحدة تتنادى من *جوه* كل دالة حساسة، فتتأكد من الصلاحية
+        // بغض النظر عن مصدر النداء (زرار، أو نداء مباشر من الـ Console).
+        //   requirePermission('owner')       → المالك فقط (يطابق ما كانت الواجهة تعرضه بـ owner-only)
+        //   requirePermission('management')  → المالك أو عامل معه صلاحية تبويب "الإدارة والتخطيط"
+        //   requirePermission('production')  → المالك أو عامل معه صلاحية تبويب "الإنتاج"
+        function requirePermission(scope) {
+            if (currentRole !== 'worker') return true; // المالك دائمًا مصرح له
+            if (scope === 'owner') { showToast('🚫 هذا الإجراء متاح لمالك المزرعة فقط'); return false; }
+            if (!workerHasPermission(scope)) { showToast('🚫 غير مصرح لك بهذا الإجراء — تواصل مع مالك المزرعة'); return false; }
+            return true;
         }
 
         function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
@@ -5507,6 +5560,7 @@
             else showToast('❌ فشل حفظ اللقطة');
         }
         function restoreLocalSnapshot(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix — CRITICAL: الدالة دي بتستبدل كل بيانات التطبيق بالكامل (state = restored)، لازم مالك فقط
             const snap = state.localSnapshots.find(s => s.id === id);
             if (!snap) return;
             showConfirm(`استرجاع نسخة "${snap.label}" بتاريخ ${new Date(snap.at).toLocaleString('ar-EG')}؟\n\n⚠️ هذا سيستبدل كل بياناتك الحالية بمحتوى هذه اللقطة، ماعدا الصور التوثيقية (غير محفوظة فى اللقطات). يُفضّل تصدير نسخة احتياطية للوضع الحالي أولاً قبل المتابعة.`, () => {
@@ -5522,6 +5576,7 @@
             });
         }
         function deleteLocalSnapshot(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             showConfirm('سيتم حذف هذه النسخة الاحتياطية المحلية نهائيًا ولن تتمكن من الرجوع إليها لاحقًا. متأكد؟', () => {
                 state.localSnapshots = state.localSnapshots.filter(s => s.id !== id);
                 persist(); render();
@@ -7475,6 +7530,7 @@
         let editingPurchaseId = null;
 
         function editPurchase(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             const p = b.purchases.find(p => p.id === id);
             if (!p) return;
@@ -7495,6 +7551,7 @@
         }
 
         function savePurchase() {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const date = document.getElementById('p_date').value;
@@ -7510,7 +7567,11 @@
             if (isNaN(total)) total = qty * price;
             const paid = document.getElementById('p_paid').value !== '0';
             const dueDate = paid ? null : (document.getElementById('p_due').value || null);
-            if (!date || !total) { showToast('أدخل التاريخ والإجمالي على الأقل'); return; }
+            // 🔒 Red Team fix: الشرط القديم !total كان بيرفض الصفر بس مش السالب — قيمة زي -500
+            // كانت تعدي وتتسجل كمصروف سالب، وده يقلّب حسابات الأرباح/المستحقات ويشوّه التحليل
+            // الإحصائي (t-test/IQR) اللي بيعتمد على القيم دي.
+            if (!date || isNaN(total) || total <= 0) { showToast('أدخل التاريخ وإجمالي أكبر من صفر'); return; }
+            if (qty < 0 || price < 0) { showToast('⚠️ الكمية والسعر لا يمكن أن يكونا بالسالب'); return; }
             if (editingPurchaseId) {
                 const old = b.purchases.find(p => p.id === editingPurchaseId);
                 // ⚠️ إصلاح: كنا بنسحب أثر الحركة القديمة من المخزون قبل التأكد إن الكمية/الوحدة
@@ -7559,6 +7620,7 @@
         }
 
         function deletePurchase(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix: كان قابل للنداء من Console بدون أي تحقق صلاحية
             const b = getActiveBatch();
             const p = b.purchases.find(p => p.id === id);
             if (!p) return;
@@ -7576,6 +7638,7 @@
         let editingSaleId = null;
 
         function editSale(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             const s = b.sales.find(s => s.id === id);
             if (!s) return;
@@ -7609,6 +7672,7 @@
         }
 
         function saveSale() {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const kind = document.getElementById('s_kind').value;
@@ -7644,7 +7708,8 @@
                 if (isNaN(total)) total = volume * price;
                 Object.assign(sale, { litterHeight, litterArea, volume, price, total });
             }
-            if (!date || !total) { showToast('أدخل التاريخ والإجمالي على الأقل'); return; }
+            // 🔒 Red Team fix: نفس إصلاح savePurchase — رفض القيم السالبة والصفرية مش بس الفارغة
+            if (!date || isNaN(total) || total <= 0) { showToast('أدخل التاريخ وإجمالي أكبر من صفر'); return; }
             if (editingSaleId) { b.sales = b.sales.filter(s => s.id !== editingSaleId); }
             b.sales.push(sale);
             b.sales.sort((a, c) => a.date.localeCompare(c.date));
@@ -7657,6 +7722,7 @@
 
         // تسجيل سريع لتحصيل/سداد بضغطة واحدة من الجدول، بدون فتح النموذج الكامل
         function markPurchasePaid(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const p = b.purchases.find(x => x.id === id);
@@ -7668,6 +7734,7 @@
             showToast('✅ تم تسجيل السداد');
         }
         function markSaleCollected(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const s = b.sales.find(x => x.id === id);
@@ -7680,6 +7747,7 @@
         }
 
         function deleteSale(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const s = b.sales.find(s => s.id === id);
@@ -7705,6 +7773,7 @@
         let editingChecklistTaskId = null;
 
         function editCustom(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             const c = b.customItems.find(c => c.id === id);
             if (!c) return;
@@ -7737,6 +7806,7 @@
         }
 
         function deleteCustom(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const c = b.customItems.find(c => c.id === id);
@@ -7842,6 +7912,7 @@
         }
 
         function editBiosecurity(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const e = b.biosecurityLog.find(x => x.id === id);
@@ -7861,6 +7932,7 @@
         }
 
         function deleteBiosecurity(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const e = b.biosecurityLog.find(e => e.id === id);
@@ -8002,6 +8074,7 @@
 
         // ============ Stock manual movement ============
         function saveStockMove() {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const name = document.getElementById('st_name').value.trim();
@@ -8065,6 +8138,7 @@
         }
 
         function editMovement(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const mv = b.stockMovements.find(m => m.id === id);
@@ -8086,6 +8160,7 @@
         }
 
         function deleteMovement(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const mv = b.stockMovements.find(m => m.id === id);
@@ -8106,6 +8181,7 @@
         }
 
         function quickStock(itemId, mode) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             const it = b.inventory.find(i => i.id === itemId);
             if (!it) return;
@@ -8124,6 +8200,7 @@
 
         // ============ Reminders, Vaccines, Treatments, Additives ============
         function saveReminder() {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix: نقطة الدخول الوحيدة لها (openReminderModal) owner-only بالواجهة
             const b = getActiveBatch();
             if (!b) return;
             const title = document.getElementById('r_title').value.trim();
@@ -8153,6 +8230,7 @@
         }
 
         function editReminder(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const r = b.reminders.find(x => x.id === id);
@@ -8190,6 +8268,7 @@
         }
 
         function deleteReminder(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const r = b.reminders.find(r => r.id === id);
@@ -8233,6 +8312,7 @@
         }
 
         function editVaccine(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const v = b.vaccineLog.find(x => x.id === id);
@@ -8288,6 +8368,7 @@
         }
 
         function deleteVaccine(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix: الزرار كان owner-only بالواجهة بس مش مطبّق فى الدالة
             const b = getActiveBatch();
             if (!b) return;
             const v = b.vaccineLog.find(v => v.id === id);
@@ -8374,6 +8455,7 @@
         }
 
         function editTreatment(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const t = b.treatmentLog.find(x => x.id === id);
@@ -8430,6 +8512,7 @@
         }
 
         function deleteTreatment(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const t0 = b.treatmentLog.find(t => t.id === id);
@@ -8794,6 +8877,7 @@
         }
 
         function applyProtocol(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix: بروتوكولات محفوظة فى تبويب الإعدادات المحجوب عن العمال أصلًا
             const b = getActiveBatch();
             if (!b) { showToast('أضف دفعة أولاً'); return; }
             const p = (state.protocols || []).find(x => x.id === id);
@@ -8820,6 +8904,7 @@
         }
 
         function deleteProtocol(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const p = (state.protocols || []).find(x => x.id === id);
             if (!p) return;
             showConfirm(`حذف بروتوكول "${p.name}" المحفوظ؟ (لن يؤثر على أى دفعة سبق تطبيقه عليها) — يمكن استرجاعه لاحقًا من سلة المهملات بالإعدادات`, () => {
@@ -8897,6 +8982,7 @@
         }
 
         function editFeedAdditive(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const a = b.feedAdditives.find(x => x.id === id);
@@ -8950,6 +9036,7 @@
         }
 
         function editWaterAdditive(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const a = b.waterAdditives.find(x => x.id === id);
@@ -8980,6 +9067,7 @@
         }
 
         function deleteAdditive(type, id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const arr = type === 'feed' ? b.feedAdditives : b.waterAdditives;
@@ -8997,6 +9085,7 @@
         let pendingDoseEdit = null;
 
         function editAdditiveDose(type, id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const list = type === 'feed' ? b.feedAdditives : b.waterAdditives;
@@ -14418,6 +14507,7 @@
         // هذا الإجراء يحذف الصنف وكل حركاته من السجل نهائيًا، ويحذّر لو الصنف مرتبط بإضافة علف/ماء نشطة
         // حتى لا تُفاجأ لاحقًا بتعذر الخصم التلقائي عند تنفيذ تلك الإضافة لعدم وجود صنف مطابق بالمخزن.
         function deleteInventoryItem(itemId) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const it = b.inventory.find(i => i.id === itemId);
@@ -15965,6 +16055,7 @@
             render();
         }
         function deleteOutageLog(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
             if (!b) return;
             const o = b.outageLog.find(x => x.id === id);
@@ -16030,6 +16121,7 @@
             render();
         }
         function deleteContact(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix: القسم بالكامل داخل تبويب الإعدادات المحجوب عن العمال
             const c = (state.contacts || []).find(x => x.id === id);
             showConfirm('حذف جهة الاتصال هذه؟ يمكن استرجاعها لاحقًا من سلة المهملات.', () => {
                 state.contacts = state.contacts.filter(x => x.id !== id);
@@ -18607,6 +18699,7 @@
             if (b.trash.length > 20) b.trash.length = 20;
         }
         function undoTrashItem(trashId) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix: سلة المهملات داخل تبويب الإعدادات المحجوب عن العمال
             const b = getActiveBatch(); if (!b) return;
             const idx = (b.trash || []).findIndex(t => t.id === trashId);
             if (idx === -1) return;
@@ -18629,6 +18722,7 @@
             if (state.trash.length > 20) state.trash.length = 20;
         }
         function undoGlobalTrashItem(trashId) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const idx = (state.trash || []).findIndex(t => t.id === trashId);
             if (idx === -1) return;
             const t = state.trash[idx];
@@ -18647,6 +18741,7 @@
         }
 
         function proceedImport(imported, event) {
+            if (!requirePermission('owner')) { event.target.value = ''; return; } // 🔒 Red Team fix — CRITICAL: استبدال كامل بيانات المزرعة، مالك فقط
             if (!imported || !Array.isArray(imported.batches)) { showToast('⚠️ ملف غير صالح'); event.target.value = ''; return; }
             showConfirm('سيتم استبدال كل البيانات الحالية بالنسخة المستوردة. هل أنت متأكد؟', () => {
                 const existingSnapshots = state.localSnapshots || [];
@@ -18667,6 +18762,7 @@
             event.target.value = '';
         }
         function importData(event) {
+            if (!requirePermission('owner')) { event.target.value = ''; return; } // 🔒 Red Team fix
             const file = event.target.files && event.target.files[0];
             if (!file) return;
             const reader = new FileReader();

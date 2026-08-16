@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner() {
+      return request.auth != null && request.auth.uid == 'QUJuUBtwnrWumLL16Spp4EtadUv1';
+    }
+
+    function isAuthorizedForFarm(farmId) {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/farms/$(farmId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/farms/$(farmId)).data.authorizedUids;
+    }
+
+    // ⚠️ إصلاح: الحقول اللي اتغيّرت فى هذا التحديث (بين النسخة القديمة والجديدة من المستند)
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    match /farms/{farmId} {
+      allow read: if isOwner() || isAuthorizedForFarm(farmId);
+      allow create: if isOwner();
+
+      // ============ 🔒 تحصين (Red Team fix — Allow-list بدل Deny-list) ============
+      // المشكلة: الشرط القديم كان يمنع العامل من لمس authorizedUids بس (Deny-list) — يعني
+      // أي حقل جديد يتضاف للمستند مستقبلًا (مثلاً ownerNotes أو adminFlags) هيبقى قابل للتعديل
+      // من أي عامل تلقائيًا لحد ما حد يفتكر يضيفه هنا صراحةً. الحل الأسلم أمنيًا هو Allow-list:
+      // نحدد بالاسم الحقول المسموح للعامل يعدّلها بس، وأي حقل جديد يتضاف مستقبلًا يكون
+      // ممنوع بشكل افتراضي (Fail-safe by default) لحد ما يُضاف صراحةً هنا بعد مراجعة.
+      //
+      // ⚠️ ملحوظة معمارية مهمة (مش تم حلها هنا، محتاجة الترحيل لـ subcollections):
+      // العامل المُصرَّح له لسه بيقدر يكتب المحتوى الكامل لحقل stateJson (لأن كل بيانات
+      // المزرعة — مبيعات/مشتريات/مخزون... — متجمّعة فى نص JSON واحد). الـ rules مينفعش
+      // تتحقق من *محتوى* النص ده (مين عدّل إيه بالظبط جواه) وهو مخزّن كـ string واحد.
+      // يعني عامل عنده صلاحية "السجل اليومي" بس فى التطبيق يقدر تقنيًا (لو استخدم
+      // Firestore SDK مباشرة بدل واجهة التطبيق) يكتب أي محتوى لل stateJson كله، بما فيه
+      // بيانات مالية مش من صلاحياته أصلًا. الحل الوحيد الحقيقي = تقسيم المستند لمجموعات
+      // فرعية (subcollections) لكل قسم (سجلات/مبيعات/مخزون...) بحيث الـ rules تقدر تفرض
+      // صلاحية لكل قسم لوحده. هذا التغيير مؤجَّل بقرار صريح لجلسة منفصلة.
+      allow update: if isOwner() ||
+        (isAuthorizedForFarm(farmId) &&
+         !('authorizedUids' in changedKeys()) &&
+         changedKeys().hasOnly(['stateJson', 'lastWriter', 'rev', 'updatedAt']) &&
+         // ============ 🔒 تحصين (Red Team fix — Document Size Guard على مستوى السيرفر) ============
+         // نفس فحص الحجم اللي أضفناه فى الكود (pushStateToCloud)، لكن هنا كخط دفاع ثانٍ
+         // حقيقي على مستوى السيرفر — الكود فى المتصفح ممكن يتلاعب فيه، لكن قاعدة الـ
+         // Firestore دي بتتنفذ على سيرفرات جوجل ومفيش طريقة تتجاوزها من المتصفح.
+         request.resource.data.stateJson.size() < 1048576);
+
+      allow delete: if isOwner();
+    }
+
+    match /deviceAccess/{uid} {
+      allow read: if isOwner() || (request.auth != null && request.auth.uid == uid);
+
+      // ⚠️ إصلاح: العامل وقت إنشاء طلب دخوله الأول كان يقدر يكتب أي حقل يحبه فى مستنده
+      // (بما فيها accessLevel:'full' أو status:'approved') بدل ما يلتزم بمسار "pending"
+      // العادي. دلوقتي بنقيّد الإنشاء: لازم status يكون 'pending' بالظبط، ومينفعش يبعت
+      // accessLevel أو permissions من الأساس وقت الإنشاء — الحقول دي بيحددها المالك بس
+      // لاحقًا عبر decideAccessRequest (اللي بيستخدم allow update: if isOwner()).
+      allow create: if request.auth != null && request.auth.uid == uid &&
+        request.resource.data.status == 'pending' &&
+        !('accessLevel' in request.resource.data) &&
+        !('permissions' in request.resource.data);
+
+      allow update: if isOwner();
+      allow delete: if isOwner();
+    }
+  }
+}
