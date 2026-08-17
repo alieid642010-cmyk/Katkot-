@@ -1690,7 +1690,13 @@
                 <div class="field"><label>التاريخ</label><input id="d_date" type="date" onchange="recalcAge()"></div>
                 <div class="field"><label>عمر القطيع (يوم) — تلقائي</label><input id="d_age" type="number" inputmode="decimal" readonly style="background:#f3f1e8;"></div>
                 <div class="field full" id="stdRefBox" style="background:#f8f5ed;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;"></div>
-                <div class="field full" id="dailyWorkerBox" style="background:#fdf4f2;border:1px solid #f0c9c5;border-radius:12px;padding:8px;font-size:13px;"></div>
+                <!-- 🔧 إعادة تنظيم: essentialsBox بتتخفي فى وضعي "نهار"/"ليل" (الأكثر استخدامًا)، فمفيش داعي تنبيهات
+                     عامة تحجب أول الفورم قبل الحقول — بقت details مطوية افتراضيًا (ملخص سطر واحد فقط)، بتفضل
+                     ظاهرة فى كل الأوضاع لأنها مش مرتبطة بنهار/ليل، لكن من غير ما تاخد مساحة إلا لو المستخدم فتحها -->
+                <details class="field full" id="d_alertsRemDetails" style="background:#fdf4f2;border:1px solid #f0c9c5;border-radius:12px;font-size:13px;">
+                    <summary id="d_alertsRemSummary" style="padding:8px;font-weight:800;color:#8a3a34;cursor:pointer;">👷 مهمتك دلوقتي</summary>
+                    <div id="d_alertsRemBox" style="padding:0 8px 8px;"></div>
+                </details>
                 <div class="field full" id="d_mortTotalBox" style="background:#f3f1e8;border-radius:10px;padding:8px 10px;font-size:12.5px;"></div>
             </div>
 
@@ -1721,6 +1727,9 @@
             <div class="full dnSection" id="dayBox" style="margin-top:10px;background:#fff6df;border:1px solid #e8d9ad;border-radius:12px;padding:10px;">
                 <div style="font-weight:bold;color:#6B4226;margin-bottom:6px;">☀️ قراءة النهار</div>
                 <div class="form-grid">
+                    <!-- 🔧 تشيك ليست السلامة الحيوية موجودة هنا (جوّه قراءة النهار) مش فى صندوق عام أعلى الفورم كله —
+                         لأنها فعليًا جولة صباحية بتتعمل مرة واحدة مع دخول العنبر نهارًا، مش حاجة منفصلة عن التوقيت -->
+                    <div class="field full" id="d_checklistBoxDay" style="background:#eef6f0;border:1px solid #bfe0c8;border-radius:12px;padding:8px;font-size:13px;"></div>
                     <div class="field full" id="dailyDueBoxDay" style="background:#fff8ea;border:1px solid #e8d9ad;border-radius:12px;padding:8px;font-size:13px;"></div>
                     <div class="field"><label>صنف العلف نهارًا</label><select id="d_feeditem" onchange="onFeedItemManualChange()"></select>
                         <div id="d_feeditem_warn" style="display:none;font-size:11px;color:#b45309;background:#fff8ea;border:1px solid #e8d9ad;border-radius:8px;padding:6px 8px;margin-top:5px;"></div>
@@ -2142,6 +2151,16 @@
                         <button type="button" class="btn ghost sm" onclick="voiceInput('ic_title', this)" title="إدخال صوتي">🎤</button>
                     </div>
                 </div>
+                <div class="field full"><label>المرض/التشخيص المحدد (اختياري لو معروف)</label>
+                    <input id="ic_disease" list="dl_diseaseNames" placeholder="مثال: جمبورو، نيوكاسل، كوكسيديا، CRD...">
+                    <datalist id="dl_diseaseNames">
+                        <option value="نيوكاسل"></option><option value="جمبورو"></option><option value="التهاب الشعب الهوائية المعدي (IB)"></option>
+                        <option value="أنفلونزا الطيور"></option><option value="كوكسيديا"></option><option value="التهاب الأمعاء النخري"></option>
+                        <option value="إيكولاي/كوليباسيلوزس"></option><option value="مرض مزمن تنفسي CRD"></option><option value="جدري الطيور"></option>
+                        <option value="النقرس"></option><option value="الاستسقاء (Ascites)"></option><option value="متلازمة الموت المفاجئ"></option>
+                    </datalist>
+                </div>
+                <p style="font-size:10px;color:var(--muted);margin:-4px 2px 4px;">💡 لو حددت اسم المرض، هيساعد فى ربط الحوادث المتشابهة بدقة أعلى من مجرد "نوع الحادثة" العام، ويساعد فى رصد الأمراض اللي بتتبع بعضها.</p>
                 <div class="field full"><label>الحل المستخدم (لو فيه)</label><input id="ic_solution" list="dl_invItems" placeholder="مثال: فيتامين سي + إلكتروليت فى الماء"></div>
                 <div class="field full"><label>نتيجة الحل</label>
                     <select id="ic_outcome">
@@ -2503,7 +2522,9 @@
         // بيحسب كام % من مجموعة القيم التاريخية "أسوأ" من القيمة الحالية (كل ما زاد % كان الأداء الحالي أفضل نسبيًا)
         function percentileBeats(value, historyArr, higherIsBetter) {
             const vals = (historyArr || []).filter(v => v != null && !isNaN(v));
-            if (value == null || isNaN(value) || vals.length < 2) return null;
+            // ⚠️ إصلاح: كان الحد الأدنى دورتين بس (n=2) — نسبة مئوية من عينة بحجم 2 ممكن تقفز 0%↔100% بمجرد
+            // إضافة دورة واحدة، وده مضلل بصريًا حتى لو الشارة جنبها بتقول "ثقة منخفضة". رفعنا الحد لـ3 كحد أدنى حقيقي.
+            if (value == null || isNaN(value) || vals.length < 3) return null;
             const worseCount = vals.filter(v => higherIsBetter ? (value > v) : (value < v)).length;
             const tieCount = vals.filter(v => v === value).length;
             return Math.round(((worseCount + tieCount * 0.5) / vals.length) * 100);
@@ -2532,7 +2553,7 @@
                 const xfin = computeFinance(x, xm);
                 return { epef: xm.epef, fcr: xm.fcr, mortRate: xm.mortRate, costPerKg: xfin.costPerKg };
             }).filter(r => r.epef != null);
-            if (rows.length < 2) return null;
+            if (rows.length < 3) return null; // ⚠️ إصلاح: رفعنا الحد الأدنى من دورتين لـ3 (نفس حد percentileBeats) عشان النسب المعروضة تبقى ذات معنى إحصائي أدنى
             const metrics = [
                 { key: 'epef', label: 'EPEF', value: m.epef, higherIsBetter: true },
                 { key: 'fcr', label: 'معدل التحويل FCR', value: m.fcr, higherIsBetter: false },
@@ -2541,7 +2562,7 @@
             ];
             const breakdown = metrics.map(mt => {
                 const hist = rows.map(r => r[mt.key]).filter(v => v != null);
-                const pct = hist.length >= 2 ? percentileBeats(mt.value, hist, mt.higherIsBetter) : null;
+                const pct = hist.length >= 3 ? percentileBeats(mt.value, hist, mt.higherIsBetter) : null;
                 return { ...mt, pct, sample: hist.length };
             }).filter(x => x.pct != null);
             if (!breakdown.length) return null;
@@ -2549,8 +2570,22 @@
             const epefRows = rows.map(r => r.epef).filter(v => v != null);
             const betterCount = epefRows.filter(v => (m.epef || 0) > v).length;
             const rankPos = epefRows.length - betterCount; // 1 = الأفضل
+            // ============ (جديد) مرجع مطلق مستقل عن تاريخ المزرعة — يعالج فجوة "الترتيب نسبي بس مقابل نفسه" ============
+            // كل الأرقام فوق دي نسبية (مقارنة بدوراتك المؤرشفة أنت بس) — لو كل دوراتك كانت متوسطة الأداء
+            // صناعيًا، الترتيب ممكن يطلع "🥇 الأفضل" وهو أداء عادي فعليًا. هنا بنقارن كمان بمعيار السلالة
+            // القياسي المطلق (منحنى الوزن/العلف الرسمي) المستقل تمامًا عن تاريخ المستخدم.
+            let absolute = null;
+            if (m.age > 0) {
+                const stdWAbs = getRefValue(b, 'weight', m.age); // جرام
+                const stdFeedAbs = getRefValue(b, 'feed', m.age); // جرام/طائر تراكمي
+                if (stdWAbs > 0 && stdFeedAbs > 0) {
+                    const stdFcrAbs = stdFeedAbs / stdWAbs; // نفس وحدة m.fcr (كجم علف/كجم وزن حي، النسبة بتتلغي)
+                    const fcrDiffPct = m.fcr != null ? ((m.fcr - stdFcrAbs) / stdFcrAbs) * 100 : null;
+                    absolute = { stdFcrAbs, fcrDiffPct, weightDiffPct: m.weightDiffPct, atAge: m.age };
+                }
+            }
             return { score, breakdown, rank: { position: Math.max(1, rankPos), total: epefRows.length + 1 },
-                sampleSize: rows.length, conf: confBadge(rows.length) };
+                sampleSize: rows.length, conf: confBadge(rows.length), absolute };
         }
 
         // ============ تقييم أداء العمال (Worker Performance) ============
@@ -2587,6 +2622,22 @@
                     const filled = optionalFields.filter(f => r[f] != null && r[f] !== '').length;
                     completenessSum += (filled / optionalFields.length) * 100;
                 });
+                // ============ (جديد) كشف أنماط إدخال مشبوهة — مش اتهام، مجرد إشارة "راجع يدويًا" ============
+                // 1) قيم متطابقة تمامًا (تباين صفري) عبر عدد كبير من السجلات فى حقل بطبيعته متغيّر يوميًا بيولوجيًا
+                //    (وزن/حرارة) — ده نمط غير طبيعي بيولوجيًا وممكن يكون نسخ قيمة قديمة بدل قياس فعلي كل مرة.
+                // 2) دفعة كبيرة من السجلات اتسجلت بنفس timestamp بالظبط — مؤشر تعبئة لاحقة دفعة واحدة بدل تسجيل آني.
+                const anomalyFlags = [];
+                ['weight', 'temp'].forEach(f => {
+                    const vals = g.records.map(r => r[f]).filter(v => v != null && v !== '' && !isNaN(v)).map(Number);
+                    if (vals.length >= 8) {
+                        const sd = stdDev(vals);
+                        if (sd === 0) anomalyFlags.push(`قيم "${f === 'weight' ? 'الوزن' : 'الحرارة'}" متطابقة تمامًا فى كل الـ${vals.length} سجل — غير منطقي بيولوجيًا، راجع طريقة القياس الفعلية`);
+                    }
+                });
+                const tsCounts = {};
+                g.records.forEach(r => { if (r.enteredAt) tsCounts[r.enteredAt] = (tsCounts[r.enteredAt] || 0) + 1; });
+                const maxBurst = Object.values(tsCounts).reduce((a, c) => Math.max(a, c), 0);
+                if (n >= 6 && maxBurst >= Math.max(4, Math.ceil(n * 0.5))) anomalyFlags.push(`${maxBurst} من أصل ${n} سجل اتسجلوا بنفس اللحظة بالظبط — يرجّح تعبئة لاحقة دفعة واحدة بدل تسجيل يومي آني`);
                 return {
                     name, recordsCount: n, edits: g.edits,
                     quickInts: g.quickInts, incidents: g.incidents, execs: g.execs,
@@ -2594,6 +2645,7 @@
                     onTimePct: n ? (onTime / n) * 100 : null,
                     avgDelayDays: n ? totalDelay / n : null,
                     completenessPct: n ? completenessSum / n : null,
+                    anomalyFlags,
                 };
             });
             rows.sort((a, c) => c.totalEffort - a.totalEffort);
@@ -3491,10 +3543,36 @@
         };
 
         // دوال مساعدة للكتالوج
-        function getSpeciesData(speciesKey) {
+        // ============ (جديد) مطابقة نص السلالة الحر (breed) اللي بيكتبه المستخدم مع سلالات تجارية معروفة لها منحنى نمو مختلف ============
+        // المشكلة الأصلية: المرجع المعياري كان مربوط بـ"النوع" (دجاج تسمين) بس، فروص 308 وكوب 500 وهوبارد
+        // كانوا بيتقارنوا كلهم بمنحنى واحد رغم إن منحناهم الفعلي مختلف — مقارنة غير دقيقة تأثر على كل التحليلات.
+        const BREED_NAME_ALIASES = {
+            ross308: ['روص', 'ross', 'روس 308', 'روص 308'],
+            cobb500: ['كوب', 'cobb', 'كوب 500', 'كوب500'],
+        };
+        function detectBreedKey(breedText) {
+            if (!breedText) return null;
+            const t = String(breedText).trim().toLowerCase();
+            if (!t) return null;
+            for (const key of Object.keys(BREED_NAME_ALIASES)) {
+                if (BREED_NAME_ALIASES[key].some(alias => t.includes(alias.toLowerCase()))) return key;
+            }
+            return null;
+        }
+        function getSpeciesData(speciesKey, breedText) {
             const base = SPECIES_CATALOG[speciesKey] || SPECIES_CATALOG.broiler;
             const ov = (state.speciesOverrides || {})[speciesKey];
-            return ov ? { ...base, ...ov } : base;
+            let result = ov ? { ...base, ...ov } : base;
+            // 1) تعديل يدوي مخصّص لسلالة بعينها (لو المستخدم حفظ واحد صراحة من محرر المرجع) — أعلى أولوية
+            const breedKey = detectBreedKey(breedText);
+            const breedOv = breedKey && state.speciesOverrides ? state.speciesOverrides[speciesKey + '::' + breedKey] : null;
+            if (breedOv) return { ...result, ...breedOv };
+            // 2) لو مفيش تعديل يدوي، لكن السلالة معروفة (روص/كوب) وعندها منحنى وزن عالمي جاهز ومفيش تعديل عام
+            //    يدوي مقصود على مستوى النوع كله (لو المستخدم عدّل يدويًا على مستوى النوع، بنحترم اختياره ومنستبدلوش تلقائيًا)
+            if (breedKey && !ov && GLOBAL_BREED_BENCHMARKS[breedKey]) {
+                result = { ...result, weight: GLOBAL_BREED_BENCHMARKS[breedKey].weight, breedAutoMatched: breedKey };
+            }
+            return result;
         }
 
         // ============ خطة المساحة/التحضين والتجهيزات (علافات + سقايات/نبل) طوال الدورة ============
@@ -3911,7 +3989,7 @@
         }
 
         function getRefValue(b, key, day) {
-            const data = getSpeciesData(b.species);
+            const data = getSpeciesData(b.species, b.breed);
             if (!data[key]) return null;
             // الوزن والعلف بس هما اللي عندهم مقابل تاريخي حقيقي فى دوراتك (أداء) يستحق المزج معه؛
             // القيم البيئية (حرارة/رطوبة/أمونيا...) تفضل معيارية بحتة لأنها "هدف" مش "أداء سابق" يُقاس عليه
@@ -4246,6 +4324,7 @@
             // بأكتر من بايت للحرف، وده فرق حقيقي فى تطبيق كل نصوصه عربي.
             try { return new TextEncoder().encode(jsonStr).length; } catch (e) { return jsonStr.length * 3; } // تقدير احتياطي متحفّظ لو TextEncoder غير متاح
         }
+        let _cloudSyncing = false; // ============ (جديد) حالة "بيتم الحفظ" مرئية وقت الرفع الفعلي للسحاب — قبل كده كان المستخدم شايف "🟢 متصل" بس من غير ما يعرف لو آخر تعديل له فعلاً اتحفظ أو لسه فى الطريق ============
         function pushStateToCloud(immediate) {
             if (_applyingRemoteUpdate || !cloudSyncEnabled || !farmId || !fbDb) return Promise.resolve();
             clearTimeout(_cloudPushTimer);
@@ -4272,12 +4351,16 @@
                     showToast(`⚠️ بيانات المزرعة وصلت ${pct}% من حد المزامنة السحابية — فكّر فى أرشفة الدورات القديمة جدًا أو تصدير نسخة والاحتفاظ بيها محليًا`);
                 }
                 _lastPushedRev = Date.now();
+                _cloudSyncing = true; updateConnStatus();
                 return fbDb.collection('farms').doc(farmId).set({
                     stateJson: jsonStr,
                     lastWriter: getDeviceId(),
                     rev: _lastPushedRev,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true }).then(() => { cloudConnected = true; }).catch(e => { cloudConnected = false; console.error('فشل رفع البيانات للسحاب', e); throw e; });
+                }, { merge: true })
+                    .then(() => { cloudConnected = true; })
+                    .catch(e => { cloudConnected = false; console.error('فشل رفع البيانات للسحاب', e); throw e; })
+                    .finally(() => { _cloudSyncing = false; updateConnStatus(); });
             };
             if (immediate) return doPush();
             return new Promise((resolve) => { _cloudPushTimer = setTimeout(() => { doPush().catch(() => {}).finally(resolve); }, 1200); }); // تجميع التعديلات المتتالية فى رفعة واحدة بدل ما نرفع مع كل حرف يتكتب
@@ -4712,7 +4795,7 @@
                     showToast(decision === 'approved' ? '✅ اتسمحله يستخدم التطبيق' : '🚫 اتمنع');
                     accessRequestPanelOpen[deviceId] = false;
                 })
-                .catch(e => { console.error(e); showToast('❌ فشل تنفيذ القرار — راجع صلاحيات فايرستور'); });
+                .catch(e => { console.error(e); showToast('❌ فشل تنفيذ القرار — تأكد من اتصال الإنترنت وحاول تاني، أو تواصل مع الدعم لو استمرت'); });
         }
         function revokeAccess(deviceId) {
             showConfirm('هل تريد إلغاء صلاحية هذا الجهاز؟ هيتقفل فورًا حتى لو التطبيق مفتوح عنده دلوقتي.', () => decideAccessRequest(deviceId, 'denied'), 'إلغاء الصلاحية');
@@ -5403,6 +5486,17 @@
         }
 
         function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+        // ============ 🔴 تنفيذ Critique (2): البُعد الثاني للذاكرة المرضية — الموسم/وقت السنة، مستخرج من تاريخ الحادثة ============
+        // نستخدم الفصول الأربعة (مش الشهر مباشرة) عشان العينة تفضل كافية إحصائيًا — 12 شهر هيقسّم بيانات قليلة أصلاً
+        // لدرجة مفيش فيها معنى، أما 4 فصول فبتحافظ على قوة إحصائية معقولة وبرضه بتلتقط الفرق المناخي الحقيقي فى مصر.
+        function seasonOf(dateStr) {
+            if (!dateStr) return null;
+            const m = new Date(dateStr).getMonth() + 1; // 1-12
+            if (m >= 6 && m <= 9) return 'صيف';
+            if (m === 12 || m <= 2) return 'شتاء';
+            if (m >= 3 && m <= 5) return 'ربيع';
+            return 'خريف';
+        }
 
         function fmt(n, d = 1) { if (n === null || n === undefined || isNaN(n)) return '—'; return Number(n).toLocaleString(
                 'ar-EG', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
@@ -6116,37 +6210,58 @@
         // ============ (جديد) صفحة العامل الموحّدة: تنبيهات نشطة + تشيك ليست السلامة الحيوية اليوم + تذكيرات مستحقة ============
         // الهدف: العامل يفتح "تسجيل بيانات اليوم" ويلاقي كل حاجة محتاج يتعامل معاها فى مكان واحد —
         // يتابع البروتوكول (تشيك ليست)، يشوف التنبيهات النشطة، وينفّذ التذكيرات المستحقة — من غير ما يدوّر فى تابات تانية.
+        // ============ 👷 مهمتك دلوقتي — بعد إعادة التنظيم: صندوقين منفصلين بدل واحد يحجب أول الفورم ============
+        // 1) d_alertsRemBox (تنبيهات + تذكيرات): مش مرتبطة بنهار/ليل، فضلت فى مكانها الأصلي فوق، لكن بقت
+        //    جوّه <details> مطوية افتراضيًا (ملخص سطر واحد) — تتفتح تلقائيًا بس لو فيه تنبيه خطر فعلي (danger)
+        //    عشان الأمان يفضل واضح فورًا، من غير ما التنبيهات الروتينية تحجب حقول الإدخال زي قبل.
+        // 2) d_checklistBoxDay (تشيك ليست السلامة الحيوية): اتنقلت جوّه "☀️ قراءة النهار" لأنها فعليًا جولة
+        //    صباحية بتتعمل مع دخول العنبر نهارًا — منظّمة حسب وقت العمل الفعلي بدل ما تكون عامة فوق كل حاجة.
         function renderDailyWorkerBox() {
-            const box = document.getElementById('dailyWorkerBox');
-            if (!box) return;
+            const detailsEl = document.getElementById('d_alertsRemDetails');
+            const alertsBox = document.getElementById('d_alertsRemBox');
+            const summaryEl = document.getElementById('d_alertsRemSummary');
+            const checklistBox = document.getElementById('d_checklistBoxDay');
             const b = getActiveBatch();
-            if (!b) { box.innerHTML = ''; box.style.display = 'none'; return; }
+            if (!b) {
+                if (detailsEl) detailsEl.style.display = 'none';
+                if (checklistBox) { checklistBox.innerHTML = ''; checklistBox.style.display = 'none'; }
+                return;
+            }
             const m = computeMetrics(b);
             const alerts = computeAlerts(b, m).filter(a => a.level === 'danger' || a.level === 'warn');
             const topAlerts = alerts.slice(0, 6); // نعرض الأهم بس عشان النموذج مايتقلش بحمل زيادة
+            const hasDanger = alerts.some(a => a.level === 'danger');
             const today = todayStr();
             const checklistTasks = b.checklistTemplate || [];
             const doneSet = new Set((b.checklistLog || []).filter(l => l.date === today && l.done).map(l => l.taskId));
             const dueReminders = (b.reminders || []).filter(r => !r.done && r.date <= today);
 
-            if (!topAlerts.length && !checklistTasks.length && !dueReminders.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
-            box.style.display = '';
-
-            const alertsHtml = !topAlerts.length ? '' : `
-                <div style="font-weight:800;color:var(--barn);font-size:12px;margin:0 0 3px;">⚠️ تنبيهات نشطة الآن (${alerts.length}${alerts.length > topAlerts.length ? '، أهم ' + topAlerts.length : ''})</div>
-                ${topAlerts.map(a => `<div class="day" style="margin-bottom:4px;${a.level === 'danger' ? 'color:var(--red);font-weight:700;' : ''}">${a.text}</div>`).join('')}`;
-
-            const checklistHtml = !checklistTasks.length ? '' : `
-                <div style="font-weight:800;color:var(--barn);font-size:12px;margin:8px 0 3px;">🧹 تشيك ليست السلامة الحيوية اليوم (${checklistTasks.filter(t => doneSet.has(t.id)).length}/${checklistTasks.length})</div>
-                ${checklistTasks.map(t => `<div class="check-row"><input type="checkbox" ${doneSet.has(t.id) ? 'checked' : ''} onchange="dailyToggleChecklist('${t.id}')"><div class="txt ${doneSet.has(t.id) ? 'done-strike' : ''}">${esc(t.text)}</div></div>`).join('')}`;
-
-            const reminderHtml = !dueReminders.length ? '' : `
-                <div style="font-weight:800;color:var(--barn);font-size:12px;margin:8px 0 3px;">🔔 تذكيرات مستحقة</div>
-                ${dueReminders.map(r => `<div class="check-row"><div class="txt">${esc(r.title)}${r.date < today ? ' <span style="color:var(--red);">(متأخر)</span>' : ''}</div><button class="btn gold sm" onclick="dailyToggleReminder('${r.id}')">✅ تم</button></div>`).join('')}`;
-
-            box.innerHTML = `
-                <div style="font-weight:800;color:#8a3a34;">👷 مهمتك دلوقتي</div>
-                ${alertsHtml}${checklistHtml}${reminderHtml}`;
+            // --- تنبيهات + تذكيرات (details مطوية، تتفتح تلقائيًا لو فيه خطر فعلي) ---
+            if (detailsEl && alertsBox) {
+                if (!topAlerts.length && !dueReminders.length) { detailsEl.style.display = 'none'; }
+                else {
+                    detailsEl.style.display = '';
+                    detailsEl.open = hasDanger; // خطر فعلي = يتفتح تلقائيًا؛ غير كده يفضل مطوي لحد ما المستخدم يفتحه بنفسه
+                    if (summaryEl) summaryEl.textContent = `👷 مهمتك دلوقتي${(topAlerts.length + dueReminders.length) ? ' (' + (topAlerts.length + dueReminders.length) + ')' : ''}${hasDanger ? ' ⚠️' : ''}`;
+                    const alertsHtml = !topAlerts.length ? '' : `
+                        <div style="font-weight:800;color:var(--barn);font-size:12px;margin:0 0 3px;">⚠️ تنبيهات نشطة الآن (${alerts.length}${alerts.length > topAlerts.length ? '، أهم ' + topAlerts.length : ''})</div>
+                        ${topAlerts.map(a => `<div class="day" style="margin-bottom:4px;${a.level === 'danger' ? 'color:var(--red);font-weight:700;' : ''}">${a.text}</div>`).join('')}`;
+                    const reminderHtml = !dueReminders.length ? '' : `
+                        <div style="font-weight:800;color:var(--barn);font-size:12px;margin:8px 0 3px;">🔔 تذكيرات مستحقة</div>
+                        ${dueReminders.map(r => `<div class="check-row"><div class="txt">${esc(r.title)}${r.date < today ? ' <span style="color:var(--red);">(متأخر)</span>' : ''}</div><button class="btn gold sm" onclick="dailyToggleReminder('${r.id}')">✅ تم</button></div>`).join('')}`;
+                    alertsBox.innerHTML = alertsHtml + reminderHtml;
+                }
+            }
+            // --- تشيك ليست السلامة الحيوية (جوّه قراءة النهار فقط — جولة صباحية) ---
+            if (checklistBox) {
+                if (!checklistTasks.length) { checklistBox.innerHTML = ''; checklistBox.style.display = 'none'; }
+                else {
+                    checklistBox.style.display = '';
+                    checklistBox.innerHTML = `
+                        <div style="font-weight:800;color:var(--barn);font-size:12px;margin:0 0 3px;">🧹 تشيك ليست السلامة الحيوية اليوم (${checklistTasks.filter(t => doneSet.has(t.id)).length}/${checklistTasks.length})</div>
+                        ${checklistTasks.map(t => `<div class="check-row"><input type="checkbox" ${doneSet.has(t.id) ? 'checked' : ''} onchange="dailyToggleChecklist('${t.id}')"><div class="txt ${doneSet.has(t.id) ? 'done-strike' : ''}">${esc(t.text)}</div></div>`).join('')}`;
+                }
+            }
         }
         function dailyToggleChecklist(id) { toggleChecklistTask(id); renderDailyWorkerBox(); }
         function dailyToggleReminder(id) { toggleReminder(id); renderDailyWorkerBox(); }
@@ -6842,7 +6957,7 @@
                 showToast('تم تحديث بيانات الدفعة بنجاح ✅');
                 return;
             }
-            const spData = getSpeciesData(species);
+            const spData = getSpeciesData(species, breed);
             const batch = {
                 id: uid(),
                 name,
@@ -9528,13 +9643,24 @@
                 return stdAtLast > 0 ? lastP.weight * (stdAtAge / stdAtLast) : lastP.weight;
             }
 
+            // ============ 🔴 Red Team fix (تناغم المبيعات مع الإنتاج): liveCount كان بيتحسب من (البداية - نفوق - استبعاد) ============
+            // بس، من غير ما يطرح الطيور اللي اتباعت فعليًا فى تفريغ جزئي أثناء الدورة (شائع جدًا فى التسمين المصري).
+            // النتيجة: بعد أي بيع جزئي، كل حساب بعده (الكثافة، الكتلة الحيوية، EPEF، وأي تحليل مبني عليهم) كان
+            // بيفترض إن كل الطيور المتبقية لسه موجودة فى العنبر، فيضخّم تنبيهات الكثافة ويشوّه FCR/EPEF بعد البيع.
+            const meatSalesSorted = (b.sales || []).filter(s => s.kind !== 'litter' && s.count > 0).sort((a, c) => a.date.localeCompare(c.date));
+            const soldCountAsOf = (dateStr) => {
+                let sum = 0;
+                for (const s of meatSalesSorted) { if (s.date <= dateStr) sum += s.count; else break; }
+                return sum;
+            };
             let cumMort = 0, cumCull = 0, cumFeed = 0, cumWater = 0;
             const series = recs.map(r => {
                 cumMort += (r.mort || 0);
                 cumCull += (r.cull || 0);
                 cumFeed += (r.feed || 0);   // تراكمي بالكجم
                 cumWater += (r.water || 0); // تراكمي باللتر
-                const liveCount = Math.max(b.startCount - cumMort - cumCull, 0);
+                const cumSold = soldCountAsOf(r.date);
+                const liveCount = Math.max(b.startCount - cumMort - cumCull - cumSold, 0);
                 const weightIsEstimated = r.weight == null;
                 const effWeight = weightIsEstimated ? estimateWeight(r.age) : r.weight;
                 const biomassKg = (liveCount * effWeight) / 1000;
@@ -9544,15 +9670,16 @@
                 const gainKg = Math.max(biomassKg - initialBiomassAtDay, 0);
                 const fcr = (gainKg > 0 && cumFeed > 0) ? cumFeed / gainKg : null;
                 const stdW = getRefValue(b, 'weight', r.age) || 0;
-                return { ...r, cumMort, cumCull, cumFeed, cumWater, liveCount, biomassKg, gainKg, fcr, stdW, effWeight, weightIsEstimated };
+                return { ...r, cumMort, cumCull, cumSold, cumFeed, cumWater, liveCount, biomassKg, gainKg, fcr, stdW, effWeight, weightIsEstimated };
             });
 
             // نقطة البداية
             if (!series.length || series[0].age !== 0) {
+                const soldAtStart = soldCountAsOf(b.startDate);
                 series.unshift({
                     date: b.startDate, age: 0, mort: 0, cull: 0, feed: 0, water: 0, weight: b.startweight, notes: '',
-                    cumMort: 0, cumCull: 0, cumFeed: 0, cumWater: 0, liveCount: b.startCount,
-                    biomassKg: b.startCount * startWeightKg, gainKg: 0, fcr: null,
+                    cumMort: 0, cumCull: 0, cumSold: soldAtStart, cumFeed: 0, cumWater: 0, liveCount: Math.max(b.startCount - soldAtStart, 0),
+                    biomassKg: Math.max(b.startCount - soldAtStart, 0) * startWeightKg, gainKg: 0, fcr: null,
                     stdW: getRefValue(b, 'weight', 0) || b.startweight, effWeight: b.startweight, weightIsEstimated: false
                 });
             }
@@ -9674,11 +9801,8 @@
             const df = Math.pow((va / a.length) + (vc / c.length), 2) /
                 ((Math.pow(va / a.length, 2) / (a.length - 1)) + (Math.pow(vc / c.length, 2) / (c.length - 1)) || 1);
             let critical = df <= 6 ? 2.6 : (df <= 12 ? 2.2 : 2.0);
-            // ============ 🔴 إصلاح Red Team: تصحيح بونفيروني تقريبي عند فحص عدة بنود مع بعض (إضافات/معاملات/شحنات) ============
-            // كل ما زاد عدد الاختبارات المتزامنة، زاد احتمال ظهور "دلالة إحصائية" وهمية بالصدفة البحتة (Multiple Comparisons
-            // Problem) — بدون تصحيح، لو عندك 10 إضافات شغالة، فرصة إن واحدة منهم على الأقل تظهر "دالة" بالصدفة عالية جدًا حتى
-            // لو كلهم فعليًا بلا أثر. هنا بنرفع العتبة الحرجة تقريبيًا مع log2(عدد الاختبارات) — بديل عملي مبسّط لجدول
-            // بونفيروني الكامل، متسق مع أسلوب الثوابت التقريبية المستخدم أصلاً فى نفس الدالة (عتبات df).
+            // ============ 🔴 إصلاح Red Team (مدموج من فرع تطوير آخر): تصحيح بونفيروني تقريبي عند فحص عدة بنود مع ============
+            // بعض (إضافات/معاملات/شحنات) — كل ما زاد عدد الاختبارات المتزامنة، زاد احتمال ظهور "دلالة" وهمية بالصدفة.
             const numTests = Math.max(1, numComparisons || 1);
             if (numTests > 1) critical += Math.min(Math.log2(numTests) * 0.3, 1.4);
             return { significant: tStat >= critical, tStat, df, meanA: ma, meanC: mc, critical, numComparisons: numTests };
@@ -9807,7 +9931,7 @@
             const b = getActiveBatch(); if (!b) return;
             if (!b.dismissedAlerts) b.dismissedAlerts = {};
             b.dismissedAlerts['alert_' + key] = todayStr();
-            // ============ 🔴 إصلاح Red Team: تتبّع تراكمي لعدد مرات كتم نفس التنبيه — أساس حلقة "إجهاد التنبيهات" =========
+            // ============ 🔴 إصلاح Red Team (مدموج): تتبّع تراكمي لعدد مرات كتم نفس التنبيه — أساس حلقة "إجهاد التنبيهات" ============
             // (يُستخدم فى computeUnifiedPriorities عشان تنبيه اتكتم كتير قبل كده ياخد أولوية أقل فى "أهم 3 أفعال")
             if (!b.alertDismissCount) b.alertDismissCount = {};
             b.alertDismissCount[key] = (b.alertDismissCount[key] || 0) + 1;
@@ -9838,7 +9962,7 @@
                 const h = b.alertHistory[k];
                 if (!activeKeys.has(k) && !h.resolved) {
                     h.resolved = true; h.resolvedDate = today;
-                    // ============ 🔴 إصلاح Red Team: لما تنبيه يتحل فعليًا (مش بس يتكتم)، نخفّف نصف "إجهاده" التراكمي =========
+                    // ============ 🔴 إصلاح Red Team (مدموج): لما تنبيه يتحل فعليًا (مش بس يتكتم)، نخفّف نصف "إجهاده" التراكمي ============
                     // عشان لو رجع يظهر تاني بعد فترة طويلة كمشكلة جديدة فعلاً، ميفضلش مقموع بتاريخ كتم قديم غير ذي صلة.
                     if (b.alertDismissCount && b.alertDismissCount[k]) {
                         b.alertDismissCount[k] = Math.floor(b.alertDismissCount[k] / 2);
@@ -9861,8 +9985,8 @@
             const actionBtn = a.planKey
                 ? `<button class="btn ghost sm" style="flex-shrink:0;padding:3px 8px;" onclick="markPlanDone('${a.planKey}')" title="نفّذتها">✓ نفّذتها</button>`
                 : `<button class="btn ghost sm" style="flex-shrink:0;padding:3px 8px;" onclick="dismissAlert('${a.key}')" title="كتم لحد بكرة">🔕</button>`;
-            // ============ 🔴 إصلاح Red Team: شارة شفافية — توضّح إن التنبيه ده أخذ أولوية أقل فى "أهم 3 أفعال" ============
-            // لأنك كتمته كتير قبل كده، بدل ما يبقى تصرّف مخفي فى الخوارزمية من غير ما تعرف السبب.
+            // ============ 🔴 إصلاح Red Team (مدموج): شارة شفافية توضّح إن التنبيه أخذ أولوية أقل فى "أهم 3 أفعال" ============
+            // لأنه اتكتم كتير قبل كده، بدل ما يبقى تصرّف مخفي فى الخوارزمية من غير ما تعرف السبب.
             const fatigueBadge = (a.level === 'warn' && a.dismissCount >= 3)
                 ? `<span style="font-size:9.5px;color:var(--muted);flex-shrink:0;" title="كتمته ${a.dismissCount} مرة قبل كده — بياخد أولوية أقل فى أهم 3 أفعال">🔕×${a.dismissCount}</span>` : '';
             return `<div class="alert-item ${a.level}" style="display:flex;align-items:center;gap:6px;justify-content:space-between;">
@@ -9988,7 +10112,7 @@
             let bestEpef = null;
             const archivedEpefVals = [];
             archived.forEach(x => { const xm = computeMetrics(x); if (xm.epef != null) { archivedEpefVals.push(xm.epef); if (bestEpef == null || xm.epef > bestEpef) bestEpef = xm.epef; } });
-            const epefPercentile = archivedEpefVals.length >= 2 ? percentileBeats(projEpef, archivedEpefVals, true) : null;
+            const epefPercentile = archivedEpefVals.length >= 3 ? percentileBeats(projEpef, archivedEpefVals, true) : null;
             return { targetAge, remainingDays, projWeightKg, projLiveCountPct, projFcr, projEpef, bestEpef, epefPercentile, sampleSize: archivedEpefVals.length };
         }
 
@@ -10544,8 +10668,12 @@
                 const prev = i > 0 ? series[i - 1] : null;
                 const gainPerBirdG = prev != null ? (r.effWeight - prev.effWeight) : null;
                 const dailyGainKgFlock = gainPerBirdG != null ? (gainPerBirdG / 1000) * r.liveCount : null;
+                // ============ (جديد) معدل تحويل يومي تقريبي (Daily FCR proxy) — علف اليوم ÷ الزيادة الفعلية فى الكتلة الحيوية لنفس اليوم ============
+                // بيتقلب يوميًا بشكل طبيعي (بعكس معدل التحويل التراكمي الثابت)، فبيصلح كسلسلة نقدر نطبّق عليها اختبار Welch
+                // زي ما بنعمل بالظبط مع النفوق والانحراف فى الوزن، بدل ما الـFCR يفضل "فرق نسبي وصفي" بس فى كل مكان.
+                const fcrDaily = (r.feed != null && dailyGainKgFlock != null && dailyGainKgFlock > 0) ? (r.feed / dailyGainKgFlock) : null;
                 return { age: r.age, mort: (r.mort || 0) + (r.cull || 0), feed: r.feed,
-                    dailyGainKgFlock, devPct: r.stdW > 0 ? ((r.effWeight - r.stdW) / r.stdW) * 100 : null };
+                    dailyGainKgFlock, fcrDaily, devPct: r.stdW > 0 ? ((r.effWeight - r.stdW) / r.stdW) * 100 : null };
             });
             function perfPeriodStats(days) {
                 const mortRate = days.length ? days.reduce((s, d) => s + d.mort, 0) / days.length : null;
@@ -10556,6 +10684,12 @@
                 const gainSum = gainDays.reduce((s, d) => s + d.dailyGainKgFlock, 0);
                 const periodFcr = gainSum > 0 ? feedSum / gainSum : null;
                 return { mortRate, avgDev, periodFcr };
+            }
+            // ============ فلترة القيم الشاذة إحصائيًا من سلسلة الـFCR اليومي قبل اختبار الدلالة — يوم واحد بعلف غير منطقي (خطأ إدخال/تسرب) مش المفروض يقلب النتيجة ============
+            function fcrDailyClean(days) {
+                const vals = days.map(d => d.fcrDaily).filter(v => v != null && v > 0);
+                const bounds = iqrBounds(vals);
+                return bounds ? vals.filter(v => v >= bounds.lower && v <= bounds.upper) : vals;
             }
 
             let additiveAnalysis = null;
@@ -10583,20 +10717,22 @@
                             const a = allAdditives[idx];
                             const activeDays = dailyPerf.filter(d => additiveActiveOnDay(a, d.age));
                             const inactiveDays = dailyPerf.filter(d => !additiveActiveOnDay(a, d.age));
-                            // ============ 🔴 إصلاح Red Team: تصحيح المقارنات المتعددة — عدد الاختبارات = كل إضافة × (نفوق + وزن) ============
-                            const additiveNumTests = allAdditives.length * 2;
+                            // ============ 🔴 إصلاح Red Team (مدموج): تصحيح المقارنات المتعددة — كل إضافة × 3 اختبارات (نفوق/وزن/تحويل) ============
+                            const additiveNumTests = allAdditives.length * 3;
                             const mortSig = welchSignificant(activeDays.map(d => d.mort), inactiveDays.map(d => d.mort), additiveNumTests);
                             const devSig = welchSignificant(activeDays.map(d => d.devPct).filter(v => v != null), inactiveDays.map(d => d.devPct).filter(v => v != null), additiveNumTests);
+                            // ============ (جديد) دلالة إحصائية لمعدل التحويل اليومي — بدل ما نحكم على الإضافة بفرق نسبي بس ============
+                            const fcrSig = welchSignificant(fcrDailyClean(activeDays), fcrDailyClean(inactiveDays), additiveNumTests);
                             const reasons = [];
                             if (r.activeMortRate > (r.inactiveMortRate * 1.3 + 0.05) && mortSig.significant) reasons.push({ key: 'mort', size: r.activeMortRate - r.inactiveMortRate });
                             if (r.activeDev != null && r.inactiveDev != null && (r.inactiveDev - r.activeDev) >= 3 && devSig.significant) reasons.push({ key: 'weight', size: r.inactiveDev - r.activeDev });
-                            if (r.activeFcr != null && r.inactiveFcr != null && r.activeFcr > r.inactiveFcr * 1.1) reasons.push({ key: 'fcr', size: r.activeFcr - r.inactiveFcr });
+                            if (r.activeFcr != null && r.inactiveFcr != null && r.activeFcr > r.inactiveFcr * 1.1 && fcrSig.significant) reasons.push({ key: 'fcr', size: r.activeFcr - r.inactiveFcr });
                             const positiveReasons = [];
                             if (r.activeDev != null && r.inactiveDev != null && (r.activeDev - r.inactiveDev) >= 3 && devSig.significant) positiveReasons.push({ key: 'weight', size: r.activeDev - r.inactiveDev });
-                            if (r.activeFcr != null && r.inactiveFcr != null && r.inactiveFcr > r.activeFcr * 1.1) positiveReasons.push({ key: 'fcr', size: r.inactiveFcr - r.activeFcr });
+                            if (r.activeFcr != null && r.inactiveFcr != null && r.inactiveFcr > r.activeFcr * 1.1 && fcrSig.significant) positiveReasons.push({ key: 'fcr', size: r.inactiveFcr - r.activeFcr });
                             reasons.sort((x, y) => y.size - x.size);
                             positiveReasons.sort((x, y) => y.size - x.size);
-                            return { ...r, reasons, positiveReasons, statSignificant: mortSig.significant || devSig.significant };
+                            return { ...r, reasons, positiveReasons, fcrStatSignificant: fcrSig.significant, statSignificant: mortSig.significant || devSig.significant || fcrSig.significant };
                         });
                         const flagged = withReason.filter(r => r.reasons.length)
                             .sort((x, y) => (y.reasons[0] ? y.reasons[0].size : 0) - (x.reasons[0] ? x.reasons[0].size : 0));
@@ -10629,26 +10765,26 @@
                         const afterDailyPerf = dailyPerf.filter(d => d.age > doneAge && d.age <= doneAge + 3);
                         const beforePerf = perfPeriodStats(beforeDailyPerf);
                         const afterPerf = perfPeriodStats(afterDailyPerf);
-                        // ============ 🔴 إصلاح Red Team: تصحيح المقارنات المتعددة — عدد الاختبارات = كل معاملة منفَّذة × (نفوق + أمونيا + وزن) ============
-                        const treatNumTests = doneTreatments.length * 3;
+                        // ============ 🔴 إصلاح Red Team (مدموج): تصحيح المقارنات المتعددة — كل معاملة × 4 اختبارات (نفوق/أمونيا/وزن/تحويل) ============
+                        const treatNumTests = doneTreatments.length * 4;
                         const mortSig = welchSignificant(before.map(r => (r.mort || 0) + (r.cull || 0)), after.map(r => (r.mort || 0) + (r.cull || 0)), treatNumTests);
-                        // ⚠️ إصلاح: الأمونيا والوزن كان بيتحكم فيهم نسبة مباشرة بس من غير أي اختبار دلالة —
-                        // دلوقتي بنطبّق نفس اختبار Welch المستخدم أصلاً للنفوق. الـ FCR لسه مفيهوش سلسلة يومية
-                        // طبيعية تصلح لاختبار تباين (شوف نفس الملاحظة فى additiveAnalysis)، فهيفضل نسبة وصفية بس.
+                        // ⚠️ إصلاح: الأمونيا والوزن والـFCR كانوا بيتحكم فيهم نسبة مباشرة بس من غير أي اختبار دلالة —
+                        // دلوقتي بنطبّق نفس اختبار Welch المستخدم أصلاً للنفوق على الاتلاتة، بما فيهم معدل التحويل
+                        // اليومي التقريبي (fcrDaily) بدل ما يفضل الوحيد اللي بيتحكم فيه بنسبة وصفية بس.
                         const nh3Sig = welchSignificant(nh3BeforeArr, nh3AfterArr, treatNumTests);
                         const devSig = welchSignificant(beforeDailyPerf.map(d => d.devPct).filter(v => v != null), afterDailyPerf.map(d => d.devPct).filter(v => v != null), treatNumTests);
+                        const fcrSig = welchSignificant(fcrDailyClean(beforeDailyPerf), fcrDailyClean(afterDailyPerf), treatNumTests);
                         return { name: t.name, doneAge, mortBefore, mortAfter, nh3Before, nh3After,
                             devBefore: beforePerf.avgDev, devAfter: afterPerf.avgDev, fcrBefore: beforePerf.periodFcr, fcrAfter: afterPerf.periodFcr,
-                            mortStatSignificant: mortSig.significant, nh3StatSignificant: nh3Sig.significant, devStatSignificant: devSig.significant };
+                            mortStatSignificant: mortSig.significant, nh3StatSignificant: nh3Sig.significant, devStatSignificant: devSig.significant, fcrStatSignificant: fcrSig.significant };
                     }).filter(Boolean);
                     if (rows.length) {
-                        // نعلّم المعاملات اللي حسّنت النفوق أو الأمونيا أو الوزن أو معدل التحويل بوضوح بعد تنفيذها
-                        // (تحسّن النفوق/الأمونيا/الوزن لازم يكون مدعوم بدلالة إحصائية Welch مش بس نسبة، لصغر
-                        // حجم عينة قبل/بعد عادة 3-4 أيام — الـ FCR وحده بيفضل نسبة وصفية لعدم وجود سلسلة يومية له)
+                        // نعلّم المعاملات اللي حسّنت النفوق أو الأمونيا أو الوزن أو معدل التحويل بوضوح بعد تنفيذها —
+                        // الأربعة كلهم دلوقتي مدعومين بدلالة إحصائية Welch مش نسبة وصفية بس.
                         const improved = rows.filter(r => (r.mortAfter < r.mortBefore * 0.7 && r.mortStatSignificant)
                             || (r.nh3Before != null && r.nh3After != null && r.nh3After < r.nh3Before * 0.8 && r.nh3StatSignificant)
                             || (r.devBefore != null && r.devAfter != null && (r.devAfter - r.devBefore) >= 2 && r.devStatSignificant)
-                            || (r.fcrBefore != null && r.fcrAfter != null && r.fcrAfter < r.fcrBefore * 0.92))
+                            || (r.fcrBefore != null && r.fcrAfter != null && r.fcrAfter < r.fcrBefore * 0.92 && r.fcrStatSignificant))
                             .sort((x, y) => (x.mortAfter - x.mortBefore) - (y.mortAfter - y.mortBefore));
                         treatmentImpact = { rows, best: improved[0] || null };
                     }
@@ -10677,7 +10813,8 @@
                         // ⚠️ إصلاح: بنحتفظ بالسلاسل اليومية الخام (مش بس المتوسط) عشان نقدر نشغّل اختبار
                         // Welch لكل شحنة مقابل باقي الشحنات مجتمعة، بدل ما نحكم بمجرد نسبة مباشرة.
                         return { lot: fl.lot, days, totalMort, mortPerDay: days > 0 ? totalMort / days : 0, avgDev: perf.avgDev, periodFcr: perf.periodFcr,
-                            mortDaily: recsInSeg.map(r => (r.mort || 0) + (r.cull || 0)), devDaily: segDailyPerf.map(d => d.devPct).filter(v => v != null) };
+                            mortDaily: recsInSeg.map(r => (r.mort || 0) + (r.cull || 0)), devDaily: segDailyPerf.map(d => d.devPct).filter(v => v != null),
+                            fcrDaily: fcrDailyClean(segDailyPerf) };
                     }).filter(s => s.days >= 3); // ⚠️ إصلاح: رفعنا الحد الأدنى من يومين لـ 3 أيام كحد أدنى حقيقي للمقارنة
                     if (segs.length >= 2) {
                         const avgMortRate = segs.reduce((s, x) => s + x.mortPerDay, 0) / segs.length;
@@ -10689,18 +10826,19 @@
                         const worstMort = segs.reduce((a, c) => c.mortPerDay > a.mortPerDay ? c : a, segs[0]);
                         const worstDev = devVals.length ? segs.reduce((a, c) => (c.avgDev != null && (a.avgDev == null || c.avgDev < a.avgDev)) ? c : a, segs[0]) : null;
                         const worstFcr = fcrVals.length ? segs.reduce((a, c) => (c.periodFcr != null && (a.periodFcr == null || c.periodFcr > a.periodFcr)) ? c : a, segs[0]) : null;
-                        // ⚠️ إصلاح: اختبار Welch لكل بند (نفوق/وزن) مقابل باقي الشحنات مجتمعة، قبل ما نتهم شحنة بعينها.
-                        // الـ FCR (زي فى باقي التحليلات) مفيهوش سلسلة يومية طبيعية، فبيفضل نسبة وصفية بس.
+                        // ⚠️ إصلاح: اختبار Welch لكل بند (نفوق/وزن/معدل تحويل) مقابل باقي الشحنات مجتمعة، قبل ما نتهم شحنة بعينها.
                         const otherMort = (seg) => segs.filter(s => s !== seg).flatMap(s => s.mortDaily);
                         const otherDev = (seg) => segs.filter(s => s !== seg).flatMap(s => s.devDaily);
-                        // ============ 🔴 إصلاح Red Team: تصحيح المقارنات المتعددة — عدد الاختبارات = كل شحنة × (نفوق + وزن) ============
-                        const lotNumTests = segs.length * 2;
+                        const otherFcr = (seg) => segs.filter(s => s !== seg).flatMap(s => s.fcrDaily);
+                        // ============ 🔴 إصلاح Red Team (مدموج): تصحيح المقارنات المتعددة — كل شحنة × 3 اختبارات (نفوق/وزن/تحويل) ============
+                        const lotNumTests = segs.length * 3;
                         const worstMortSig = welchSignificant(worstMort.mortDaily, otherMort(worstMort), lotNumTests).significant;
                         const worstDevSig = worstDev ? welchSignificant(worstDev.devDaily, otherDev(worstDev), lotNumTests).significant : false;
+                        const worstFcrSig = worstFcr ? welchSignificant(worstFcr.fcrDaily, otherFcr(worstFcr), lotNumTests).significant : false;
                         let flagged = null;
                         if (avgMortRate > 0 && worstMort.mortPerDay > avgMortRate * 1.5 && worstMortSig) flagged = { ...worstMort, reason: 'mort' };
                         else if (worstDev && avgDevAll != null && (avgDevAll - worstDev.avgDev) >= 3 && worstDevSig) flagged = { ...worstDev, reason: 'weight' };
-                        else if (worstFcr && avgFcrAll != null && worstFcr.periodFcr > avgFcrAll * 1.1) flagged = { ...worstFcr, reason: 'fcr', fcrOnly: true };
+                        else if (worstFcr && avgFcrAll != null && worstFcr.periodFcr > avgFcrAll * 1.1 && worstFcrSig) flagged = { ...worstFcr, reason: 'fcr' };
                         feedLotAnalysis = { segs, avgMortRate, avgDevAll, avgFcrAll, flagged };
                     }
                 }
@@ -10853,9 +10991,19 @@
                     const kbNow = computeIncidentKnowledgeBase(b.species);
                     const hit = kbNow && kbNow.filter(e => e.ageCenter <= m.todayAge && e.ageCenter >= m.todayAge - 2).sort((a, c) => c.cyclesAffected - a.cyclesAffected)[0];
                     if (hit) {
-                        score += hit.cyclesAffected >= 3 ? 20 : 12;
+                        let boost = hit.cyclesAffected >= 3 ? 20 : 12;
                         const solTxt = hit.bestSolution ? ` — جرّب "${hit.bestSolution.name}" (نجح سابقًا فى ${fmt(hit.bestSolution.successRate*100,0)}%)` : '';
-                        reasons.push(`عمر النهاردة قريب من نمط "${hit.category}" اللي تكرر فى ${hit.cyclesAffected} دورة سابقة${solTxt}`);
+                        const diseaseTxt = hit.likelyDisease ? ` (التشخيص الأرجح سابقًا: ${hit.likelyDisease})` : '';
+                        // ============ 🔴 تنفيذ Critique (2): لو النمط مرتبط موسميًا بفصل معين، ونحن فعلاً فى نفس الفصل دلوقتي، ============
+                        // نرفع درجة الخطورة أكتر — البُعد الثاني (الموسم) بيتقاطع مع البُعد الأول (العمر) هنا فعليًا.
+                        let seasonTxt = '';
+                        if (hit.seasonalHint) {
+                            const curSeason = seasonOf(todayStr());
+                            if (curSeason === hit.seasonalHint) { boost += 8; seasonTxt = ` — وده بيتوافق مع إن النمط ده مرتبط تاريخيًا بفصل ${hit.seasonalHint} (زي دلوقتي بالظبط)`; }
+                            else seasonTxt = ` — النمط ده مرتبط تاريخيًا بفصل ${hit.seasonalHint} غالبًا`;
+                        }
+                        score += boost;
+                        reasons.push(`عمر النهاردة قريب من نمط "${hit.category}"${diseaseTxt} اللي تكرر فى ${hit.cyclesAffected} دورة سابقة${solTxt}${seasonTxt}`);
                     }
                 }
                 score = Math.min(score, 100);
@@ -12354,8 +12502,9 @@
             [document.getElementById('connStatusOwner'), document.getElementById('connStatusWorker')].forEach(el => {
                 if (!el) return;
                 el.style.display = 'inline-block';
-                el.textContent = online ? '🟢 متصل' : '⚪ أوفلاين — البيانات محفوظة محليًا بأمان';
-                el.style.background = online ? '' : 'rgba(255,255,255,.15)';
+                // ============ (جديد) حالة "بيتم الحفظ" — تظهر بس وقت رفع فعلي للسحاب، مش دايمًا، عشان متبقاش إزعاج بصري ============
+                if (online && _cloudSyncing) { el.textContent = '🔄 بيتم الحفظ...'; el.style.background = ''; }
+                else { el.textContent = online ? '🟢 متصل' : '⚪ أوفلاين — البيانات محفوظة محليًا بأمان'; el.style.background = online ? '' : 'rgba(255,255,255,.15)'; }
             });
         }
         window.addEventListener('online', updateConnStatus);
@@ -12367,16 +12516,46 @@
             } catch (err) {
                 const main = document.getElementById('mainContent');
                 if (main) {
+                    // ⚠️ إصلاح UX: كانت الشاشة بتعرض نص الخطأ التقني (stack trace) مباشرة كأول حاجة يشوفها
+                    // المستخدم — مربك ومخيف لمربي غير تقني، وبيوهم إن البيانات ضاعت. دلوقتي: رسالة مطمئنة
+                    // بالعربي الأول (البيانات محفوظة، جرب كذا)، والتفاصيل التقنية اختيارية جوه Details مطوية.
                     main.innerHTML = `<div class="card" style="margin-top:14px;border:2px solid #c0392b;background:#fdf1f0;">
-                        <div style="font-size:15px;font-weight:800;color:#c0392b;margin-bottom:8px;">⚠️ حصل خطأ أثناء عرض الشاشة</div>
-                        <div style="font-size:13px;color:#333;margin-bottom:6px;">ابعت النص ده كامل لحد يقدر يصلحه:</div>
-                        <textarea readonly style="width:100%;min-height:140px;font-size:11px;direction:ltr;text-align:left;padding:8px;border:1px solid #ccc;border-radius:6px;" onclick="this.select()">${(err && err.stack) ? err.stack : (err && err.message) || String(err)}</textarea>
+                        <div style="font-size:15px;font-weight:800;color:#c0392b;margin-bottom:8px;">⚠️ حصلت مشكلة فى عرض الشاشة دي</div>
+                        <div style="font-size:13px;color:#333;margin-bottom:10px;line-height:1.6;">
+                            بياناتك محفوظة وآمنة — المشكلة فى العرض بس. جرّب الآتي بالترتيب:<br>
+                            1) اضغط زر "إعادة تحميل" تحت<br>
+                            2) لو استمرت، أقفل التطبيق وافتحه تاني<br>
+                            3) لو لسه فيه مشكلة، افتح "تفاصيل تقنية" تحت وابعتها لحد يقدر يساعدك
+                        </div>
+                        <button class="btn gold" style="margin-bottom:8px;" onclick="location.reload()">🔄 إعادة تحميل</button>
+                        <details style="margin-top:4px;">
+                            <summary style="font-size:11.5px;color:var(--muted);cursor:pointer;">🔧 تفاصيل تقنية (للمطوّر فقط)</summary>
+                            <textarea readonly style="width:100%;min-height:140px;font-size:11px;direction:ltr;text-align:left;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;" onclick="this.select()">${(err && err.stack) ? err.stack : (err && err.message) || String(err)}</textarea>
+                        </details>
                     </div>`;
                 }
                 console.error('renderInner failed:', err);
             }
         }
         function renderInner() {
+            // ============ 🔒 (جديد) تحذير أمني وقت التشغيل لو أسرار التفعيل لسه على القيمة الافتراضية ============
+            // MASTER_OVERRIDE_CODE و ACTIVATION_SECRET_SALT ظاهرين نص صريح فى ملف الـHTML العام على GitHub Pages —
+            // أي حد يفتح "View Source" (من غير أي وصول للجهاز فعليًا) يقدر يقرأهم وقتها يقدر: (أ) يستخدم
+            // MASTER_OVERRIDE_CODE عشان يخلي أي جهاز "جهاز مصدر/أدمن"، أو (ب) يشغّل computeActivationCode()
+            // بنفسه فى الـConsole على أي deviceCode ويولّد كود تفعيل صحيح لأي جهاز تاني من غير موافقتك خالص.
+            // ده عيب معماري متأصّل فى أي تطبيق عميل بالكامل (بدون سيرفر خاص) — مش حاجة ممكن "تتصلح" بالكامل
+            // من جوه الكود نفسه، لكن أقل حاجة نقدر نعملها إننا ننبّهك بوضوح كل مرة لحد ما تغيّرهم فعليًا.
+            if (currentRole === 'owner' && isSourceDevice()) {
+                const usingDefaultMaster = MASTER_OVERRIDE_CODE === 'EID-6666-MASTER';
+                const usingDefaultSalt = ACTIVATION_SECRET_SALT === 'KATKOT-PRO-EID-2026-SECRET';
+                if (usingDefaultMaster || usingDefaultSalt) {
+                    console.warn('⚠️ أمان: MASTER_OVERRIDE_CODE و/أو ACTIVATION_SECRET_SALT لسه على القيمة الافتراضية — أي حد يعمل View Source للموقع العام يقدر يفعّل أي جهاز أو يبقى أدمن. غيّرهم فورًا من أول السكريبت (سطر ~4503) قبل أي نشر عام.');
+                    if (!sessionStorage.getItem('_defaultSecretWarnShown')) {
+                        sessionStorage.setItem('_defaultSecretWarnShown', '1');
+                        setTimeout(() => showToast('🔒 تنبيه أمان: كود التفعيل الرئيسي لسه على القيمة الافتراضية فى الكود — أي حد يشوف مصدر الصفحة العام يقدر يستخدمه. غيّره فورًا (تفاصيل فى الـConsole)'), 1200);
+                    }
+                }
+            }
             updateConnStatus();
             updateHeaderIdentity();
             updateBatchCreateButtonUI();
@@ -12470,10 +12649,8 @@
         }
 
         function renderAlertBanner(alerts) {
-            // ============ 🔴 إصلاح Red Team/Gaps: الشريط العلوي كان بيعرض أول 3 تنبيهات بترتيب إدخالها الخام، ============
-            // من غير علاقة بترتيب الأولوية الحقيقي المستخدم فى "🎯 أهم 3 أفعال" بالداشبورد (اللي بياخد فى الاعتبار
-            // إجهاد التنبيهات/التكرار). النتيجة: تنبيه اتكتم كتير قبل كده وفقد أهميته كان لسه بيظهر بأعلى وضوح هنا
-            // فى باقي التبويبات — تناقض بين الشريط والقائمة الذكية. دلوقتي بنستخدم نفس معادلة الوزن بالظبط.
+            // ============ 🔴 إصلاح Red Team (مدموج): نفس معادلة الوزن المستخدمة فى "أهم 3 أفعال" — عشان تنبيه اتكتم ============
+            // كتير قبل كده منيفضلش يظهر بنفس الوضوح فى الشريط العلوي (تناقض بين البانر والقائمة الذكية).
             const scored = alerts.filter(a => (a.level === 'danger' || a.level === 'warn') && !a.dismissed)
                 .map(a => {
                     let w = a.level === 'danger' ? 8 : 5;
@@ -12558,10 +12735,15 @@
                 }
             }
             // ============ سبب النفوق المسيطر: يُخصم إضافيًا لو كان السبب مرضيًا أو حراريًا وبنسبة معتبرة من القطيع ============
+            // ⚠️ إصلاح ازدواج الخصم: العدد نفسه (m.dominantCause.count) مصدره نفس بيانات النفوق اللي أصلاً
+            // خصمناها فوق كـ"نسبة نفوق أعلى من المعتاد" (mortPenalty). لو mortPenalty شغّال فعلاً، بند السبب
+            // بيبقى إعادة عقاب لنفس الإشارة بزاوية تانية — فبنقلّل وزنه للنص فى الحالة دي، ونسيبه كامل بس
+            // لو mortPenalty = صفر (يعني معدل النفوق العام لسه تحت 3% لكن متركّز فى سبب واحد — إشارة مبكرة مستقلة فعلًا).
             if (m.dominantCause && m.dominantCause.count > 0 && b.startCount > 0) {
                 const shareOfFlock = (m.dominantCause.count / b.startCount) * 100; // % من إجمالي القطيع الابتدائي
                 const causeSeverity = { disease: 2.2, heat: 1.8, trample: 1.2, deform: 0.8, other: 1.0 }[m.dominantCause.key] || 1.0;
-                const causePenalty = Math.min(shareOfFlock * causeSeverity, 12);
+                const overlapFactor = mortPenalty > 0 ? 0.5 : 1; // نص الوزن لو النفوق العام اتخصم أصلاً، كامل الوزن لو ده أول إشارة
+                const causePenalty = Math.min(shareOfFlock * causeSeverity, 12) * overlapFactor;
                 if (causePenalty >= 1.5) {
                     factors.push({ label: `السبب الأساسي للنفوق "${m.dominantCause.label}" يمثل ${fmt(m.dominantCause.pct,0)}% من الحالات المصنّفة — ${mortCauseActionHint(m.dominantCause.key)}`, weight: causePenalty });
                     score -= causePenalty;
@@ -12614,11 +12796,10 @@
             if (ins.additiveAnalysis && ins.additiveAnalysis.flagged) {
                 const aa = ins.additiveAnalysis.flagged;
                 const topReason = aa.reasons[0] ? aa.reasons[0].key : 'mort';
-                // ⚠️ إصلاح: بند FCR (بعكس النفوق والوزن) مش بيتفحص بـ welchSignificant لأن معدل التحويل
-                // مش له سلسلة يومية طبيعية تُبنى منها اختبار تباين — فبنوضّح صراحة إنه فرق نسبي وصفي بس.
-                const fcrCaveat = topReason === 'fcr' ? ' (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا بعد)' : '';
+                // ✅ الـFCR اليومي التقريبي (fcrDaily) دلوقتي بيتفحص بـ welchSignificant زي النفوق والوزن —
+                // البند مش بيتعلّم أصلًا إلا لو الفرق مؤكد إحصائيًا، فمفيش داعي لكاڤيات "غير مؤكد" هنا.
                 const aaTxt = topReason === 'weight' ? `الوزن أضعف من المعتاد بـ ${fmt(aa.inactiveDev - aa.activeDev,1)}% وقت سريانه`
-                    : topReason === 'fcr' ? `معدل التحويل أسوأ (${fmt(aa.activeFcr,2)} مقابل ${fmt(aa.inactiveFcr,2)}) وقت سريانه${fcrCaveat}`
+                    : topReason === 'fcr' ? `معدل التحويل أسوأ (${fmt(aa.activeFcr,2)} مقابل ${fmt(aa.inactiveFcr,2)}) وقت سريانه`
                     : `معدل نفوق ${fmt(aa.activeMortRate,2)} طائر/يوم وقت سريانه مقابل ${fmt(aa.inactiveMortRate,2)} خارج فترته`;
                 push('production', '💊', `راجع جرعة/توقيت "${aa.name}" (${aa.kind}) — ${aaTxt}`, 7);
             }
@@ -12651,10 +12832,9 @@
                 const rule = domainRules.find(r => r.re.test(a.text));
                 if (!rule) return;
                 let w = a.level === 'danger' ? 8 : 5;
-                // ============ 🔴 إصلاح Red Team: حلقة تغذية راجعة لإجهاد التنبيهات (Alert Fatigue) ============
-                // تنبيه من نوع "تحذير" اتكتم كتير قبل كده (يعني المستخدم شافه وقرر إنه مش عاجل بالنسبالُه مرارًا)
-                // ياخد أولوية أقل فى "أهم 3 أفعال" — بدون ما يختفي خالص من قائمة التنبيهات الكاملة. تنبيهات
-                // "الخطر" (danger) مستثناة عمدًا وبتفضل بأولويتها الكاملة دايمًا لأنها سلامة/مخاطرة حرجة.
+                // ============ 🔴 إصلاح Red Team (مدموج): حلقة تغذية راجعة لإجهاد التنبيهات (Alert Fatigue) ============
+                // تحذير اتكتم كتير قبل كده ياخد أولوية أقل فى "أهم 3 أفعال" — بدون ما يختفي من قائمة التنبيهات
+                // الكاملة. تنبيهات "الخطر" مستثناة عمدًا وبتفضل بأولويتها الكاملة دايمًا لأنها سلامة/مخاطرة حرجة.
                 if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
                 push(rule.domain, rule.icon, a.text.replace(/^\S+\s*/, ''), w);
             });
@@ -12662,8 +12842,38 @@
             const seen = new Set();
             const ranked = items.filter(it => { if (seen.has(it.text)) return false; seen.add(it.text); return true; })
                 .sort((a, c) => c.weight - a.weight);
+            // ============ (جديد) تتبّع تكرار الأولويات عبر الأيام — معالجة عملية لفجوة "الأوزان ثابتة يدويًا بدون تعلّم من النتائج" ============
+            // بدل نظام تعلّم آلي معقّد (محتاج بيانات نتائج فعلية موثوقة مش متوفرة)، الحل العملي الصادق: مشكلة
+            // اتكررت فى الأولويات 3 أيام متتالية أو أكتر أقوى دليل إحصائيًا إنها حقيقية (مش تقلب يومي عشوائي)
+            // من أي وزن ثابت مكتوب فى الكود — فبنرفعها فى الترتيب ونوضّح للمستخدم إنها متكررة، عشان يفرّق
+            // بنفسه بين إنذار عابر وإنذار مُلحّ فعلًا.
+            const normKey = (it) => it.domain + '::' + it.text.replace(/[\d.,%٪٫\s]+/g, '#').slice(0, 55);
+            if (b && ranked.length) {
+                if (!b.priorityLog) b.priorityLog = [];
+                const today = todayStr();
+                if (!b.priorityLog.some(p => p.date === today)) {
+                    b.priorityLog.push({ date: today, keys: ranked.slice(0, 5).map(normKey) });
+                    if (b.priorityLog.length > 45) b.priorityLog = b.priorityLog.slice(-45); // آخر 45 يوم كفاية لأي دورة تسمين
+                }
+            }
+            const streakOf = (it) => {
+                if (!b || !b.priorityLog || !b.priorityLog.length) return 0;
+                const key = normKey(it);
+                let streak = 0;
+                for (let i = b.priorityLog.length - 1; i >= 0; i--) {
+                    if (b.priorityLog[i].keys.includes(key)) streak++; else break;
+                }
+                return streak;
+            };
+            ranked.forEach(it => {
+                const streak = streakOf(it);
+                if (streak >= 3) it.weight = Math.min(it.weight + Math.min((streak - 2) * 0.7, 3), 10); // رفع تدريجي محدود، مش قفزة مفاجئة
+                it.streak = streak;
+            });
+            ranked.sort((a, c) => c.weight - a.weight); // إعادة ترتيب بعد تعديل الأوزان بالتكرار
             const top3 = ranked.slice(0, 3).map(it => ({ ...it,
-                urgency: it.weight >= 8 ? 'اليوم' : (it.weight >= 5 ? 'هذا الأسبوع' : 'مراقبة') }));
+                urgency: it.weight >= 8 ? 'اليوم' : (it.weight >= 5 ? 'هذا الأسبوع' : 'مراقبة'),
+                recurringNote: it.streak >= 3 ? `🔁 متكررة ${it.streak} أيام متتالية فى الأولويات — مش تقلب يوم واحد` : null }));
             const domainLabels = { production: 'إنتاج', financial: 'مالية', ops: 'تشغيل', weather: 'بيئة/طقس' };
             return { top3, ranked, domainLabels, domainsCovered: [...new Set(ranked.map(r => r.domain))] };
         }
@@ -12676,7 +12886,7 @@
             const perfScoreCardHtml = (() => {
                 if (!perfRank) return `<div class="card" style="margin-bottom:10px;padding:12px;text-align:center;">
                         <div style="font-size:12px;font-weight:800;">🏅 مؤشر أداء الدورة + الترتيب</div>
-                        <div style="font-size:11px;color:var(--muted);margin-top:4px;">يظهر تلقائيًا لما يكون عندك دورتين مؤرشفتين على الأقل لنفس النوع بعمر 20 يوم فأكثر — كل ما أرشفت دورات أكتر كل ما كان الترتيب أدق</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:4px;">يظهر تلقائيًا لما يكون عندك 3 دورات مؤرشفة على الأقل لنفس النوع بعمر 20 يوم فأكثر (رُفع الحد من دورتين لـ3 عشان النسب المعروضة تبقى موثوقة إحصائيًا) — كل ما أرشفت دورات أكتر كل ما كان الترتيب أدق</div>
                     </div>`;
                 const scoreColor = perfRank.score >= 70 ? 'var(--green)' : (perfRank.score >= 40 ? '#c9a227' : 'var(--red)');
                 const rankBadge = perfRank.rank.position === 1
@@ -12698,7 +12908,12 @@
                         </div>
                     </div>
                     <div style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px;">${rows}</div>
-                    <div style="font-size:10px;color:var(--muted);margin-top:6px;">💡 النسبة بجانب كل مؤشر = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه. الرقم الكبير = متوسط الأربع نسب. مش مقياس عالمي مطلق، ده ترتيبك أنت مقابل نفسك.</div>
+                    ${perfRank.absolute ? `<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px;">
+                        <div style="font-size:10.5px;font-weight:800;">📏 مرجع مطلق مستقل (معيار السلالة القياسي عند يوم ${perfRank.absolute.atAge}، مش تاريخك أنت)</div>
+                        <div class="stat-line"><span class="k">معدل التحويل مقابل المعيار القياسي</span><span class="v" style="font-weight:700;color:${perfRank.absolute.fcrDiffPct==null?'var(--muted)':(perfRank.absolute.fcrDiffPct<=0?'var(--green)':'var(--red)')};">${perfRank.absolute.fcrDiffPct==null?'—':(perfRank.absolute.fcrDiffPct>=0?'+':'')+fmt(perfRank.absolute.fcrDiffPct,1)+'%'}</span></div>
+                        <div style="font-size:9.5px;color:var(--muted);margin-top:2px;">ده مش نسبي لتاريخك — ده مقارنة مباشرة بمنحنى العلف/الوزن الرسمي للسلالة، فمفيد حتى لو كل دوراتك السابقة كانت متوسطة الأداء</div>
+                    </div>` : ''}
+                    <div style="font-size:10px;color:var(--muted);margin-top:6px;">💡 النسبة بجانب كل مؤشر فوق = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ده ترتيب نسبي مقابل نفسك بس، مش مقياس عالمي مطلق (استخدم المرجع المطلق تحت لده).</div>
                 </div>`;
             })();
             // ============ مؤشر كثافة التسجيل: تحذير أعلى التحليلات لو التغطية اليومية ضعيفة، عشان يعرف المستخدم أن دقة كل التحليلات التالية محدودة بجودة تسجيله ============
@@ -12710,10 +12925,14 @@
                     ${dataConf ? `<div style="font-size:12px;font-weight:800;color:var(--red);${(recComp.expectedDays >= 5 && recComp.pct < 70) ? 'margin-top:6px;' : ''}">⚠️ فاتك تسجيل الوزن ${dataConf.missingWeight} من آخر ${dataConf.ofDays} أيام${dataConf.missingFeed?' والعلف '+dataConf.missingFeed+' يوم':''}</div>` : ''}
                     <div style="font-size:11px;color:var(--muted);margin-top:2px;">التحليلات والتنبؤات بالأسفل أقل دقة مع تسجيل متقطع — سجّل يوميًا لأفضل النتائج</div>
                 </div>` : '';
+            // ============ (جديد) شفافية مصدر المرجع المعياري المستخدم فى المقارنة — عشان المستخدم يعرف بيتقارن بإيه بالظبط ============
+            const refBreedKey = detectBreedKey(b.breed);
+            const refSourceNote = refBreedKey ? `🧬 المرجع المستخدم: منحنى ${GLOBAL_BREED_BENCHMARKS[refBreedKey].label} (تلقائي حسب اسم السلالة "${esc(b.breed)}")` : '';
             const devHtml = ins.devAvg == null ? `<div class="check-row"><div class="txt"><div>📐 الانحراف التراكمي عن المعيار</div><div class="day">بيانات غير كافية بعد (يحتاج 3 سجلات وزن على الأقل)</div></div></div>` : `
                 <div class="check-row"><div class="txt">
                     <div>📐 الانحراف التراكمي عن المعيار: <b style="color:${ins.devAvg>=0?'var(--green)':'var(--red)'};">${ins.devAvg>=0?'+':''}${fmt(ins.devAvg,1)}%</b></div>
                     <div class="day">${ins.devTrend==null?'':(ins.devTrend>0.5?'📈 الأداء بيتحسن مقارنة ببداية الدورة':(ins.devTrend<-0.5?'📉 الأداء بيتراجع مقارنة ببداية الدورة — راجع التغذية والبيئة':'➖ الأداء مستقر تقريبًا'))}</div>
+                    ${refSourceNote ? `<div class="day" style="color:var(--muted);margin-top:2px;">${refSourceNote} — لو ده مش صحيح أو السلالة مختلفة، عدّل اسم السلالة فى بيانات الدفعة أو خصّص المرجع يدويًا من إعدادات الأرقام القياسية</div>` : ''}
                 </div></div>`;
             const predTrackRecord = computePredictionTrackRecord(b.species);
             const predHtml = !ins.weightPrediction ? '' : `
@@ -12786,7 +13005,7 @@
                 const fl = ins.feedLotAnalysis;
                 if (fl.flagged) {
                     const reasonTxt = fl.flagged.reason === 'weight' ? `متوسط انحراف الوزن ${fmt(fl.flagged.avgDev,1)}% مقابل متوسط ${fmt(fl.avgDevAll,1)}% فى باقي الشحنات — الوزن أضعف من المعتاد بوضوح خلال فترة هذه الشحنة`
-                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا)`
+                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة (فرق مؤكد إحصائيًا)`
                         : `معدل نفوق ${fmt(fl.flagged.mortPerDay,2)} طائر/يوم مقابل متوسط ${fmt(fl.avgMortRate,2)}`;
                     return `<div class="check-row"><div class="txt">
                         <div>🌾📦 شحنة العلف "<b>${fl.flagged.lot}</b>" مرتبطة بأداء أضعف (${fl.flagged.reason === 'weight' ? 'وزن' : fl.flagged.reason === 'fcr' ? 'معدل تحويل' : 'نفوق'})</div>
@@ -12798,26 +13017,40 @@
             const additiveHtml = !ins.additiveAnalysis ? '' : (() => {
                 const aa = ins.additiveAnalysis;
                 const reasonLabel = { mort: 'نفوق', weight: 'وزن', fcr: 'معدل تحويل' };
+                // ============ 🔴 Red Team fix (تناغم الإضافات مع المشتريات): كان التحليل الإحصائي بيقول "الإضافة ============
+                // دي مفيدة/ضارة" من غير أي فكرة عن تكلفتها الفعلية — لأن بروتوكول الإضافات (feedAdditives/waterAdditives)
+                // مالوش أي ربط باسم الصنف فى المشتريات. هنا بنطابق اسم الإضافة مع وصف المشتريات (مطابقة نصية مرنة)
+                // ونعرض إجمالي المصروف عليها جنب الأثر الإحصائي، عشان القرار (تكمل معاها ولا لأ) يبقى مبني على
+                // الاتنين مع بعض: هل بتنفع؟ وهل تستاهل تكلفتها؟
+                const additiveCostLookup = (name) => {
+                    const norm = normalizeArabicName(name);
+                    if (!norm) return null;
+                    const matches = (b.purchases || []).filter(p => (p.type === 'إضافات' || p.type === 'أدوية ولقاحات') && p.desc && normalizeArabicName(p.desc).includes(norm));
+                    if (!matches.length) return null;
+                    return matches.reduce((s, p) => s + p.total, 0);
+                };
                 let html = '';
                 if (aa.flagged) {
                     const topR = aa.flagged.reasons[0];
-                    const fcrCaveat = topR.key === 'fcr' ? ' (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا بعد)' : '';
                     const txt = topR.key === 'weight' ? `الوزن أضعف من المعتاد بمتوسط ${fmt(aa.flagged.inactiveDev - aa.flagged.activeDev,1)}% وقت سريانه مقارنة بخارج فترته`
-                        : topR.key === 'fcr' ? `معدل التحويل وقت السريان ${fmt(aa.flagged.activeFcr,2)} مقابل ${fmt(aa.flagged.inactiveFcr,2)} خارج فترته — أسوأ بوضوح${fcrCaveat}`
+                        : topR.key === 'fcr' ? `معدل التحويل وقت السريان ${fmt(aa.flagged.activeFcr,2)} مقابل ${fmt(aa.flagged.inactiveFcr,2)} خارج فترته — أسوأ بوضوح (فرق مؤكد إحصائيًا)`
                         : `معدل نفوق ${fmt(aa.flagged.activeMortRate,2)} طائر/يوم وقت السريان مقابل ${fmt(aa.flagged.inactiveMortRate,2)} خارج فترته`;
+                    const flaggedCost = additiveCostLookup(aa.flagged.name);
+                    const costTxt = flaggedCost ? ` — رصدنا مشتريات باسم مطابق بإجمالي ${money(flaggedCost)}، يستاهل تراجع جدواها الاقتصادية طالما أثرها سلبي.` : '';
                     html += `<div class="check-row"><div class="txt">
                         <div>💊⚠️ "<b>${aa.flagged.name}</b>" (${aa.flagged.kind}) مرتبط بأداء أضعف (${reasonLabel[topR.key]}) وقت سريانه</div>
-                        <div class="day">${txt} — يُنصح بمراجعة الجرعة/التوقيت أو السبب الذي استدعى إعطاءه، أو إيقافه لو تكرر نفس النمط فى دورات قادمة</div>
+                        <div class="day">${txt} — يُنصح بمراجعة الجرعة/التوقيت أو السبب الذي استدعى إعطاءه، أو إيقافه لو تكرر نفس النمط فى دورات قادمة${costTxt}</div>
                     </div></div>`;
                 }
                 if (aa.improved) {
                     const topR = aa.improved.positiveReasons[0];
-                    const fcrCaveat = topR.key === 'fcr' ? ' (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا بعد)' : '';
                     const txt = topR.key === 'weight' ? `الوزن أفضل من المعتاد بمتوسط ${fmt(aa.improved.activeDev - aa.improved.inactiveDev,1)}% وقت سريانه`
-                        : `معدل التحويل وقت السريان ${fmt(aa.improved.activeFcr,2)} مقابل ${fmt(aa.improved.inactiveFcr,2)} خارج فترته — أفضل بوضوح${fcrCaveat}`;
+                        : `معدل التحويل وقت السريان ${fmt(aa.improved.activeFcr,2)} مقابل ${fmt(aa.improved.inactiveFcr,2)} خارج فترته — أفضل بوضوح (فرق مؤكد إحصائيًا)`;
+                    const improvedCost = additiveCostLookup(aa.improved.name);
+                    const costTxt = improvedCost ? ` — إجمالي مصروفك عليها حسب المشتريات المسجلة: ${money(improvedCost)}، قارنها بالفرق فى الأداء لتقييم الجدوى.` : '';
                     html += `<div class="check-row"><div class="txt">
                         <div>💊✅ "<b>${aa.improved.name}</b>" (${aa.improved.kind}) مرتبط بأداء أفضل (${reasonLabel[topR.key]}) وقت سريانه</div>
-                        <div class="day">${txt} — مؤشر إيجابي يستحق الاستمرار عليه، خصوصًا لو تكرر فى دورات قادمة</div>
+                        <div class="day">${txt} — مؤشر إيجابي يستحق الاستمرار عليه، خصوصًا لو تكرر فى دورات قادمة${costTxt}</div>
                     </div></div>`;
                 }
                 if (!html) html = `<div class="check-row"><div class="txt"><div>💊📦 تتبع أثر الإضافات/الأدوية على النفوق والوزن ومعدل التحويل: ${aa.rows.length} بند مرصود</div><div class="day">لا يوجد بند مرتبط بفرق واضح فى الأداء حتى الآن</div></div></div>`;
@@ -12931,9 +13164,8 @@
                     const extra = [];
                     if (ti.best.nh3Before != null && ti.best.nh3After != null) extra.push(`أمونيا ${fmt(ti.best.nh3Before,1)}→${fmt(ti.best.nh3After,1)} ppm${ti.best.nh3StatSignificant===false?' (فرق غير مؤكد إحصائيًا)':''}`);
                     if (ti.best.devBefore != null && ti.best.devAfter != null) extra.push(`انحراف الوزن ${fmt(ti.best.devBefore,1)}%→${fmt(ti.best.devAfter,1)}%${ti.best.devStatSignificant===false?' (فرق غير مؤكد إحصائيًا)':''}`);
-                    // ⚠️ إصلاح: الـ FCR مفيهوش سلسلة يومية طبيعية تصلح لاختبار دلالة إحصائية (زي باقي القيم)،
-                    // فبنوضّح صراحة إنه فرق نسبي وصفي بس، عشان المستخدم يقرأه بحذر مناسب.
-                    if (ti.best.fcrBefore != null && ti.best.fcrAfter != null) extra.push(`معدل التحويل ${fmt(ti.best.fcrBefore,2)}→${fmt(ti.best.fcrAfter,2)} (فرق نسبي وصفي فقط)`);
+                    // ✅ الـ FCR اليومي التقريبي دلوقتي بيتفحص بنفس اختبار Welch المستخدم للأمونيا/الوزن.
+                    if (ti.best.fcrBefore != null && ti.best.fcrAfter != null) extra.push(`معدل التحويل ${fmt(ti.best.fcrBefore,2)}→${fmt(ti.best.fcrAfter,2)}${ti.best.fcrStatSignificant===false?' (فرق غير مؤكد إحصائيًا)':''}`);
                     return `<div class="check-row"><div class="txt">
                         <div>🪣✅ معاملة "<b>${ti.best.name}</b>" (يوم ${ti.best.doneAge}) مرتبطة بتحسّن ملموس بعد التنفيذ</div>
                         <div class="day">نفوق ${fmt(ti.best.mortBefore,2)}→${fmt(ti.best.mortAfter,2)} طائر/يوم${extra.length ? ' · ' + extra.join(' · ') : ''} (مقارنة 3 أيام قبل/بعد) — مؤشر جيد لتكرارها فى نفس التوقيت بالدورات القادمة</div>
@@ -13136,9 +13368,8 @@
             const groupForecastArr = [epefProjHtml, saleHtml, liveProfitHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
             const groupPerformanceArr = [effScoreHtml, mortCostHtml, addImpactHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
             const groupBenchmarkArr = [seasonalHtml, globalBenchHtml, blendedCurveHtml, farmBenchHtml, bestCyclesHtml].filter(Boolean);
-            // ============ 🔴 إصلاح Gaps: مجموعات التحليلات ممكن توصل لأكتر من 30 كارت مجتمعة (حتى مع التجميع فى 4 فئات) ============
-            // — بعض المزارعين مش مهتم مثلاً بـ"مقارنات ومعايير" وعايز يشيلها نهائيًا بدل ما يطويها كل مرة. أضفنا إخفاء
-            // على مستوى الفئة نفسها (منفصل عن إخفاء القسم كله)، يتحكم فيه من نفس صفحة "تخصيص ترتيب لوحة التحكم".
+            // ============ 🔴 إصلاح Red Team (مدموج): إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو ============
+            // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
             const hiddenInsightGroups = (state.appSettings && state.appSettings.insightGroupsHidden) || [];
             const insightGroup = (gkey, title, icon, desc, arr, openByDefault) => (!arr.length || hiddenInsightGroups.includes(gkey)) ? '' : `
                 <details ${openByDefault ? 'open' : ''} style="border-bottom:1px solid var(--line);">
@@ -13218,6 +13449,7 @@
                             <span style="font-size:10px;font-weight:800;color:${urgencyStyle[p.urgency]};">⏱️ ${p.urgency}</span>
                         </div>
                         <div style="font-size:12px;line-height:1.5;">${esc(p.text)}</div>
+                        ${p.recurringNote ? `<div style="font-size:10px;color:#b8860b;font-weight:700;margin-top:2px;">${esc(p.recurringNote)}</div>` : ''}
                     </div>
                 </div>`).join('')}
                 <p style="font-size:10px;color:var(--muted);margin:8px 0 0;">💡 مجمّعة من كل بيانات الدفعة (إنتاج/مالية/تشغيل/بيئة) ومرتبة بالأولوية — راجعها أول حاجة كل يوم.</p>
@@ -13641,7 +13873,7 @@
                 const fl = ins.feedLotAnalysis;
                 if (fl.flagged) {
                     const reasonTxt = fl.flagged.reason === 'weight' ? `متوسط انحراف الوزن ${fmt(fl.flagged.avgDev,1)}% مقابل متوسط ${fmt(fl.avgDevAll,1)}% فى باقي الشحنات — الوزن أضعف من المعتاد بوضوح خلال فترة هذه الشحنة`
-                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة (فرق نسبي وصفي فقط، غير مؤكد إحصائيًا)`
+                        : fl.flagged.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.flagged.periodFcr,2)} مقابل متوسط ${fmt(fl.avgFcrAll,2)} فى باقي الشحنات — معامل تحويل أسوأ بوضوح خلال فترة هذه الشحنة (فرق مؤكد إحصائيًا)`
                         : `معدل نفوق ${fmt(fl.flagged.mortPerDay,2)} طائر/يوم مقابل متوسط ${fmt(fl.avgMortRate,2)}`;
                     return `<div class="check-row"><div class="txt">
                         <div>📦 شحنة العلف "<b>${fl.flagged.lot}</b>" مرتبطة بأداء أضعف (${fl.flagged.reason === 'weight' ? 'وزن' : fl.flagged.reason === 'fcr' ? 'معدل تحويل' : 'نفوق'})</div>
@@ -16067,6 +16299,7 @@
             document.getElementById('ic_category').value = 'نفوق مرتفع';
             document.getElementById('ic_severity').value = 'negative_med';
             document.getElementById('ic_title').value = '';
+            document.getElementById('ic_disease').value = '';
             document.getElementById('ic_solution').value = '';
             document.getElementById('ic_outcome').value = 'unknown';
             document.getElementById('ic_notes').value = '';
@@ -16081,17 +16314,19 @@
             if (!title) { showToast('⚠️ اكتب وصف مختصر للحادثة'); return; }
             const category = document.getElementById('ic_category').value;
             const severity = document.getElementById('ic_severity').value;
+            // ============ 🔴 تنفيذ Critique (1): تصنيف تشخيصي محدد باسم المرض، منفصل عن فئة الأعراض العامة ============
+            const diseaseTag = document.getElementById('ic_disease').value.trim() || null;
             const solution = document.getElementById('ic_solution').value.trim();
             const outcome = document.getElementById('ic_outcome').value;
             const notes = document.getElementById('ic_notes').value.trim();
             const age = Math.max(0, daysBetween(b.startDate, date));
             const rec = {
-                id: uid(), source: 'manual', date, age, category, severity, title, solution: solution || null, outcome, notes,
+                id: uid(), source: 'manual', date, age, category, diseaseTag, severity, title, solution: solution || null, outcome, notes,
                 enteredBy: currentRole === 'worker' && currentWorker ? currentWorker.name : 'المالك',
                 enteredAt: new Date().toISOString(),
             };
             b.incidents.push(rec);
-            logAudit(b, `📓 حادثة مُسجَّلة: ${category} (يوم ${age}) — ${title}${solution ? ' — الحل: ' + solution : ''}`);
+            logAudit(b, `📓 حادثة مُسجَّلة: ${category}${diseaseTag ? ' — ' + diseaseTag : ''} (يوم ${age}) — ${title}${solution ? ' — الحل: ' + solution : ''}`);
             persist();
             closeModal('incidentModalOverlay');
             showToast('✅ تم تسجيل الحادثة — هتدخل قاعدة المعرفة وتساعد فى تنبيهك مبكرًا فى الدورات الجاية');
@@ -16214,10 +16449,12 @@
                 mineAutoIncidentsForCycle(x).forEach(inc => {
                     const linked = findNearbyInterventionForIncident(x, inc);
                     const outcome = linked ? assessIncidentOutcome(x, inc, linked) : 'unknown';
-                    allIncidents.push({ source: 'auto', batchName: x.name, age: inc.age, category: inc.category, solutionName: linked ? linked.name : null, outcome });
+                    allIncidents.push({ source: 'auto', batchName: x.name, location: x.location || null, age: inc.age, date: inc.date,
+                        season: seasonOf(inc.date), category: inc.category, diseaseTag: null, solutionName: linked ? linked.name : null, outcome });
                 });
                 (x.incidents || []).filter(mi => mi.severity !== 'positive').forEach(mi => {
-                    allIncidents.push({ source: 'manual', batchName: x.name, age: mi.age, category: mi.category,
+                    allIncidents.push({ source: 'manual', batchName: x.name, location: x.location || null, age: mi.age, date: mi.date,
+                        season: seasonOf(mi.date), category: mi.category, diseaseTag: mi.diseaseTag || null,
                         solutionName: mi.solution || null, outcome: mi.outcome === 'mild_improved' ? 'improved' : mi.outcome });
                 });
             });
@@ -16250,10 +16487,26 @@
                     const ranked = Object.entries(solStats).sort((a, c) =>
                         (c[1].improved / c[1].count) - (a[1].improved / a[1].count) || c[1].count - a[1].count);
                     const best = ranked[0];
+                    // ============ 🔴 تنفيذ Critique (2): تركّز موسمي — لو أغلب حدوث النمط ده وقع فى فصل واحد بعينه ============
+                    // (مش بس عمر واحد)، نوضّح ده كـ"بُعد ثانٍ" مستقل عشان المستخدم يعرف يستعد قبل الفصل ده تحديدًا،
+                    // مش بس قبل العمر ده. محتاج دورتين مختلفتين على الأقل وقعوا فى نفس الفصل عشان النمط يبقى ذو معنى.
+                    const seasonCounts = {};
+                    bk.items.forEach(it => { if (it.season) { if (!seasonCounts[it.season]) seasonCounts[it.season] = new Set(); seasonCounts[it.season].add(it.batchName); } });
+                    let seasonalHint = null;
+                    const seasonEntries = Object.entries(seasonCounts).sort((a, c) => c[1].size - a[1].size);
+                    if (seasonEntries.length && seasonEntries[0][1].size >= 2 && seasonEntries[0][1].size / new Set(bk.items.map(i => i.batchName)).size >= 0.7) {
+                        seasonalHint = seasonEntries[0][0];
+                    }
+                    // ============ 🔴 تنفيذ Critique (1): لو أغلب الحوادث فى النمط ده مرتبطة باسم مرض محدد، نعرضه كـ"تشخيص مرجّح" ============
+                    const diseaseCounts = {};
+                    bk.items.forEach(it => { if (it.diseaseTag) diseaseCounts[it.diseaseTag] = (diseaseCounts[it.diseaseTag] || 0) + 1; });
+                    const diseaseEntries = Object.entries(diseaseCounts).sort((a, c) => c[1] - a[1]);
+                    const likelyDisease = (diseaseEntries.length && diseaseEntries[0][1] / bk.items.length >= 0.5) ? diseaseEntries[0][0] : null;
                     return {
                         category: bk.category, ageCenter: bk.ageCenter, frequency: bk.items.length,
                         cyclesAffected: new Set(bk.items.map(i => i.batchName)).size,
                         bestSolution: best ? { name: best[0], successRate: best[1].improved / best[1].count, timesUsed: best[1].count } : null,
+                        seasonalHint, likelyDisease,
                     };
                 })
                 .sort((a, c) => c.cyclesAffected - a.cyclesAffected || c.frequency - a.frequency);
@@ -16291,11 +16544,81 @@
             return results;
         }
 
+        // ============ 🔴 تنفيذ Critique (3): تسلسلات مرضية متكررة — هل حادثة معينة بيتبعها حادثة تانية بفارق أيام منتظم؟ ============
+        // مثال كلاسيكي: إصابة مناعية تضعف القطيع، وبعدها بفترة قصيرة مشكلة هضمية/تنفسية ثانوية انتهازية. النظام قبل
+        // كده كان بيحلل كل حادثة كنقطة مستقلة تمامًا؛ هنا بنفحص كل زوج حوادث متتالي داخل نفس الدورة (بفارق منطقي
+        // 1-21 يوم) ونجمع الأنماط اللي اتكررت فى دورتين مختلفتين على الأقل — عشان نفرّق تتابع سببي حقيقي عن صدفة.
+        function computeDiseaseSequences(species) {
+            const archived = state.batches.filter(x => x.species === species && x.status === 'مؤرشفة' && x.records && x.records.length >= 8);
+            if (archived.length < 2) return [];
+            const MIN_GAP = 1, MAX_GAP = 21;
+            const transitions = {};
+            archived.forEach(x => {
+                const incs = [];
+                mineAutoIncidentsForCycle(x).forEach(inc => incs.push({ age: inc.age, label: inc.category }));
+                (x.incidents || []).filter(mi => mi.severity !== 'positive').forEach(mi => incs.push({ age: mi.age, label: mi.diseaseTag || mi.category }));
+                incs.sort((a, c) => a.age - c.age);
+                for (let i = 0; i < incs.length; i++) {
+                    for (let j = i + 1; j < incs.length; j++) {
+                        const gap = incs[j].age - incs[i].age;
+                        if (gap < MIN_GAP) continue;
+                        if (gap > MAX_GAP) break; // القائمة مرتبة تصاعديًا بالعمر، فمفيش داعي نكمل الفحص بعد كده
+                        if (incs[i].label === incs[j].label) continue; // نفس النوع مش تتابع مرضي، تكرار عادي
+                        const key = incs[i].label + '→' + incs[j].label;
+                        if (!transitions[key]) transitions[key] = { from: incs[i].label, to: incs[j].label, gaps: [], batches: new Set() };
+                        transitions[key].gaps.push(gap);
+                        transitions[key].batches.add(x.name);
+                    }
+                }
+            });
+            return Object.values(transitions)
+                .filter(t => t.batches.size >= 2)
+                .map(t => ({ from: t.from, to: t.to, cyclesAffected: t.batches.size, avgGap: Math.round(t.gaps.reduce((s, g) => s + g, 0) / t.gaps.length) }))
+                .sort((a, c) => c.cyclesAffected - a.cyclesAffected);
+        }
+
+        // ============ 🔴 تنفيذ Critique (4): خريطة نقاط الضعف داخل مزرعتك — مش "مناطق موبوءة فى الجمهورية" ============
+        // بيانات التطبيق محلية لحسابك أنت بس (لا يوجد تجميع بيانات عبر مستخدمين مختلفين فى أي مكان بالكود)، فمقارنة
+        // مزارع مختلفة فى محافظات مختلفة مش ممكنة تقنيًا من غير خلفية مشتركة جديدة بالكامل. الممكن فعليًا: تجميع
+        // حوادثك حسب حقل "الموقع/العنبر" ومقارنة متوسط الحوادث لكل دورة بين عنابرك المختلفة أنت.
+        function computeLocationIncidentClusters() {
+            const archived = state.batches.filter(x => x.status === 'مؤرشفة' && x.records && x.records.length >= 8 && x.location && x.location.trim());
+            if (archived.length < 3) return null;
+            const byLoc = {};
+            archived.forEach(x => {
+                const loc = x.location.trim();
+                if (!byLoc[loc]) byLoc[loc] = { cycles: new Set(), incidentCount: 0 };
+                byLoc[loc].cycles.add(x.name);
+                byLoc[loc].incidentCount += mineAutoIncidentsForCycle(x).length + (x.incidents || []).filter(mi => mi.severity !== 'positive').length;
+            });
+            const locs = Object.entries(byLoc).map(([loc, v]) => ({ location: loc, cycles: v.cycles.size, avgIncidentsPerCycle: v.incidentCount / v.cycles.size }));
+            if (locs.length < 2) return null;
+            const farmAvg = locs.reduce((s, l) => s + l.avgIncidentsPerCycle, 0) / locs.length;
+            return locs.map(l => ({ ...l, vsFarmAvg: farmAvg > 0 ? l.avgIncidentsPerCycle / farmAvg : 1 }))
+                .sort((a, c) => c.avgIncidentsPerCycle - a.avgIncidentsPerCycle);
+        }
+
+        // ============ 🔴 تنفيذ Critique (5): ربط فعلي بين قاعدة المعرفة والبروتوكول — بدل ما الاقتراح يفضل نص للقراءة ============
+        // بس، الزرار ده بيفتح مودال "إضافة سريعة" جاهز باسم الحل المقترح، فتأكيد الكمية/الوحدة بس ويتسجل فورًا.
+        function quickApplyIncidentSolution(name) {
+            const b = getActiveBatch();
+            if (!b) { showToast('⚠️ فعّل دفعة نشطة أولاً'); return; }
+            closeModal('incidentKbModalOverlay');
+            openQuickIntModal();
+            document.getElementById('qi_name').value = name;
+            document.getElementById('qi_reason').value = 'أخرى';
+            document.getElementById('qi_reasonOther').value = 'مقترح من قاعدة معرفة الحوادث (نمط متكرر)';
+            document.getElementById('qi_reasonOtherField').style.display = '';
+            showToast('راجع الكمية والوحدة المناسبة وأكّد الإضافة 👍');
+        }
+
         function openIncidentKbModal() {
             const b = getActiveBatch();
             if (!b) { showToast('⚠️ فعّل دفعة نشطة أولاً (لتحديد النوع)'); return; }
             const kb = computeIncidentKnowledgeBase(b.species);
             const sensitivity = computeSolutionContextSensitivity(b.species);
+            const sequences = computeDiseaseSequences(b.species);
+            const locClusters = computeLocationIncidentClusters();
             const el = document.getElementById('incidentKbContent');
             let html = '';
             if (!kb || !kb.length) {
@@ -16303,10 +16626,13 @@
             } else {
                 html += `<div class="card" style="padding:0;">` + kb.map(e => {
                     const solTxt = e.bestSolution
-                        ? `🏆 أفضل حل: <b>${esc(e.bestSolution.name)}</b> — نجح فى ${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة`
+                        ? `🏆 أفضل حل: <b>${esc(e.bestSolution.name)}</b> — نجح فى ${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة
+                           <button class="btn ghost sm" style="margin-right:6px;padding:2px 8px;" onclick="quickApplyIncidentSolution('${esc(e.bestSolution.name).replace(/'/g,"\\'")}')">⚡ طبّقه دلوقتي</button>`
                         : `لسه مفيش حل مُثبت مرتبط بهذا النمط فى بياناتك`;
+                    const diseaseBadge = e.likelyDisease ? `<span style="background:#fde8e8;color:#a33;border-radius:8px;padding:1px 7px;font-size:10.5px;font-weight:700;margin-right:4px;">🩺 ${esc(e.likelyDisease)}</span>` : '';
+                    const seasonBadge = e.seasonalHint ? `<span style="background:#fff3d6;color:#8a6800;border-radius:8px;padding:1px 7px;font-size:10.5px;font-weight:700;">🗓️ مرتبط بفصل ${e.seasonalHint}</span>` : '';
                     return `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">⚠️ ${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
+                        <div style="font-weight:800;">⚠️ ${esc(e.category)} — حوالي يوم ${e.ageCenter} ${diseaseBadge}${seasonBadge}</div>
                         <div class="day">حصل فى ${e.cyclesAffected} دورة مختلفة (${e.frequency} مرة إجمالاً)</div>
                         <div style="font-size:12px;margin-top:2px;">${solTxt}</div>
                     </div></div>`;
@@ -16320,6 +16646,25 @@
                         <div class="day" style="color:var(--green);">✅ مفيد قرب: ${s.goodContexts.map(c => `${esc(c.category)} (يوم ${c.ageCenter})`).join('، ')}</div>
                         <div class="day" style="color:var(--red);">❌ ضار/غير مجدي قرب: ${s.badContexts.map(c => `${esc(c.category)} (يوم ${c.ageCenter})`).join('، ')}</div>
                     </div></div>`).join('') + `</div>`;
+            }
+            if (sequences.length) {
+                html += `<div class="section-head" style="margin-top:12px;"><h2>🔗 تسلسلات مرضية متكررة</h2></div>
+                    <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">لما مشكلة معينة تحصل، مشكلة تانية بتميل تظهر بعدها بفترة منتظمة — غالبًا لأن الأولى بتضعف مقاومة القطيع للتانية.</p>
+                    <div class="card" style="padding:0;">` + sequences.map(s => `<div class="check-row"><div class="txt">
+                        <div>🔗 لما تحصل "<b>${esc(s.from)}</b>"، راقب "<b>${esc(s.to)}</b>" خلال ~${s.avgGap} يوم تقريبًا</div>
+                        <div class="day">تكرر النمط ده فى ${s.cyclesAffected} دورة مختلفة</div>
+                    </div></div>`).join('') + `</div>`;
+            }
+            if (locClusters && locClusters.length) {
+                html += `<div class="section-head" style="margin-top:12px;"><h2>📍 خريطة نقاط الضعف داخل مزرعتك</h2></div>
+                    <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">متوسط عدد الحوادث لكل دورة فى كل موقع/عنبر عندك (كل الأنواع مجتمعة) — موقع بمتوسط أعلى بوضوح ممكن يكون فيه مشكلة بنيوية (تهوية، فرشة، تيار هوا).</p>
+                    <div class="card" style="padding:0;">` + locClusters.map(l => {
+                        const flag = l.vsFarmAvg >= 1.3 && l.cycles >= 2 ? ' 🔴' : '';
+                        return `<div class="check-row"><div class="txt">
+                        <div style="font-weight:800;">📍 ${esc(l.location)}${flag}</div>
+                        <div class="day">${fmt(l.avgIncidentsPerCycle,1)} حادثة/دورة فى المتوسط (${l.cycles} دورة) — ${fmt(l.vsFarmAvg*100,0)}% من متوسط مزرعتك</div>
+                    </div></div>`;
+                    }).join('') + `</div>`;
             }
             el.innerHTML = html;
             openModal('incidentKbModalOverlay');
@@ -19486,8 +19831,8 @@
             <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الترتيب والإخفاء يُطبَّق على أقسام الرسوم البيانية والتحليلات فى لوحة التحكم (الكروت الرئيسية بأعلى الصفحة ثابتة دايمًا).</p>
             ${renderInsightGroupsSettings()}`;
         }
-        // ============ 🔴 إصلاح Gaps: إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو "مقارنات ومعايير" ============
-        // مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
+        // ============ 🔴 إصلاح Red Team (مدموج): إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو ============
+        // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
         function renderInsightGroupsSettings() {
             const groups = [
                 { key: 'attention', label: '⚠️ يحتاج انتباه الآن' },
