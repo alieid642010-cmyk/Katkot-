@@ -1,26 +1,18 @@
-var CACHE_NAME = 'katkot-shell-v2'; // ⚠️ رفعنا رقم النسخة عشان نفعّل الكاش الجديد لسكريبتات Firebase على كل الأجهزة تلقائيًا
-
-// ============ 🔒 تحسين (Red Team fix — Firebase SDK Offline Availability) ============
-// المشكلة: سكريبتات Firebase (auth/firestore) كانت بتتحمّل من CDN جوجل مباشرة، وكانت
-// بتتعدّى بالكامل من غير أي كاش (زي أي "بيانات حية" — الطقس مثلاً). لكن السكريبتات دي
-// مش بيانات حية، هي كود ثابت مربوط بإصدار مُحدَّد فى الرابط نفسه (10.12.2) — نفس المحتوى
-// كل مرة. لو المستخدم فتح التطبيق أول مرة وهو أونلاين، تخزينهم فى الكاش بيضمن إن التطبيق
-// يقدر يشتغل بمحاولة اتصال بفايربيز حتى لو النت اتقطع بعد كده (بدل ما ينتظر فشل الشبكة
-// كل مرة قبل ما يرجع للمسار المحلي فقط). لو الإصدار اتغيّر مستقبلًا، لازم الرابط يتغيّر
-// هنا كمان (ورقم CACHE_NAME يترفع) عشان الكاش القديم يتمسح وينزل الإصدار الجديد.
+var CACHE_NAME = 'katkot-shell-v2'; // ⚠️ لازم يتزامن يدويًا مع sw.js — الاتنين نسخة واحدة من نفس الكود، ده بس خط دفاع تاني لو الملف الحقيقي فشل يتحمّل (404/مشكلة نشر)
+// ============ 🔒 (إصلاح) هنا كانت النسخة القديمة (v1) اللي ملهاش تخزين لسكريبتات Firebase —
+// لو ./sw.js الحقيقي فشل يتسجّل لأي سبب (404، مشكلة نشر على GitHub Pages)، التطبيق كان بيرجع
+// بصمت للنسخة القديمة دي وبيفقد كل فايدة تخزين Firebase من غير ما حد يلاحظ. دلوقتي الاتنين
+// نفس الكود بالظبط (نسخة من sw.js بتاريخ آخر تحديث)، فمفيش فرق فعلي فى السلوك أي النسختين اشتغلت.
 var FIREBASE_URLS = [
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'
 ];
-
 self.addEventListener('install', function(e){
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(function(cache){
         return Promise.all([
             cache.add(self.registration.scope).catch(function(){}),
-            // كل رابط بيتكاش لوحده بمحاولة منفصلة — لو واحد فشل (مثلاً أول تحميل وهو أوفلاين
-            // أصلًا) الباقي يكمل عادي بدل ما فشل واحد يوقف كل عملية التثبيت.
             ...FIREBASE_URLS.map(function(url){
                 return cache.add(url).catch(function(){});
             })
@@ -37,19 +29,16 @@ self.addEventListener('activate', function(e){
 });
 // بيخزّن نسخة من صفحة التطبيق نفسها (شل التطبيق) عشان تفتح حتى من غير إنترنت — نتيجة الشبكة
 // (Network-first) عشان لو أونلاين ياخد آخر نسخة محفوظة دايمًا، ولو أوفلاين يرجع لآخر نسخة متخزّنة.
-// سكريبتات Firebase المُثبَّتة بالأعلى: Cache-first (الكود ثابت مربوط بإصدار محدد، مفيش داعي
-// نراجع الشبكة كل مرة). أي طلبات تانية (Open-Meteo، الخطوط...) بتعدي للشبكة عادي من غير تدخل،
-// لأنها بيانات حية مفيش فايدة من تخزينها.
+// سكريبتات Firebase: Cache-first (كود ثابت مربوط بإصدار محدد). أي طلبات تانية (Open-Meteo،
+// الخطوط...) بتعدي للشبكة عادي من غير تدخل، لأنها بيانات حية مفيش فايدة من تخزينها.
 self.addEventListener('fetch', function(event){
     var isAppShell = event.request.mode === 'navigate' ||
         (event.request.method === 'GET' && event.request.url === self.registration.scope);
-
     var isFirebaseSdk = event.request.method === 'GET' && FIREBASE_URLS.indexOf(event.request.url) !== -1;
-
     if (isFirebaseSdk) {
         event.respondWith(
             caches.match(event.request).then(function(cached){
-                if (cached) return cached; // Cache-first: عندنا نسخة محلية ثابتة، مفيش داعي للشبكة
+                if (cached) return cached;
                 return fetch(event.request).then(function(resp){
                     var clone = resp.clone();
                     caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, clone); });
@@ -59,7 +48,6 @@ self.addEventListener('fetch', function(event){
         );
         return;
     }
-
     if (!isAppShell) return;
     event.respondWith(
         fetch(event.request).then(function(resp){

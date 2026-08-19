@@ -1,30 +1,36 @@
 {
-  "name": "كتكوت Pro | إدارة دواجن التسمين",
-  "short_name": "كتكوت Pro",
-  "description": "تطبيق شامل لإدارة مزارع دواجن التسمين، تسجيل يومي، متابعة الأداء والتحصينات، إدارة المخزون والمالية، وتقارير احترافية.",
-  "start_url": "./",
+  "name": "كتكوت برو — إدارة مزرعة الدواجن",
+  "short_name": "كتكوت برو",
+  "description": "نظام إدارة مزرعة دواجن شامل: سجل يومي، تحليلات إنتاجية، مخزون، مالية، وتنبيهات ذكية — يعمل بدون إنترنت.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#2F4538",
-  "theme_color": "#2F4538",
-  "lang": "ar",
+  "orientation": "portrait",
   "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#FAF7EE",
+  "theme_color": "#1F2F26",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "./icon-192x192-any.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
+      "src": "./icon-512x512-any.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-512-maskable.png",
+      "src": "./icon-192x192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-512x512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
