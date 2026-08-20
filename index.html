@@ -784,6 +784,39 @@
             display: block;
             margin: 0 auto;
         }
+        /* ⚡ محرك الرسم البياني المتطور — صندوق التلميح التفاعلي (يتبع السحب/اللمس) */
+        .chart-tooltip-v2 {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            background: var(--barn-dark);
+            color: var(--cream);
+            font-family: 'Tajawal', sans-serif;
+            border-radius: 12px;
+            padding: 8px 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.15);
+            opacity: 0;
+            transform: translate(-50%, -100%) translateY(-10px) scale(.92);
+            transition: opacity .1s ease, transform .1s ease;
+            min-width: 90px;
+        }
+        .chart-tooltip-v2.show { opacity: 1; transform: translate(-50%, -100%) translateY(-14px) scale(1); }
+        .chart-tooltip-v2.below { transform: translate(-50%, 0) translateY(14px) scale(1); }
+        .chart-tooltip-v2.below.show { transform: translate(-50%, 0) translateY(14px) scale(1); }
+        .chart-tooltip-v2 .ctp-title { font-size: 10px; color: var(--wheat-light); font-weight: 700; margin-bottom: 3px; opacity: .85; }
+        .chart-tooltip-v2 .ctp-row { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+        .chart-tooltip-v2 .ctp-row + .ctp-row { margin-top: 3px; }
+        .chart-tooltip-v2 .ctp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(255,255,255,.15); }
+        .chart-tooltip-v2 .ctp-val { color: var(--wheat-light); font-variant-numeric: tabular-nums; }
+        .chart-tooltip-v2::after {
+            content: '';
+            position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
+            border: 5px solid transparent; border-top-color: var(--barn-dark);
+        }
+        .chart-tooltip-v2.below::after {
+            bottom: auto; top: -5px;
+            border-top-color: transparent; border-bottom-color: var(--barn-dark);
+        }
         .legend-row {
             display: flex;
             gap: 14px;
@@ -831,12 +864,32 @@
             max-width: 560px;
             border-radius: 22px 22px 0 0;
             padding: 20px;
+            padding-top: 26px;
             padding-bottom: calc(20px + env(safe-area-inset-bottom));
             max-height: 88vh;
             overflow-y: auto;
             animation: slideUp .25s ease;
             position: relative;
         }
+        /* خط السحب العلوي (drag handle) — إشارة بصرية إن النافذة sheet قابلة للسحب/الإغلاق، زي أغلب تطبيقات الموبايل */
+        .modal::before {
+            content: "";
+            position: absolute;
+            top: 9px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 38px;
+            height: 4px;
+            border-radius: 999px;
+            background: var(--line);
+        }
+        /* زر حذف دائري أحمر لعناصر القوائم القابلة للتعديل (دليل الأمراض، جهات الاتصال، إلخ) */
+        .del-x {
+            width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%;
+            background: #E5544B; color: #fff; border: none; font-size: 13px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .del-x:active { background: #c73f36; }
         @keyframes slideUp {
             from {
                 transform: translateY(30px);
@@ -2223,7 +2276,7 @@
             <div class="form-grid">
                 <div class="field full"><label>الاسم</label><input id="ct_name" placeholder="مثال: د. أحمد - طبيب بيطري"></div>
                 <div class="field"><label>الصفة</label>
-                    <select id="ct_role"><option>مورد</option><option>طبيب بيطري</option><option>فني صيانة</option><option>عامل</option><option>أخرى</option></select>
+                    <select id="ct_role"></select>
                 </div>
                 <div class="field"><label>رقم الهاتف (بصيغة دولية للواتساب، مثال: 20101xxxxxxx)</label><input id="ct_phone" type="tel" placeholder="20101xxxxxxx"></div>
             </div>
@@ -4315,26 +4368,68 @@
         // ============ قاعدة معرفة استدلالية عامة (مرجع بيطري عام لدواجن التسمين فى مصر) — مش تشخيص نهائي ============
         // كل بند: نطاق عمري تقريبي بيظهر فيه المرض غالبًا + أعراض "أساسية" (وزنها أعلى فى المطابقة) وأعراض "مساندة"،
         // وتوصية عملية أولى. الهدف تنبيه مبكر واسترشادي فقط — التشخيص المؤكد دايمًا محتاج طبيب بيطري ميداني/تحليل معملي.
-        const CLINICAL_DISEASE_KB = [
-            { name: 'كوكسيديا الأعور (Coccidiosis)', ageMin: 14, ageMax: 35,
-                requiredSigns: ['bloody_droppings'], supportingSigns: ['lethargy_huddling', 'feed_water_drop', 'watery_droppings'],
-                recommendation: 'راجع الفرشة والزرق فورًا — لو الدم واضح فى الزرق، ابدأ بروتوكول العلاج المضاد للكوكسيديا اللي عندك واستشر الطبيب البيطري لتأكيد النوع (أعورية/معوية) وتحديد الجرعة المناسبة.' },
-            { name: 'الجمبورو (Gumboro / IBD)', ageMin: 14, ageMax: 28,
-                requiredSigns: ['watery_droppings'], supportingSigns: ['lethargy_huddling', 'imbalance', 'feed_water_drop'],
-                recommendation: 'نفوق سريع مع إسهال مائي أبيض فى العمر ده من علامات الجمبورو الشائعة — اعزل القطيع المتأثر لو ممكن، وكلم الطبيب البيطري بسرعة لتقييم الحالة المناعية والحاجة لدعم مصلي/فيتاميني.' },
-            { name: 'الكوليباسيلوس (E. coli / Colibacillosis)', ageMin: 18, ageMax: 42,
-                requiredSigns: ['discharge'], supportingSigns: ['lethargy_huddling', 'feed_water_drop', 'joint_swelling', 'cough_sneeze'],
-                recommendation: 'غالبًا مرتبط بضعف تهوية أو تراكم أمونيا — راجع معدل التهوية والفرشة فورًا، وناقش مع الطبيب البيطري بروتوكول مضاد حيوي مناسب لو الحالة منتشرة.' },
-            { name: 'أمراض الجهاز التنفسي المزمن (CRD / مايكوبلازما)', ageMin: 10, ageMax: 45,
-                requiredSigns: ['rales'], supportingSigns: ['cough_sneeze', 'discharge', 'feed_water_drop'],
-                recommendation: 'راقب التهوية ونسبة الأمونيا وكثافة التربية — دعم بروتوكول مضاد للمايكوبلازما بعد استشارة الطبيب البيطري، خصوصًا لو الأعراض بدأت مع تغيّر مفاجئ فى الطقس.' },
-            { name: 'النيوكاسل (Newcastle) — احتمال، يحتاج تأكيد فوري', ageMin: 1, ageMax: 60,
-                requiredSigns: ['torticollis', 'circling'], supportingSigns: ['bloody_droppings', 'gasping', 'lethargy_huddling'],
-                recommendation: '⚠️ أعراض عصبية زي التواء الرقبة أو الدوران محتاجة تواصل فوري مع الطبيب البيطري — النيوكاسل مرض وبائي خطير ومعدي، والتأكيد والعزل السريع بيحددوا مصير باقي القطيع.' },
-            { name: 'إجهاد حراري (مش مرض معدي، لكن مهم يتفرّق)', ageMin: 1, ageMax: 60,
-                requiredSigns: ['gasping'], supportingSigns: ['lethargy_huddling', 'feed_water_drop'],
-                recommendation: 'راجع حرارة ورطوبة العنبر الآن — زوّد التهوية/الرش لو متاح، ووفّر مياه باردة. لو الأعراض اختفت بعد تحسين البيئة، الأغلب إجهاد حراري مش مرض.' },
-        ];
+        // ============ قاعدة معرفة الأمراض الافتراضية (نقطة انطلاق فقط) — تتحوّل لقائمة قابلة للتعديل الكامل
+        // من المستخدم (state.diseaseKB) عند أول تحميل. أي تعديل هنا بعد كده مالوش تأثير على تطبيقات مثبّتة
+        // بالفعل — التعديل الفعلي بيبقى من شاشة "دليل الأمراض" فى التطبيق نفسه. ============
+        // symptomsText/diffText: وصف حر يظهر فى شاشة تصفح الدليل. requiredSigns/supportingSigns: أكواد من
+        // CLINICAL_SIGN_GROUPS تُستخدم فى المطابقة الاستباقية مع السجل اليومي — ممكن تُترك فاضية لمرض مالوش
+        // توقيع أعراض واضح يتفحص بصريًا (زي التسمم بالأفلاتوكسين)، ووقتها بيفضل للتصفح والمرجعية بس.
+        // ============ أدوار جهات الاتصال — قابلة للتعديل الكامل من المستخدم (state.contactRoles)، نفس نمط دليل الأمراض ============
+        function getDefaultContactRoles() {
+            return [
+                { id: 'role_supplier', label: 'مورد', icon: '🚚' },
+                { id: 'role_vet', label: 'طبيب بيطري', icon: '💉' },
+                { id: 'role_tech', label: 'فني صيانة', icon: '🔧' },
+                { id: 'role_worker', label: 'عامل', icon: '👷' },
+                { id: 'role_other', label: 'أخرى', icon: '📇' },
+            ];
+        }
+        function getDefaultDiseaseKB() {
+            return [
+                { id: 'dz_cocci', name: 'كوكسيديا الأعور (Coccidiosis)', ageMin: 14, ageMax: 35,
+                    requiredSigns: ['bloody_droppings'], supportingSigns: ['lethargy_huddling', 'feed_water_drop', 'watery_droppings'],
+                    symptomsText: 'إسهال دموي، ريش منتفش وخمول، تراجع فى معدل النمو ووزن غير متجانس بين الطيور.',
+                    diffText: 'الدم فى الزرق علامة مميزة، غالبًا مرتبط بفرشة رطبة أو كثافة عالية.',
+                    recommendation: 'راجع الفرشة والزرق فورًا — لو الدم واضح فى الزرق، ابدأ بروتوكول العلاج المضاد للكوكسيديا اللي عندك واستشر الطبيب البيطري لتأكيد النوع (أعورية/معوية) وتحديد الجرعة المناسبة.' },
+                { id: 'dz_gumboro', name: 'الجمبورو (Gumboro / IBD)', ageMin: 14, ageMax: 28,
+                    requiredSigns: ['watery_droppings'], supportingSigns: ['lethargy_huddling', 'imbalance', 'feed_water_drop'],
+                    symptomsText: 'إسهال أبيض مائي، ريش منتفش، عزوف عن الأكل، نفوق يبدأ فجأة ويرتفع خلال أيام قليلة عادة بعمر 3-6 أسابيع.',
+                    diffText: 'يصيب عادة قبل عمر 6 أسابيع ويترك الطائر أكثر عرضة لعدوى ثانوية بعدها بسبب ضعف المناعة.',
+                    recommendation: 'نفوق سريع مع إسهال مائي أبيض فى العمر ده من علامات الجمبورو الشائعة — اعزل القطيع المتأثر لو ممكن، وكلم الطبيب البيطري بسرعة لتقييم الحالة المناعية والحاجة لدعم مصلي/فيتاميني.' },
+                { id: 'dz_ecoli', name: 'الكوليباسيلوس (E. coli / Colibacillosis)', ageMin: 18, ageMax: 42,
+                    requiredSigns: ['discharge'], supportingSigns: ['lethargy_huddling', 'feed_water_drop', 'joint_swelling', 'cough_sneeze'],
+                    symptomsText: 'ضعف عام، إسهال، التهاب الأكياس الهوائية (يظهر عند التشريح)، تراجع الأداء ونفوق متفرق مستمر بدل موجة حادة.',
+                    diffText: 'غالبًا عدوى ثانوية تتبع إجهاد بيئي أو ضعف مناعة من مرض آخر — راجع التهوية والكثافة والفرشة.',
+                    recommendation: 'غالبًا مرتبط بضعف تهوية أو تراكم أمونيا — راجع معدل التهوية والفرشة فورًا، وناقش مع الطبيب البيطري بروتوكول مضاد حيوي مناسب لو الحالة منتشرة.' },
+                { id: 'dz_crd', name: 'أمراض الجهاز التنفسي المزمن (CRD / مايكوبلازما)', ageMin: 10, ageMax: 45,
+                    requiredSigns: ['rales'], supportingSigns: ['cough_sneeze', 'discharge', 'feed_water_drop'],
+                    symptomsText: 'سعال وحشرجة تنفسية، إفرازات أنفية، تراجع طفيف فى النمو، نفوق منخفض عادة إلا مع عدوى مصاحبة.',
+                    diffText: 'أعراض تنفسية مزمنة ممتدة بدون موجة نفوق حادة، خصوصًا فى الجو البارد أو سوء التهوية.',
+                    recommendation: 'راقب التهوية ونسبة الأمونيا وكثافة التربية — دعم بروتوكول مضاد للمايكوبلازما بعد استشارة الطبيب البيطري، خصوصًا لو الأعراض بدأت مع تغيّر مفاجئ فى الطقس.' },
+                { id: 'dz_nd', name: 'النيوكاسل (Newcastle) — احتمال، يحتاج تأكيد فوري', ageMin: 1, ageMax: 60,
+                    requiredSigns: ['torticollis', 'circling'], supportingSigns: ['bloody_droppings', 'gasping', 'lethargy_huddling'],
+                    symptomsText: 'ضيق تنفس وسعال، إسهال أخضر، ارتعاش وأعراض عصبية (التواء الرقبة)، انخفاض حاد فى إنتاج البيض، ارتفاع نفوق مفاجئ.',
+                    diffText: 'الفرق عن الإنفلونزا: ظهور الأعراض العصبية (التواء الرقبة/الدوران) بوضوح أكبر فى النيوكاسل.',
+                    recommendation: '⚠️ أعراض عصبية زي التواء الرقبة أو الدوران محتاجة تواصل فوري مع الطبيب البيطري — النيوكاسل مرض وبائي خطير ومعدي، والتأكيد والعزل السريع بيحددوا مصير باقي القطيع.' },
+                { id: 'dz_heat', name: 'إجهاد حراري (مش مرض معدي، لكن مهم يتفرّق)', ageMin: 1, ageMax: 60,
+                    requiredSigns: ['gasping'], supportingSigns: ['lethargy_huddling', 'feed_water_drop'],
+                    symptomsText: 'لهث وفرد الأجنحة، تجمّع الطيور بعيدًا عن بعض، تراجع استهلاك العلف وزيادة استهلاك الماء، نفوق مفاجئ فى ساعات الذروة الحارة.',
+                    diffText: 'يرتبط بتوقيت درجة الحرارة المرتفعة مباشرة وليس عدوى — التبريد والتهوية الفورية هما الحل الأول.',
+                    recommendation: 'راجع حرارة ورطوبة العنبر الآن — زوّد التهوية/الرش لو متاح، ووفّر مياه باردة. لو الأعراض اختفت بعد تحسين البيئة، الأغلب إجهاد حراري مش مرض.' },
+                { id: 'dz_ai', name: 'أنفلونزا الطيور', ageMin: 1, ageMax: 60, requiredSigns: [], supportingSigns: ['lethargy_huddling', 'watery_droppings', 'gasping'],
+                    symptomsText: 'نفوق مفاجئ بدون أعراض واضحة أحيانًا، تورم الرأس والعرف المزرقّ، إسهال، ضعف عام شديد.',
+                    diffText: 'نفوق سريع جدًا ومرتفع مقارنة بالأمراض التنفسية الأخرى — يستدعى إبلاغ الجهات البيطرية فورًا.',
+                    recommendation: '⚠️ نفوق مفاجئ مرتفع من غير سبب واضح يستدعي إبلاغ الجهات البيطرية الرسمية فورًا، مش بس علاج ذاتي.' },
+                { id: 'dz_aflatoxin', name: 'التسمم بالأفلاتوكسين (علف ملوث)', ageMin: 1, ageMax: 60, requiredSigns: [], supportingSigns: ['feed_water_drop'],
+                    symptomsText: 'تراجع النمو والـFCR بدون سبب واضح، شحوب، تضخم الكبد (عند التشريح)، ضعف مناعة عام.',
+                    diffText: 'لا توجد أعراض تنفسية أو عصبية مميزة — الشك يقوى مع تدهور الأداء العام رغم سلامة البرنامج الصحي، راجع مصدر وتخزين العلف.',
+                    recommendation: 'مفيش أعراض ظاهرة مميزة تتفحص بصريًا — الشك بيقوى من تراجع الأداء (FCR/نمو) رغم سلامة البرنامج الصحي. راجع مصدر وتخزين العلف واستشر الطبيب البيطري لو الشك استمر.' },
+                { id: 'dz_gout', name: 'النقرس (Gout)', ageMin: 1, ageMax: 60, requiredSigns: [], supportingSigns: ['lethargy_huddling'],
+                    symptomsText: 'خمول، ترسبات بيضاء طباشيرية حول المفاصل أو الأعضاء الداخلية (عند التشريح)، تراجع الشهية.',
+                    diffText: 'غالبًا مرتبط بمشاكل كلوية من جفاف حاد سابق أو زيادة بروتين/كالسيوم غير متوازنة فى العلف.',
+                    recommendation: 'راجع برنامج التحصين للماء (خصوصًا فى الأيام الحارة) وتوازن البروتين/الكالسيوم فى العلف، واستشر الطبيب البيطري لو النفوق مستمر.' },
+            ];
+        }
 
         // ==================== State & Storage ====================
 
@@ -5064,8 +5159,6 @@
                 else if (e.code === 'auth/weak-password') msg = '❌ كلمة المرور ضعيفة — جرّب كلمة أطول وأقوى';
                 else if (e.code === 'auth/invalid-email') msg = '❌ الإيميل غير صحيح';
                 else if (e.code === 'auth/provider-already-linked') msg = '⚠️ عندك حساب استرداد مربوط بالفعل';
-                else if (e.code === 'auth/operation-not-allowed') msg = '⚠️ خانة "Email/Password" لسه مش مفعّلة فى إعدادات Firebase بتاع مشروعك — روح Firebase Console ← Authentication ← Sign-in method وفعّلها، وبعدين جرّب تاني (ده إعداد لمرة واحدة بس)';
-                else if (e.code === 'auth/network-request-failed') msg = '⚠️ مفيش اتصال بالإنترنت — تأكد من الشبكة وجرّب تاني';
                 if (err) err.textContent = msg; else showToast(msg);
             });
         }
@@ -5643,6 +5736,15 @@
             const sig = dangerOnly.map(a => a.text).join('|');
             if (dangerOnly.length && sig !== lastDangerAlertSignatures[batchId]) {
                 vibrate([50, 40, 50]);
+                // ⚡ (جديد) إشعار فوري (نفس نظام showKatkotNotification الموجود أصلاً لمواعيد الإضافات/المعاملات)
+                // لكل تنبيه خطر جديد فعليًا (مش كل التنبيهات الخطرة القديمة اللي لسه موجودة من قبل) —
+                // بنقارن بالتوقيع القديم عشان مانزعجش المستخدم بنفس التنبيه تاني كل ما الصفحة تعمل render
+                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                    const prevTexts = new Set((lastDangerAlertSignatures[batchId] || '').split('|'));
+                    const b = state.batches.find(x => x.id === batchId);
+                    dangerOnly.filter(a => !prevTexts.has(a.text)).forEach(a =>
+                        showKatkotNotification('🔴 تنبيه خطر — كتكوت برو', `${b ? b.name + ': ' : ''}${a.text}`, 'danger_' + a.key));
+                }
             }
             lastDangerAlertSignatures[batchId] = sig;
         }
@@ -5683,6 +5785,52 @@
                 'ar-EG', { maximumFractionDigits: d, minimumFractionDigits: 0 }); }
 
         function money(n) { return fmt(n, 0) + ' ' + getCurrencySymbol(); }
+
+        // ============ مكوّن فلتر تاريخ موحّد قابل لإعادة الاستخدام (المرحلة الملهمة من تطبيق آخر) ============
+        // بديل عن ما يتكرر إعادة بناءه فى كل شاشة تحتاج فلترة بالتاريخ: نفس التسعة اختيارات القياسية.
+        const DATE_RANGE_PRESETS = [
+            { id: 'today', label: 'اليوم' }, { id: 'yesterday', label: 'أمس' },
+            { id: 'this_month', label: 'هذا الشهر' }, { id: 'last_month', label: 'الشهر الماضي' },
+            { id: 'last_3_months', label: 'آخر 3 أشهر' }, { id: 'last_6_months', label: 'آخر 6 أشهر' },
+            { id: 'this_year', label: 'هذا العام' }, { id: 'last_year', label: 'العام الماضي' },
+            { id: 'all_time', label: 'كل الوقت' },
+        ];
+        function dateRangePresetLabel(id) { const p = DATE_RANGE_PRESETS.find(x => x.id === id); return p ? p.label : 'كل الوقت'; }
+        // بيرجع {start, end} كـ Date، أو null لـ 'all_time' (يعني بلا حدود)
+        function dateRangeFromPreset(presetId) {
+            const now = new Date();
+            const startOfDay = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+            const endOfDay = d => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; };
+            switch (presetId) {
+                case 'today': return { start: startOfDay(now), end: endOfDay(now) };
+                case 'yesterday': { const y = new Date(now); y.setDate(y.getDate() - 1); return { start: startOfDay(y), end: endOfDay(y) }; }
+                case 'this_month': return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: endOfDay(now) };
+                case 'last_month': { const s = new Date(now.getFullYear(), now.getMonth() - 1, 1); const e = new Date(now.getFullYear(), now.getMonth(), 0); return { start: s, end: endOfDay(e) }; }
+                case 'last_3_months': { const s = new Date(now); s.setMonth(s.getMonth() - 3); return { start: startOfDay(s), end: endOfDay(now) }; }
+                case 'last_6_months': { const s = new Date(now); s.setMonth(s.getMonth() - 6); return { start: startOfDay(s), end: endOfDay(now) }; }
+                case 'this_year': return { start: new Date(now.getFullYear(), 0, 1), end: endOfDay(now) };
+                case 'last_year': return { start: new Date(now.getFullYear() - 1, 0, 1), end: new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999) };
+                case 'all_time': default: return null;
+            }
+        }
+        function isDateInPreset(dateStrOrTimestamp, presetId) {
+            if (!dateStrOrTimestamp) return false;
+            const range = dateRangeFromPreset(presetId);
+            if (!range) return true;
+            const d = new Date(dateStrOrTimestamp);
+            return d >= range.start && d <= range.end;
+        }
+        let _dateRangeFilterCallback = null;
+        function openDateRangeFilter(currentPresetId, onSelect) {
+            _dateRangeFilterCallback = onSelect;
+            const cur = currentPresetId || 'all_time';
+            const html = DATE_RANGE_PRESETS.map(p => `<button class="btn ${p.id === cur ? '' : 'ghost'} block" style="margin-bottom:6px;" onclick="selectDateRangePreset('${p.id}')">${p.label}</button>`).join('');
+            openGenericModal('📅 فلترة حسب التاريخ', html);
+        }
+        function selectDateRangePreset(id) {
+            closeModal('genericModalOverlay');
+            if (_dateRangeFilterCallback) _dateRangeFilterCallback(id);
+        }
 
         // ===== Storage (متزامن بالكامل - يحل مشكلة سباق البيانات) =====
         function saveToStorage(jsonStr) {
@@ -5825,6 +5973,8 @@
             if (state.darkMode === undefined) setState('darkMode', false);
             applyTheme();
             if (!state.conflictRules) setState('conflictRules', []);
+            if (!state.diseaseKB) setState('diseaseKB', getDefaultDiseaseKB()); // ⚠️ ترحيل: دليل الأمراض بقى قابل للتعديل الكامل من المستخدم
+            if (!state.contactRoles) setState('contactRoles', getDefaultContactRoles()); // ⚠️ ترحيل: أدوار جهات الاتصال بقت قابلة للتعديل
             if (!state.pendingCarryOver) setState('pendingCarryOver', []); // ⚠️ ترحيل: قائمة انتظار مخزون الدورات المؤرشفة حديثًا
             state.batches.forEach(migrateBatch);
             if (!state.activeId && activeBatches().length) setState('activeId', activeBatches()[0].id);
@@ -7433,6 +7583,15 @@
             return TABS.filter(t => t.id !== 'settings' && perms.includes(t.id));
         }
 
+        // ⚡ (جديد) الانتقال من أي تنبيه مباشرة لمكان حله — بيستخدم actionTab/actionSubTab اللي حطهم
+        // categorizeAlert على كل تنبيه، فمفيش حاجة مكتوبة يدويًا لكل نوع تنبيه على حدة.
+        function goToAlertAction(actionTab, actionSubTab) {
+            if (!actionTab || !visibleTabs().some(t => t.id === actionTab)) return;
+            setState('activeTab', actionTab);
+            if (actionSubTab && actionTab === 'management') managementSubTab = actionSubTab;
+            persist(); render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         function setTab(id) {
             // ✅ تحقق موجود مسبقًا وسليم من ناحية المنطق — لكنه دفاع UI فقط (يمنع التنقل من الواجهة).
             // لا يمنع استدعاء دوال الحفظ مباشرة من الـ Console، لذلك التحصين الحقيقي انتقل لمستوى
@@ -10420,8 +10579,10 @@
             // لأنه اتكتم كتير قبل كده، بدل ما يبقى تصرّف مخفي فى الخوارزمية من غير ما تعرف السبب.
             const fatigueBadge = (a.level === 'warn' && a.dismissCount >= 3)
                 ? `<span style="font-size:9.5px;color:var(--muted);flex-shrink:0;" title="كتمته ${a.dismissCount} مرة قبل كده — بياخد أولوية أقل فى أهم 3 أفعال">🔕×${a.dismissCount}</span>` : '';
+            // ⚡ (جديد) النص نفسه قابل للضغط — يوديك لتبويب/تبويب فرعي حل المشكلة مباشرة، بدل ما تدور بنفسك
+            const clickable = a.actionTab ? ` onclick="goToAlertAction('${a.actionTab}','${a.actionSubTab || ''}')" style="flex:1;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;"` : ' style="flex:1;"';
             return `<div class="alert-item ${a.level}" style="display:flex;align-items:center;gap:6px;justify-content:space-between;">
-                <span style="flex:1;">${esc(a.text)}</span>
+                <span${clickable}>${esc(a.text)}</span>
                 ${fatigueBadge}
                 ${actionBtn}
             </div>`;
@@ -11558,11 +11719,14 @@
             const kb = (typeof computeIncidentKnowledgeBase === 'function') ? computeIncidentKnowledgeBase(b.species) : null;
             const allPersonalIncidents = (typeof mineAllIncidentRecords === 'function') ? mineAllIncidentRecords(b.species) : [];
             const normalize = s => String(s || '').toLowerCase().replace(/[\s\u0640]+/g, '');
+            // ⚠️ دليل الأمراض بقى قابل للتعديل بالكامل من المستخدم (state.diseaseKB) — القائمة الثابتة تحت
+            // بتُستخدم كنقطة انطلاق افتراضية بس لو الترحيل لسه ما حصلش (مثلاً فى بيئة اختبار معزولة عن state)
+            const diseaseSource = (typeof state !== 'undefined' && state.diseaseKB && state.diseaseKB.length) ? state.diseaseKB : getDefaultDiseaseKB();
 
             const predictions = [];
-            CLINICAL_DISEASE_KB.forEach(dz => {
+            diseaseSource.forEach(dz => {
                 if (age && (age < dz.ageMin || age > dz.ageMax)) return;
-                const matchedRequired = dz.requiredSigns.filter(c => flatSigns.includes(c));
+                const matchedRequired = (dz.requiredSigns || []).filter(c => flatSigns.includes(c));
                 if (!matchedRequired.length) return;
                 const matchedSupporting = (dz.supportingSigns || []).filter(c => flatSigns.includes(c));
                 let officialScore = matchedRequired.length * 2 + matchedSupporting.length;
@@ -12490,6 +12654,44 @@
             }
             return alerts;
         }
+        // ============ تصنيف كل تنبيه لمجال (نفس مجالات computeUnifiedPriorities: إنتاج/مالية/تشغيل/بيئة) +
+        // تحديد مكان الحل (تبويب/تبويب فرعي) — يشتغل على أي تنبيه من الـ60+ نوع بدون لمس منطق التوليد نفسه.
+        // مبني على الأيقونة اللي فى أول كل نص (كل تنبيهات الكود متسقة فى استخدام أيقونة مميزة فى البداية)
+        // مع كلمات مفتاحية للحالات اللي الأيقونة نفسها بتتشارك بين أكتر من مجال (زي 📊 و📦 و🔥). ============
+        function categorizeAlert(text) {
+            const t = String(text || '');
+            // 📊 مشترك بين عدة حقول Z-score — التفرقة بالكلمة نفسها
+            if (t.startsWith('📊')) {
+                if (t.includes('العلف')) return { domain: 'production', actionTab: 'daily', actionSubTab: null };
+                if (t.includes('الماء') || t.includes('ماء')) return { domain: 'production', actionTab: 'daily', actionSubTab: null };
+                if (t.includes('حرارة')) return { domain: 'weather', actionTab: 'daily', actionSubTab: null };
+                return { domain: 'production', actionTab: 'daily', actionSubTab: null };
+            }
+            // 🔥 مشترك بين "توسعة التحضين" (تشغيل) و"موجة حرارة متوقعة" (بيئة)
+            if (t.startsWith('🔥')) {
+                if (t.includes('موجة')) return { domain: 'weather', actionTab: 'daily', actionSubTab: null };
+                return { domain: 'ops', actionTab: 'daily', actionSubTab: null };
+            }
+            // 📦 مشترك بين "نواقص مخزون" (تشغيل/شراء) و"تعارض فترة سحب مع عمر البيع" (تشغيل/جدول)
+            if (t.startsWith('📦')) {
+                if (t.includes('سحب')) return { domain: 'ops', actionTab: 'daily', actionSubTab: null };
+                return { domain: 'ops', actionTab: 'management', actionSubTab: 'inventory' };
+            }
+            const rules = [
+                { re: /^💧/, domain: 'production', actionTab: 'daily' },
+                { re: /^🌾/, domain: 'production', actionTab: (t.includes('نفاذ') || t.includes('ناقص') || t.includes('مشتريات')) ? 'management' : 'daily', actionSubTab: (t.includes('نفاذ') || t.includes('ناقص') || t.includes('مشتريات')) ? 'inventory' : null },
+                { re: /^❄️/, domain: 'weather', actionTab: 'daily' },
+                { re: /^🌡️|^🧭|^🧠|^💀|^📏|^⚖️/, domain: 'production', actionTab: 'daily' },
+                { re: /^💰|^🎯|^💳/, domain: 'financial', actionTab: 'management', actionSubTab: 'finance' },
+                { re: /^💉|^🧴|^🍽️/, domain: 'ops', actionTab: 'daily' },
+                { re: /^✅|^🛡️|^🧹|^⚠️/, domain: 'ops', actionTab: 'daily' },
+                { re: /^📉/, domain: 'production', actionTab: 'daily' },
+            ];
+            const hit = rules.find(r => r.re.test(t));
+            if (hit) return { domain: hit.domain, actionTab: hit.actionTab, actionSubTab: hit.actionSubTab || null };
+            return { domain: 'ops', actionTab: 'daily', actionSubTab: null }; // احتياطي — نادرًا ما يتفعّل لو كل النصوص متسقة
+        }
+
         function computeAlerts(b, m) {
             const alerts = [];
             const cfg = AS();
@@ -12993,7 +13195,8 @@
                 }
             }
             alerts.forEach(a => { if (!a.key) a.key = alertKeyFromText(a.text); a.dismissed = isDismissedToday(b, 'alert_' + a.key);
-                a.dismissCount = (b.alertDismissCount && b.alertDismissCount[a.key]) || 0; });
+                a.dismissCount = (b.alertDismissCount && b.alertDismissCount[a.key]) || 0;
+                Object.assign(a, categorizeAlert(a.text)); }); // ⚡ (جديد) تصنيف مجال + مكان الحل — يُستخدم فى العرض والأولويات الموحّدة والإشعارات
             logAlertHistory(b, alerts);
             return alerts;
         }
@@ -13342,7 +13545,7 @@
         // كل إشارة متعلّمة بالمجال اللي جاية منه ودرجة الإلحاح (اليوم / هذا الأسبوع / مراقبة) عشان الأولوية تبقى مفهومة فورًا.
         function computeUnifiedPriorities(b, m, fin, alerts, ins, ops, hs, saleAdv) {
             const items = [];
-            const push = (domain, icon, text, weight) => items.push({ domain, icon, text, weight });
+            const push = (domain, icon, text, weight, actionTab, actionSubTab, alertKey) => items.push({ domain, icon, text, weight, actionTab: actionTab || 'daily', actionSubTab: actionSubTab || null, alertKey: alertKey || null });
 
             // --- 🌱 إنتاج: من نفس عوامل مؤشر الصحة (نفوق/وزن/اتجاه/تجانس/سبب النفوق)، مع فرز عوامل التشغيل لقسمها الخاص ---
             hs.factors.forEach(f => {
@@ -13385,23 +13588,19 @@
                 }
             }
 
-            // --- 💰 مالية + 🌡️ بيئة/طقس + 🛡️ تشغيل: نلتقطها من alerts المحسوبة أصلاً بمطابقة نصية دقيقة (بدون إعادة حساب المنطق) ---
-            const domainRules = [
-                { re: /تكلفة كيلو اللحم|مستحق سداد|مستحق تحصيل/, domain: 'financial', icon: '💰' },
-                { re: /الإجهاد البيئي|ثاني أكسيد الكربون|الطقس المتوقع/, domain: 'weather', icon: '🌡️' },
-                { re: /نواقص فى المخزن/, domain: 'ops', icon: '📦' },
-            ];
+            // --- 💰 مالية + 🌡️ بيئة/طقس + 🛡️/📦 تشغيل: كل تنبيهات الخطر/التحذير غير المكتومة — بمجالها المصنَّف
+            // من categorizeAlert (بدل المطابقة النصية المحدودة اللي كانت بتلقط 3 أنماط بس من 60+ نوع تنبيه) ---
             alerts.forEach(a => {
                 if (a.level !== 'danger' && a.level !== 'warn') return;
                 if (a.dismissed) return; // المستخدم كتمها اليوم بنفسه — منعرضهاش كأولوية عاجلة تانى
-                const rule = domainRules.find(r => r.re.test(a.text));
-                if (!rule) return;
+                const domain = a.domain || 'ops';
+                const icon = { production: '🌱', financial: '💰', weather: '🌡️', ops: '🛡️' }[domain] || '🛡️';
                 let w = a.level === 'danger' ? 8 : 5;
                 // ============ 🔴 إصلاح Red Team (مدموج): حلقة تغذية راجعة لإجهاد التنبيهات (Alert Fatigue) ============
                 // تحذير اتكتم كتير قبل كده ياخد أولوية أقل فى "أهم 3 أفعال" — بدون ما يختفي من قائمة التنبيهات
                 // الكاملة. تنبيهات "الخطر" مستثناة عمدًا وبتفضل بأولويتها الكاملة دايمًا لأنها سلامة/مخاطرة حرجة.
                 if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
-                push(rule.domain, rule.icon, a.text.replace(/^\S+\s*/, ''), w);
+                push(domain, icon, a.text.replace(/^\S+\s*/, ''), w, a.actionTab, a.actionSubTab, a.key);
             });
 
             const seen = new Set();
@@ -14021,14 +14220,14 @@
             const prioritiesSection = unified.top3.length ? `
             <div class="card" style="margin-bottom:14px;padding:12px;border:1px solid var(--wheat);background:#fffdf7;">
                 <div style="font-size:12.5px;font-weight:800;color:var(--barn-dark);margin-bottom:8px;">🎯 أهم 3 أفعال عليك اتخاذها الآن</div>
-                ${unified.top3.map((p, i) => `<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;${i<unified.top3.length-1?'border-bottom:1px dashed #e5ddc8;':''}">
+                ${unified.top3.map((p, i) => `<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;${i<unified.top3.length-1?'border-bottom:1px dashed #e5ddc8;':''}${p.actionTab?'cursor:pointer;':''}"${p.actionTab?` onclick="goToAlertAction('${p.actionTab}','${p.actionSubTab||''}')"`:''}>
                     <div style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--barn-dark);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;">${i+1}</div>
                     <div style="flex:1;">
                         <div style="display:flex;gap:6px;align-items:center;margin-bottom:2px;flex-wrap:wrap;">
                             <span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:8px;background:${domainStyle[p.domain].bg};color:${domainStyle[p.domain].color};">${p.icon} ${unified.domainLabels[p.domain]}</span>
                             <span style="font-size:10px;font-weight:800;color:${urgencyStyle[p.urgency]};">⏱️ ${p.urgency}</span>
                         </div>
-                        <div style="font-size:12px;line-height:1.5;">${esc(p.text)}</div>
+                        <div style="font-size:12px;line-height:1.5;${p.actionTab?'text-decoration:underline dotted;text-underline-offset:3px;':''}">${esc(p.text)}</div>
                         ${p.recurringNote ? `<div style="font-size:10px;color:#b8860b;font-weight:700;margin-top:2px;">${esc(p.recurringNote)}</div>` : ''}
                     </div>
                 </div>`).join('')}
@@ -14806,6 +15005,72 @@
             if (box && b) box.innerHTML = renderVaccineListCard(b);
             else render();
         }
+        // ============ تقويم شهري مرئي للتنبيهات (بديل بصري للقائمة الفلات — إلهام من تطبيق تانى) ============
+        // حالة العرض والتنقل بين الشهور session فقط (مش محفوظة)، بترجع لشهر تاريخ النهاردة كل ما تفتح دفعة جديدة
+        let reminderViewMode = 'list'; // 'list' | 'calendar'
+        let reminderCalYear = null, reminderCalMonth = null, reminderCalSelectedDate = null;
+        function toggleReminderViewMode() {
+            reminderViewMode = reminderViewMode === 'list' ? 'calendar' : 'list';
+            if (reminderViewMode === 'calendar' && reminderCalYear === null) {
+                const t = new Date(); reminderCalYear = t.getFullYear(); reminderCalMonth = t.getMonth(); reminderCalSelectedDate = todayStr();
+            }
+            refreshReminderListBox();
+        }
+        function navigateReminderCalendar(delta) {
+            reminderCalMonth += delta;
+            if (reminderCalMonth < 0) { reminderCalMonth = 11; reminderCalYear--; }
+            else if (reminderCalMonth > 11) { reminderCalMonth = 0; reminderCalYear++; }
+            refreshReminderListBox();
+        }
+        function selectReminderCalendarDay(dateStr) { reminderCalSelectedDate = dateStr; refreshReminderListBox(); }
+        const AR_MONTH_NAMES = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        const AR_WEEKDAY_SHORT = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+        function renderReminderCalendar(b) {
+            if (reminderCalYear === null) { const t = new Date(); reminderCalYear = t.getFullYear(); reminderCalMonth = t.getMonth(); reminderCalSelectedDate = todayStr(); }
+            const y = reminderCalYear, m = reminderCalMonth;
+            const firstDay = new Date(y, m, 1);
+            const startOffset = firstDay.getDay(); // 0=أحد
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const t0 = todayStr();
+            const remByDate = {};
+            (b.reminders || []).forEach(r => { (remByDate[r.date] = remByDate[r.date] || []).push(r); });
+            let cells = '';
+            for (let i = 0; i < startOffset; i++) cells += '<div></div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayRems = remByDate[dateStr] || [];
+                const hasOverdue = dayRems.some(r => !r.done && dateStr < t0);
+                const isToday = dateStr === t0;
+                const isSelected = dateStr === reminderCalSelectedDate;
+                cells += `<div onclick="selectReminderCalendarDay('${dateStr}')" style="text-align:center;padding:7px 0;border-radius:10px;cursor:pointer;font-size:13px;
+                    ${isSelected ? 'background:var(--barn-dark);color:#fff;font-weight:800;' : isToday ? 'background:rgba(217,165,68,.18);font-weight:800;' : ''}">
+                    ${d}${dayRems.length ? `<div style="display:flex;justify-content:center;gap:2px;margin-top:2px;">${dayRems.slice(0, 3).map(r => `<span style="width:5px;height:5px;border-radius:50%;display:inline-block;background:${r.done ? '#9aa08f' : hasOverdue ? '#E5544B' : 'var(--wheat)'};"></span>`).join('')}</div>` : ''}
+                    </div>`;
+            }
+            const weekdayHeaders = AR_WEEKDAY_SHORT.map(w => `<div style="text-align:center;font-size:11px;color:var(--muted);font-weight:700;">${w}</div>`).join('');
+            const selRems = (remByDate[reminderCalSelectedDate] || []).sort((a, c) => (a.done - c.done));
+            const remCatIcon = { feed: '🌾', water: '💧', medication: '💊', maintenance: '🔧', other: '📌' };
+            const selRemsHtml = selRems.length ? selRems.map(r => `
+                <div class="check-row"><input type="checkbox" ${r.done ? 'checked' : ''} onchange="toggleReminder('${r.id}')">
+                    <div class="txt"><div class="${r.done ? 'done-strike' : ''}">${remCatIcon[r.category] || '📌'} ${esc(r.title)}</div></div>
+                    <button class="btn ghost sm owner-only" onclick="editReminder('${r.id}')">✏️</button>
+                    <button class="btn danger sm owner-only" onclick="deleteReminder('${r.id}')">🗑️</button></div>`).join('')
+                : `<div class="empty" style="padding:10px;font-size:12px;">مفيش تنبيهات فى ${reminderCalSelectedDate}</div>`;
+            return `
+                <div style="padding:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <button class="btn ghost sm" onclick="navigateReminderCalendar(-1)">›</button>
+                    <div style="font-weight:800;">${AR_MONTH_NAMES[m]} ${y}</div>
+                    <button class="btn ghost sm" onclick="navigateReminderCalendar(1)">‹</button>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px;">${weekdayHeaders}</div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">${cells}</div>
+                <div style="margin-top:12px;border-top:1px dashed var(--line);padding-top:8px;">
+                    <div style="font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px;">📌 ${reminderCalSelectedDate}</div>
+                    ${selRemsHtml}
+                </div>
+                </div>`;
+        }
         function renderReminderListCard(b) {
             const remCatIcon = { feed: '🌾', water: '💧', medication: '💊', maintenance: '🔧', other: '📌' };
             return [...b.reminders].sort((a,c)=>a.date.localeCompare(c.date)).map(r => {
@@ -14826,8 +15091,10 @@
         function refreshReminderListBox() {
             const box = document.getElementById('healthReminderListBox');
             const b = getActiveBatch();
-            if (box && b) box.innerHTML = renderReminderListCard(b);
-            else render();
+            if (!box || !b) { render(); return; }
+            box.innerHTML = reminderViewMode === 'calendar' ? renderReminderCalendar(b) : (renderReminderListCard(b) || '<div class="empty" style="padding:14px;">لا توجد تنبيهات مخصصة.</div>');
+            const btn = document.getElementById('reminderViewToggleBtn');
+            if (btn) btn.textContent = reminderViewMode === 'calendar' ? '📋 قائمة' : '📅 تقويم';
         }
         function renderHealthSection(b, m) {
             m = m || computeMetrics(b);
@@ -14853,8 +15120,11 @@
                 <div class="card" id="healthVaccineListBox" style="padding:0;">${vaccineRows||'<div class="empty" style="padding:14px;">لا توجد تحصينات. اضغط «تحميل البرنامج القياسي» لتحميل برنامج التحصينات المعتمد لهذا النوع.</div>'}</div>
             </div>
             <div class="section"><div class="section-head"><h2>🔔 تنبيهات مخصصة</h2>
-                <button class="btn ghost sm owner-only" onclick="openReminderModal()">+ تنبيه</button></div>
-                <div class="card" id="healthReminderListBox" style="padding:0;">${reminderRows||'<div class="empty" style="padding:14px;">لا توجد تنبيهات مخصصة.</div>'}</div>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn ghost sm" id="reminderViewToggleBtn" onclick="toggleReminderViewMode()">${reminderViewMode === 'calendar' ? '📋 قائمة' : '📅 تقويم'}</button>
+                    <button class="btn ghost sm owner-only" onclick="openReminderModal()">+ تنبيه</button>
+                </div></div>
+                <div class="card" id="healthReminderListBox" style="padding:0;">${reminderViewMode === 'calendar' ? renderReminderCalendar(b) : (reminderRows || '<div class="empty" style="padding:14px;">لا توجد تنبيهات مخصصة.</div>')}</div>
             </div>
             <div class="section"><div class="section-head"><h2>📜 سجل تنفيذ الإضافات (مخصوم من المخزن)</h2></div>
                 <div class="card" style="padding:0;">${execRows||'<div class="empty" style="padding:14px;">لا توجد عمليات تنفيذ مسجّلة بعد.</div>'}</div>
@@ -17524,7 +17794,10 @@
             const c = id ? state.contacts.find(x => x.id === id) : null;
             document.getElementById('contactModalTitle').textContent = id ? '✏️ تعديل جهة اتصال' : '📇 إضافة جهة اتصال سريعة';
             document.getElementById('ct_name').value = c ? c.name : '';
-            document.getElementById('ct_role').value = c ? c.role : 'مورد';
+            const roleSel = document.getElementById('ct_role');
+            const roles = (state.contactRoles && state.contactRoles.length) ? state.contactRoles : getDefaultContactRoles();
+            roleSel.innerHTML = roles.map(r => `<option value="${esc(r.label)}">${r.icon} ${esc(r.label)}</option>`).join('');
+            roleSel.value = c ? c.role : (roles[0] ? roles[0].label : 'مورد');
             document.getElementById('ct_phone').value = c ? c.phone : '';
             openModal('contactModalOverlay');
         }
@@ -17556,11 +17829,16 @@
                 render();
             });
         }
+        function contactRoleIcon(roleLabel) {
+            const roles = (state.contactRoles && state.contactRoles.length) ? state.contactRoles : getDefaultContactRoles();
+            const found = roles.find(r => r.label === roleLabel);
+            return found ? found.icon : '📇';
+        }
         function renderContactsSection() {
             const rows = state.contacts.length ? state.contacts.map(c => `
                 <div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">${({'مورد':'🚚','طبيب بيطري':'💉','فني صيانة':'🔧','عامل':'👷'}[c.role] || '📇')} ${esc(c.name)}</div>
-                    <div class="day">${c.role} · ${esc(c.phone)}</div>
+                    <div style="font-weight:800;">${contactRoleIcon(c.role)} ${esc(c.name)}</div>
+                    <div class="day">${esc(c.role)} · ${esc(c.phone)}</div>
                 </div>
                 <div class="row-actions" style="gap:6px;">
                     <a class="btn ghost" style="padding:6px 10px;font-size:12px;" href="${telLink(c.phone)}">☎️ اتصال</a>
@@ -17569,7 +17847,69 @@
                     <button class="btn ghost" style="padding:6px 10px;font-size:12px;color:var(--red);" onclick="deleteContact('${c.id}')">🗑️</button>
                 </div></div>`).join('') : '<div class="empty" style="padding:14px;"><div class="ico">📇</div>لا توجد جهات اتصال محفوظة بعد.</div>';
             return `<div class="card" style="padding:0;">${rows}</div>
-                <button class="btn gold block" style="margin-top:10px;" onclick="openContactModal()">+ إضافة جهة اتصال سريعة</button>`;
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <button class="btn gold block" onclick="openContactModal()">+ إضافة جهة اتصال سريعة</button>
+                    <button class="btn ghost" style="flex-shrink:0;padding:10px 14px;" onclick="showContactRolesManager()" title="إدارة الأدوار">🏷️</button>
+                </div>`;
+        }
+        // ============ إدارة أدوار جهات الاتصال — إضافة/تعديل/حذف دور بأيقونته، نفس نمط دليل الأمراض ============
+        let editingContactRoleId = null;
+        function showContactRolesManager() {
+            if (!requirePermission('management')) return;
+            const html = `<div id="contactRolesList"></div>
+                <div class="form-grid" style="margin-top:10px;">
+                    <div class="field"><label>أيقونة (إيموجي)</label><input id="cr_icon" maxlength="4" placeholder="🚚" style="text-align:center;"></div>
+                    <div class="field"><label>اسم الدور</label><input id="cr_label" placeholder="مثال: مندوب توصيل"></div>
+                </div>
+                <button class="btn ghost block" id="crSaveBtn" style="margin-top:8px;" onclick="saveContactRole()">+ إضافة دور</button>`;
+            openGenericModal('🏷️ إدارة أدوار جهات الاتصال', html);
+            renderContactRolesList();
+        }
+        function renderContactRolesList() {
+            const box = document.getElementById('contactRolesList');
+            if (!box) return;
+            const roles = state.contactRoles || [];
+            box.innerHTML = roles.length ? roles.map(r => `
+                <div class="check-row"><button class="del-x" onclick="removeContactRole('${r.id}')" title="حذف">✕</button>
+                    <div class="txt" onclick="editContactRole('${r.id}')" style="cursor:pointer;">${r.icon} ${esc(r.label)}</div>
+                </div>`).join('') : '<div class="empty" style="padding:14px;">لا توجد أدوار بعد.</div>';
+        }
+        function editContactRole(id) {
+            const r = (state.contactRoles || []).find(x => x.id === id);
+            if (!r) return;
+            editingContactRoleId = id;
+            document.getElementById('cr_icon').value = r.icon;
+            document.getElementById('cr_label').value = r.label;
+            document.getElementById('crSaveBtn').textContent = '✏️ حفظ التعديل';
+        }
+        function saveContactRole() {
+            if (!requirePermission('management')) return;
+            const icon = document.getElementById('cr_icon').value.trim() || '📇';
+            const label = document.getElementById('cr_label').value.trim();
+            if (!label) { showToast('اكتب اسم الدور أولاً'); return; }
+            const roles = (state.contactRoles || []).slice();
+            if (editingContactRoleId) {
+                const idx = roles.findIndex(r => r.id === editingContactRoleId);
+                if (idx > -1) roles[idx] = { ...roles[idx], icon, label };
+            } else {
+                roles.push({ id: uid(), icon, label });
+            }
+            setState('contactRoles', roles);
+            persist();
+            editingContactRoleId = null;
+            document.getElementById('cr_icon').value = '';
+            document.getElementById('cr_label').value = '';
+            document.getElementById('crSaveBtn').textContent = '+ إضافة دور';
+            renderContactRolesList();
+            showToast('تم حفظ الدور ✅');
+        }
+        function removeContactRole(id) {
+            if (!requirePermission('management')) return;
+            showConfirm('حذف الدور ده مش هيمسح جهات الاتصال اللي مستخدماه، بس مش هيظهر تانى فى القايمة عند الإضافة. متأكد؟', () => {
+                setState('contactRoles', (state.contactRoles || []).filter(r => r.id !== id));
+                persist();
+                renderContactRolesList();
+            });
         }
         // شريط أزرار سريعة (اتصال/واتساب) يظهر بجوار حقل المورد فى شاشات الشراء/السجل — يفلتر حسب الصفة المطلوبة
         function renderQuickContactChips(roleFilter) {
@@ -17588,6 +17928,7 @@
 
 
         let settingsSubTab = 'identity';
+        let auditLogDateFilter = 'all_time'; // مؤقت (session فقط، مش محفوظ) — لتصفية عرض سجل التدقيق بالتاريخ
         function setSettingsSubTab(id) { settingsSubTab = id; render(); }
         function renderSettingsTab() {
             if (currentRole !== 'owner') {
@@ -17784,7 +18125,7 @@
                     <button class="btn ghost block" onclick="openFeedCalcModal()">🧮 حاسبة تكوين العلف</button>
                     <button class="btn ghost block" onclick="openWaterCalcModal()">💧 حاسبة تركيز محلول الإماهة/اللقاح فى المياه</button>
                     <button class="btn ghost block" onclick="showGlossaryFull()">📖 دليل المصطلحات</button>
-                    <button class="btn ghost block" onclick="showDiseaseLibrary()">🩺 دليل الأمراض السريع</button>
+                    <button class="btn ghost block" onclick="showDiseaseLibrary()">🩺 دليل الأمراض (قابل للتعديل)</button>
                     <button class="btn ghost block" onclick="openGlobalSearch()">🔎 بحث شامل فى التطبيق</button>
                 </div>
             </div>
@@ -17973,13 +18314,18 @@
                 </div>
             </div>
             <div class="section">
-                <div class="section-head"><h2>📜 سجل التدقيق (آخر العمليات الحساسة)</h2></div>
+                <div class="section-head"><h2>📜 سجل التدقيق (آخر العمليات الحساسة)</h2>
+                    <button class="btn ghost sm" onclick="openDateRangeFilter(auditLogDateFilter, (id) => { auditLogDateFilter = id; render(); })">📅 ${esc(dateRangePresetLabel(auditLogDateFilter))}</button>
+                </div>
                 <div class="card" style="padding:0;">
-                    ${(state.globalAuditLog && state.globalAuditLog.length) ? state.globalAuditLog.slice(0, 30).map(e => `
+                    ${(() => {
+                        const filtered = (state.globalAuditLog || []).filter(e => isDateInPreset(e.at, auditLogDateFilter));
+                        return filtered.length ? filtered.slice(0, 30).map(e => `
                         <div class="check-row"><div class="txt">
                             <div>${e.text}</div>
                             <div class="day">${e.batchName ? e.batchName + ' · ' : ''}${e.who} · ${new Date(e.at).toLocaleString('ar-EG')}</div>
-                        </div></div>`).join('') : '<div class="empty" style="padding:14px;">لا توجد عمليات حذف/تعديل حساسة مسجّلة بعد.</div>'}
+                        </div></div>`).join('') : '<div class="empty" style="padding:14px;">لا توجد عمليات حذف/تعديل حساسة فى الفترة دي.</div>';
+                    })()}
                 </div>
             </div>`;
 
@@ -18825,102 +19171,64 @@
             ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
         }
 
-        function drawLineChart(canvasId, labels, series) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const { ctx, w, h } = prepCanvas(canvas);
-            let vals = [];
-            series.forEach(s => s.data.forEach(v => { if (v != null && !isNaN(v)) vals.push(v); }));
-            if (vals.length === 0) {
-                ctx.fillStyle = '#9b9690';
-                ctx.font = '13px Tajawal,sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('لا توجد بيانات كافية لعرض الرسم البياني', w / 2, h / 2);
-                return;
+        // ============================================================================================
+        // ⚡ محرك الرسم البياني المتطور (V2) — حركة رسم تدريجية حقيقية بالفريم + سحب تفاعلي مستمر
+        // (Crosshair يتبع إصبعك زي تطبيقات الأسهم/الاستثمار) + تلميحات مصقولة. نفس توقيعات الدوال
+        // الأربعة الأصلية بالظبط (drawLineChart/drawBarChart/drawComboChart/drawPieChart) — يعني كل
+        // الأماكن اللي بتستخدمهم فى التطبيق (11 مكان) هتشتغل تلقائيًا بدون أي تعديل فيها.
+        // ============================================================================================
+        const _chartAnimState = {}; // canvasId -> { raf, sig }
+        const _chartRedraw = {}; // canvasId -> function(hoverPx|null) — إعادة رسم فورية بدون حركة (للسحب)
+
+        function _chartSig(...parts) { try { return JSON.stringify(parts); } catch (e) { return String(Math.random()); } }
+        function _easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+        function _easeOutBack(t) { const c = 1.7; return 1 + c * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
+
+        // يشغّل حركة رسم تدريجية لكانفاس معيّن، أو يرسم فورًا (بدون حركة) لو نفس البيانات بالظبط
+        // اتّرسمت قبل كده (بيمنع "وميض" الحركة المزعج لو التطبيق عمل إعادة رسم عامة مش متعلقة بيانات الرسمة دي)
+        function _runChartAnim(canvasId, sig, durationMs, frameFn) {
+            const prev = _chartAnimState[canvasId];
+            if (prev && prev.raf) cancelAnimationFrame(prev.raf);
+            if (prev && prev.sig === sig) { frameFn(1); return; }
+            const t0 = performance.now();
+            function step(now) {
+                const p = Math.min((now - t0) / durationMs, 1);
+                frameFn(_easeOutCubic(p));
+                if (p < 1) _chartAnimState[canvasId] = { raf: requestAnimationFrame(step), sig };
+                else _chartAnimState[canvasId] = { raf: null, sig };
             }
-            const pad = { l: 38, r: 12, t: 14, b: 24 };
-            const plotW = w - pad.l - pad.r,
-                plotH = h - pad.t - pad.b;
-            const n = labels.length;
-            const maxV = niceMax(Math.max(...vals) * 1.12),
-                minV = 0;
-            ctx.font = '10.5px Tajawal,sans-serif';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 4; i++) {
-                const y = pad.t + plotH * (i / 4);
-                const val = maxV - (maxV - minV) * (i / 4);
-                ctx.strokeStyle = '#EFEAE0';
-                ctx.setLineDash(i === 4 ? [] : [4, 4]);
-                ctx.beginPath();
-                ctx.moveTo(pad.l, y);
-                ctx.lineTo(w - pad.r, y);
-                ctx.stroke();
-                ctx.setLineDash([]);
-                ctx.fillStyle = '#9b9690';
-                ctx.textAlign = 'left';
-                ctx.fillText(Math.round(val).toLocaleString('ar-EG'), 2, y + 3);
-            }
-            const xStep = n > 1 ? plotW / (n - 1) : 0;
-            const labs = sparseLabels(labels, 6);
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#9b9690';
-            labs.forEach((lab, i) => { if (lab != null) ctx.fillText(lab, pad.l + xStep * i, h - 6); });
-            series.forEach(s => {
-                const pts = [];
-                s.data.forEach((v, i) => { if (v == null || isNaN(v)) return;
-                    pts.push([pad.l + xStep * i, pad.t + plotH * (1 - (v - minV) / (maxV - minV || 1)),
-                        i
-                    ]); });
-                if (pts.length === 0) return;
-                if (s.fill && pts.length) {
-                    const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + plotH);
-                    grad.addColorStop(0, s.fillTop || 'rgba(217,165,68,.30)');
-                    grad.addColorStop(1, s.fillBottom || 'rgba(217,165,68,.02)');
-                    ctx.beginPath();
-                    smoothPath(ctx, pts.map(p => [p[0], p[1]]));
-                    ctx.lineTo(pts[pts.length - 1][0], pad.t + plotH);
-                    ctx.lineTo(pts[0][0], pad.t + plotH);
-                    ctx.closePath();
-                    ctx.fillStyle = grad;
-                    ctx.fill();
-                }
-                ctx.beginPath();
-                if (s.dashed) ctx.setLineDash([7, 5]);
-                else ctx.setLineDash([]);
-                smoothPath(ctx, pts.map(p => [p[0], p[1]]));
-                ctx.strokeStyle = s.color;
-                ctx.lineWidth = 2.6;
-                ctx.lineJoin = 'round';
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                ctx.setLineDash([]);
-                if (s.points) pts.forEach(p => { ctx.beginPath();
-                    ctx.arc(p[0], p[1], 3, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fff';
-                    ctx.fill();
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = s.color;
-                    ctx.stroke(); });
-            });
+            _chartAnimState[canvasId] = { raf: requestAnimationFrame(step), sig };
         }
 
-        function drawBarChart(canvasId, labels, data, color) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const { ctx, w, h } = prepCanvas(canvas);
-            const vals = data.filter(v => v != null && !isNaN(v));
-            if (vals.length === 0) {
-                ctx.fillStyle = '#9b9690';
-                ctx.font = '13px Tajawal,sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('لا توجد بيانات كافية', w / 2, h / 2);
-                return;
-            }
-            const pad = { l: 38, r: 12, t: 14, b: 24 };
-            const plotW = w - pad.l - pad.r,
-                plotH = h - pad.t - pad.b;
-            const n = labels.length;
-            const maxV = niceMax(Math.max(...vals) * 1.15) || 1;
+        let _chartTipEl = null;
+        function _chartTip() {
+            if (_chartTipEl && document.body.contains(_chartTipEl)) return _chartTipEl;
+            _chartTipEl = document.createElement('div');
+            _chartTipEl.className = 'chart-tooltip-v2';
+            document.body.appendChild(_chartTipEl);
+            return _chartTipEl;
+        }
+        function _showChartTip(clientX, clientY, html) {
+            const tip = _chartTip();
+            tip.innerHTML = html;
+            tip.classList.remove('below');
+            tip.style.left = clientX + 'px';
+            tip.style.top = clientY + 'px';
+            tip.classList.add('show');
+            requestAnimationFrame(() => {
+                const r = tip.getBoundingClientRect(),
+                    m = 8;
+                let dx = 0;
+                if (r.left < m) dx = m - r.left;
+                if (r.right > innerWidth - m) dx = -(r.right - innerWidth + m);
+                if (dx) tip.style.left = (clientX + dx) + 'px';
+                if (r.top < m) tip.classList.add('below');
+            });
+        }
+        function _hideChartTip() { if (_chartTipEl) _chartTipEl.classList.remove('show'); }
+
+        // نرسم شبكة الخلفية + تسميات المحور الرأسي — نفس المنطق فى كل الأنواع، مستخرج مرة واحدة
+        function _drawGrid(ctx, pad, w, plotW, plotH, maxV, formatFn, rightFormatFn, maxVRight) {
             for (let i = 0; i <= 4; i++) {
                 const y = pad.t + plotH * (i / 4);
                 const val = maxV - (maxV * (i / 4));
@@ -18931,30 +19239,184 @@
                 ctx.lineTo(w - pad.r, y);
                 ctx.stroke();
                 ctx.setLineDash([]);
-                ctx.fillStyle = '#9b9690';
                 ctx.font = '10.5px Tajawal,sans-serif';
+                ctx.fillStyle = '#9b9690';
                 ctx.textAlign = 'left';
-                ctx.fillText(Math.round(val).toLocaleString('ar-EG'), 2, y + 3);
+                ctx.fillText(formatFn(val), 2, y + 3);
+                if (rightFormatFn && maxVRight != null) {
+                    const valR = maxVRight - (maxVRight * (i / 4));
+                    ctx.textAlign = 'right';
+                    ctx.fillText(rightFormatFn(valR), w - 2, y + 3);
+                }
             }
+        }
+        function _emptyState(ctx, w, h) {
+            ctx.fillStyle = '#9b9690';
+            ctx.font = '13px Tajawal,sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('لا توجد بيانات كافية لعرض الرسم البياني', w / 2, h / 2);
+        }
+        // أقرب index لعمود بيانات بالنسبة لموضع لمسة x — مشترك بين كل الأنواع اللي فيها محور أفقي بفترات متساوية
+        function _nearestIndex(x, pad, step, n) { return Math.max(0, Math.min(n - 1, Math.round((x - pad.l) / step))); }
+
+        function drawLineChart(canvasId, labels, series) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const { ctx, w, h } = prepCanvas(canvas);
+            let vals = [];
+            series.forEach(s => s.data.forEach(v => { if (v != null && !isNaN(v)) vals.push(v); }));
+            if (vals.length === 0) { _emptyState(ctx, w, h); _chartRedraw[canvasId] = null; return; }
+            const pad = { l: 38, r: 12, t: 14, b: 24 };
+            const plotW = w - pad.l - pad.r,
+                plotH = h - pad.t - pad.b;
+            const n = labels.length;
+            const maxV = niceMax(Math.max(...vals) * 1.12),
+                minV = 0;
+            const xStep = n > 1 ? plotW / (n - 1) : 0;
+            const seriesPts = series.map(s => {
+                const pts = [];
+                s.data.forEach((v, i) => { if (v == null || isNaN(v)) return;
+                    pts.push([pad.l + xStep * i, pad.t + plotH * (1 - (v - minV) / (maxV - minV || 1)), i]); });
+                return pts;
+            });
+
+            function frame(p, hoverPx) {
+                ctx.clearRect(0, 0, w, h);
+                ctx.font = '10.5px Tajawal,sans-serif';
+                ctx.lineWidth = 1;
+                _drawGrid(ctx, pad, w, plotW, plotH, maxV, v => Math.round(v).toLocaleString('ar-EG'));
+                const labs = sparseLabels(labels, 6);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#9b9690';
+                labs.forEach((lab, i) => { if (lab != null) ctx.fillText(lab, pad.l + xStep * i, h - 6); });
+                // كشف تدريجي من اليسار لليمين (كل السلاسل مع بعض بنفس النسبة) — إحساس "بيترسم قدامك"
+                const revealX = pad.l + plotW * p;
+                series.forEach((s, si) => {
+                    const pts = seriesPts[si];
+                    if (pts.length === 0) return;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(0, 0, revealX, h);
+                    ctx.clip();
+                    if (s.fill) {
+                        const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + plotH);
+                        grad.addColorStop(0, s.fillTop || 'rgba(217,165,68,.30)');
+                        grad.addColorStop(1, s.fillBottom || 'rgba(217,165,68,.02)');
+                        ctx.beginPath();
+                        smoothPath(ctx, pts.map(pt => [pt[0], pt[1]]));
+                        ctx.lineTo(pts[pts.length - 1][0], pad.t + plotH);
+                        ctx.lineTo(pts[0][0], pad.t + plotH);
+                        ctx.closePath();
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                    }
+                    ctx.beginPath();
+                    ctx.setLineDash(s.dashed ? [7, 5] : []);
+                    smoothPath(ctx, pts.map(pt => [pt[0], pt[1]]));
+                    ctx.strokeStyle = s.color;
+                    ctx.lineWidth = 2.6;
+                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    if (s.points) pts.forEach(pt => { ctx.beginPath();
+                        ctx.arc(pt[0], pt[1], 3, 0, Math.PI * 2);
+                        ctx.fillStyle = '#fff';
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = s.color;
+                        ctx.stroke(); });
+                    ctx.restore();
+                });
+                // 🎯 خط السحب التفاعلي (Crosshair) — بيظهر بس لما فى تفاعل فعلي، وبيوقف الرسم عند أبعد نقطة كُشفت فعلاً
+                if (hoverPx != null && p >= 0.999) {
+                    const idx = _nearestIndex(hoverPx, pad, xStep, n);
+                    const cx = pad.l + xStep * idx;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = '#B8B0A0';
+                    ctx.moveTo(cx, pad.t);
+                    ctx.lineTo(cx, pad.t + plotH);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    let rows = '';
+                    series.forEach(s => {
+                        const v = s.data[idx];
+                        if (v == null || isNaN(v)) return;
+                        const py = pad.t + plotH * (1 - (v - minV) / (maxV - minV || 1));
+                        ctx.beginPath();
+                        ctx.arc(cx, py, 5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#fff';
+                        ctx.fill();
+                        ctx.lineWidth = 2.5;
+                        ctx.strokeStyle = s.color;
+                        ctx.stroke();
+                        rows += `<div class="ctp-row"><span class="ctp-dot" style="background:${s.color}"></span>${s.label ? esc(s.label) + ': ' : ''}<span class="ctp-val">${fmt(v, s.decimals != null ? s.decimals : 1)}</span></div>`;
+                    });
+                    ctx.restore();
+                    if (rows) {
+                        const rect = canvas.getBoundingClientRect();
+                        const title = labels[idx] != null ? `<div class="ctp-title">${esc(String(labels[idx]))}</div>` : '';
+                        _showChartTip(rect.left + cx, rect.top + pad.t - 6, title + rows);
+                    }
+                } else if (p >= 0.999) { _hideChartTip(); }
+            }
+            const sig = _chartSig('line', canvasId, labels, series.map(s => [s.color, s.data]));
+            _chartRedraw[canvasId] = (hoverPx) => frame(1, hoverPx);
+            _runChartAnim(canvasId, sig, 550, p => frame(p, null));
+            _bindChartScrub(canvas, pad, xStep, n);
+        }
+
+        function drawBarChart(canvasId, labels, data, color) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const { ctx, w, h } = prepCanvas(canvas);
+            const vals = data.filter(v => v != null && !isNaN(v));
+            if (vals.length === 0) { _emptyState(ctx, w, h); _chartRedraw[canvasId] = null; return; }
+            const pad = { l: 38, r: 12, t: 14, b: 24 };
+            const plotW = w - pad.l - pad.r,
+                plotH = h - pad.t - pad.b;
+            const n = labels.length;
+            const maxV = niceMax(Math.max(...vals) * 1.15) || 1;
             const slot = plotW / n;
             const barW = Math.max(Math.min(slot * 0.55, 24), 2);
-            data.forEach((v, i) => {
-                if (v == null || isNaN(v)) return;
-                const x = pad.l + slot * i + (slot - barW) / 2;
-                const barH = plotH * (v / maxV);
-                const grad = ctx.createLinearGradient(0, pad.t + plotH - barH, 0, pad.t + plotH);
-                grad.addColorStop(0, color);
-                grad.addColorStop(1, color + 'AA');
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.roundRect ? ctx.roundRect(x, pad.t + plotH - barH, barW, Math.max(barH, 1), [3, 3, 0, 0]) : ctx
-                    .rect(x, pad.t + plotH - barH, barW, Math.max(barH, 1));
-                ctx.fill();
-            });
-            const labs = sparseLabels(labels, 6);
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#9b9690';
-            labs.forEach((lab, i) => { if (lab != null) ctx.fillText(lab, pad.l + slot * i + slot / 2, h - 6); });
+
+            function frame(p, activeIdx) {
+                ctx.clearRect(0, 0, w, h);
+                ctx.font = '10.5px Tajawal,sans-serif';
+                _drawGrid(ctx, pad, w, plotW, plotH, maxV, v => Math.round(v).toLocaleString('ar-EG'));
+                data.forEach((v, i) => {
+                    if (v == null || isNaN(v)) return;
+                    const x = pad.l + slot * i + (slot - barW) / 2;
+                    const barH = plotH * (v / maxV) * p;
+                    const active = i === activeIdx;
+                    const grad = ctx.createLinearGradient(0, pad.t + plotH - barH, 0, pad.t + plotH);
+                    grad.addColorStop(0, active ? color : color);
+                    grad.addColorStop(1, color + (active ? 'CC' : 'AA'));
+                    ctx.fillStyle = grad;
+                    ctx.globalAlpha = active || activeIdx == null ? 1 : .55;
+                    ctx.beginPath();
+                    ctx.roundRect ? ctx.roundRect(x, pad.t + plotH - barH, barW, Math.max(barH, 1), [3, 3, 0, 0]) : ctx
+                        .rect(x, pad.t + plotH - barH, barW, Math.max(barH, 1));
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                });
+                const labs = sparseLabels(labels, 6);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#9b9690';
+                labs.forEach((lab, i) => { if (lab != null) ctx.fillText(lab, pad.l + slot * i + slot / 2, h - 6); });
+                if (activeIdx != null && p >= 0.999 && data[activeIdx] != null) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = pad.l + slot * activeIdx + slot / 2;
+                    const title = labels[activeIdx] != null ? `<div class="ctp-title">${esc(String(labels[activeIdx]))}</div>` : '';
+                    _showChartTip(rect.left + x, rect.top + pad.t, title + `<div class="ctp-row"><span class="ctp-dot" style="background:${color}"></span><span class="ctp-val">${fmt(data[activeIdx],1)}</span></div>`);
+                } else if (p >= 0.999) { _hideChartTip(); }
+            }
+            const sig = _chartSig('bar', canvasId, labels, data, color);
+            _chartRedraw[canvasId] = (hoverPx) => frame(1, hoverPx == null ? null : _nearestIndex(hoverPx, pad, slot, n));
+            _runChartAnim(canvasId, sig, 550, p => frame(p, null));
+            _bindChartScrub(canvas, pad, slot, n);
         }
 
         function drawComboChart(canvasId, labels, bars, barColor, line, lineColor) {
@@ -18963,13 +19425,7 @@
             const { ctx, w, h } = prepCanvas(canvas);
             const barVals = bars.filter(v => v != null && !isNaN(v));
             const lineVals = line.filter(v => v != null && !isNaN(v));
-            if (barVals.length === 0) {
-                ctx.fillStyle = '#9b9690';
-                ctx.font = '13px Tajawal,sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('لا توجد بيانات كافية', w / 2, h / 2);
-                return;
-            }
+            if (barVals.length === 0) { _emptyState(ctx, w, h); _chartRedraw[canvasId] = null; return; }
             const hasLine = lineVals.length > 0;
             const pad = hasLine ? { l: 38, r: 38, t: 14, b: 24 } : { l: 38, r: 12, t: 14, b: 24 };
             const plotW = w - pad.l - pad.r,
@@ -18977,62 +19433,68 @@
             const n = labels.length;
             const maxBar = niceMax(Math.max(...barVals) * 1.2) || 1;
             const maxLine = hasLine ? (niceMax(Math.max(...lineVals) * 1.2) || 1) : 1;
-            for (let i = 0; i <= 4; i++) {
-                const y = pad.t + plotH * (i / 4);
-                const valL = maxBar - (maxBar * (i / 4));
-                ctx.strokeStyle = '#EFEAE0';
-                ctx.setLineDash(i === 4 ? [] : [4, 4]);
-                ctx.beginPath();
-                ctx.moveTo(pad.l, y);
-                ctx.lineTo(w - pad.r, y);
-                ctx.stroke();
-                ctx.setLineDash([]);
-                ctx.font = '10px Tajawal,sans-serif';
-                ctx.fillStyle = '#9b9690';
-                ctx.textAlign = 'left';
-                ctx.fillText(Math.round(valL).toLocaleString('ar-EG'), 2, y + 3);
-                if (hasLine) {
-                    const valR = maxLine - (maxLine * (i / 4));
-                    ctx.fillStyle = lineColor;
-                    ctx.textAlign = 'right';
-                    ctx.fillText(valR.toFixed(1), w - 2, y + 3);
-                }
-            }
             const slot = plotW / n;
             const barW = Math.max(Math.min(slot * 0.5, 20), 2);
-            bars.forEach((v, i) => { if (v == null || isNaN(v)) return;
-                const x = pad.l + slot * i + (slot - barW) / 2;
-                const barH = plotH * (v / maxBar);
-                ctx.fillStyle = barColor;
-                ctx.beginPath();
-                ctx.roundRect ? ctx.roundRect(x, pad.t + plotH - barH, barW, Math.max(barH, 1), [3, 3, 0, 0]) : ctx
-                    .rect(x, pad.t + plotH - barH, barW, Math.max(barH, 1));
-                ctx.fill(); });
             const xStep = n > 1 ? plotW / (n - 1) : 0;
             const pts = [];
             line.forEach((v, i) => { if (v == null || isNaN(v)) return;
-                pts.push([pad.l + xStep * i, pad.t + plotH * (1 - v / maxLine)]); });
-            if (pts.length > 0) {
-                ctx.beginPath();
-                smoothPath(ctx, pts);
-                ctx.strokeStyle = lineColor;
-                ctx.lineWidth = 2.6;
-                ctx.lineJoin = 'round';
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                ctx.setLineDash([]);
-                pts.forEach(p => { ctx.beginPath();
-                    ctx.arc(p[0], p[1], 3, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fff';
+                pts.push([pad.l + xStep * i, pad.t + plotH * (1 - v / maxLine), i]); });
+
+            function frame(p, activeIdx) {
+                ctx.clearRect(0, 0, w, h);
+                ctx.font = '10px Tajawal,sans-serif';
+                _drawGrid(ctx, pad, w, plotW, plotH, maxBar, v => Math.round(v).toLocaleString('ar-EG'),
+                    hasLine ? v => v.toFixed(1) : null, hasLine ? maxLine : null);
+                bars.forEach((v, i) => { if (v == null || isNaN(v)) return;
+                    const x = pad.l + slot * i + (slot - barW) / 2;
+                    const barH = plotH * (v / maxBar) * p;
+                    ctx.fillStyle = barColor;
+                    ctx.globalAlpha = activeIdx == null || i === activeIdx ? 1 : .5;
+                    ctx.beginPath();
+                    ctx.roundRect ? ctx.roundRect(x, pad.t + plotH - barH, barW, Math.max(barH, 1), [3, 3, 0, 0]) : ctx
+                        .rect(x, pad.t + plotH - barH, barW, Math.max(barH, 1));
                     ctx.fill();
-                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 1; });
+                if (pts.length > 0) {
+                    const revealX = pad.l + plotW * p;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(0, 0, revealX, h);
+                    ctx.clip();
+                    ctx.beginPath();
+                    smoothPath(ctx, pts.map(pt => [pt[0], pt[1]]));
                     ctx.strokeStyle = lineColor;
-                    ctx.stroke(); });
+                    ctx.lineWidth = 2.6;
+                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    pts.forEach(pt => { ctx.beginPath();
+                        ctx.arc(pt[0], pt[1], 3, 0, Math.PI * 2);
+                        ctx.fillStyle = '#fff';
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = lineColor;
+                        ctx.stroke(); });
+                    ctx.restore();
+                }
+                const labs = sparseLabels(labels, 6);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#9b9690';
+                labs.forEach((lab, i) => { if (lab != null) ctx.fillText(lab, pad.l + slot * i + slot / 2, h - 6); });
+                if (activeIdx != null && p >= 0.999) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = pad.l + slot * activeIdx + slot / 2;
+                    const title = labels[activeIdx] != null ? `<div class="ctp-title">${esc(String(labels[activeIdx]))}</div>` : '';
+                    let rows = '';
+                    if (bars[activeIdx] != null) rows += `<div class="ctp-row"><span class="ctp-dot" style="background:${barColor}"></span><span class="ctp-val">${fmt(bars[activeIdx],1)}</span></div>`;
+                    if (hasLine && line[activeIdx] != null) rows += `<div class="ctp-row"><span class="ctp-dot" style="background:${lineColor}"></span><span class="ctp-val">${fmt(line[activeIdx],2)}</span></div>`;
+                    if (rows) _showChartTip(rect.left + x, rect.top + pad.t, title + rows);
+                } else if (p >= 0.999) { _hideChartTip(); }
             }
-            const labs = sparseLabels(labels, 6);
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#9b9690';
-            labs.forEach((lab, i) => { if (lab != null) ctx.fillText(lab, pad.l + slot * i + slot / 2, h - 6); });
+            const sig = _chartSig('combo', canvasId, labels, bars, line);
+            _chartRedraw[canvasId] = (hoverPx) => frame(1, hoverPx == null ? null : _nearestIndex(hoverPx, pad, slot, n));
+            _runChartAnim(canvasId, sig, 550, p => frame(p, null));
+            _bindChartScrub(canvas, pad, slot, n);
         }
 
         function drawPieChart(canvasId, legendId, segments) {
@@ -19042,37 +19504,93 @@
             const legendEl = legendId ? document.getElementById(legendId) : null;
             const valid = segments.filter(s => s.value > 0);
             const total = valid.reduce((s, x) => s + x.value, 0);
-            if (total <= 0) {
-                ctx.fillStyle = '#9b9690';
-                ctx.font = '13px Tajawal,sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('لا توجد بيانات كافية', w / 2, h / 2);
-                if (legendEl) legendEl.innerHTML = '';
-                return;
-            }
-            const cx = w / 2, cy = h / 2, r = Math.max(Math.min(w, h) / 2 - 10, 10);
-            let start = -Math.PI / 2;
-            valid.forEach(seg => {
-                const angle = (seg.value / total) * Math.PI * 2;
+            if (total <= 0) { _emptyState(ctx, w, h); if (legendEl) legendEl.innerHTML = ''; _chartRedraw[canvasId] = null; return; }
+            const cx = w / 2,
+                cy = h / 2,
+                r = Math.max(Math.min(w, h) / 2 - 10, 10);
+
+            function frame(p, activeAngle) {
+                ctx.clearRect(0, 0, w, h);
+                let start = -Math.PI / 2;
+                const fullSweep = Math.PI * 2 * p;
+                let consumed = 0;
+                let activeSeg = null;
+                valid.forEach(seg => {
+                    const fullAngle = (seg.value / total) * Math.PI * 2;
+                    const angle = Math.max(0, Math.min(fullAngle, fullSweep - consumed));
+                    consumed += fullAngle;
+                    if (angle <= 0) return;
+                    const isActive = activeAngle != null && activeAngle >= start && activeAngle <= start + fullAngle && p >= 0.999;
+                    if (isActive) activeSeg = seg;
+                    const rr = isActive ? r * 1.035 : r;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, rr, start, start + angle);
+                    ctx.closePath();
+                    ctx.fillStyle = seg.color;
+                    ctx.globalAlpha = activeAngle == null || isActive ? 1 : .6;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    start += fullAngle;
+                });
                 ctx.beginPath();
-                ctx.moveTo(cx, cy);
-                ctx.arc(cx, cy, r, start, start + angle);
-                ctx.closePath();
-                ctx.fillStyle = seg.color;
+                ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFFDF6';
                 ctx.fill();
-                start += angle;
-            });
-            ctx.beginPath();
-            ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFFDF6';
-            ctx.fill();
-            ctx.fillStyle = '#6B4226';
-            ctx.font = '900 13px Cairo,sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(money(total), cx, cy + 4);
-            if (legendEl) {
-                legendEl.innerHTML = valid.map(s => `<span><span class="dot" style="background:${s.color}"></span>${s.label} (${fmt((s.value / total) * 100, 1)}%)</span>`).join('');
+                ctx.fillStyle = '#6B4226';
+                ctx.font = '900 13px Cairo,sans-serif';
+                ctx.textAlign = 'center';
+                if (activeSeg) {
+                    ctx.font = '900 12px Cairo,sans-serif';
+                    ctx.fillText(money(activeSeg.value), cx, cy);
+                    ctx.font = '700 9.5px Tajawal,sans-serif';
+                    ctx.fillStyle = '#9b9690';
+                    ctx.fillText(activeSeg.label, cx, cy + 14);
+                } else {
+                    ctx.fillText(money(total), cx, cy + 4);
+                }
+                if (legendEl) {
+                    legendEl.innerHTML = valid.map(s => `<span><span class="dot" style="background:${s.color}"></span>${s.label} (${fmt((s.value / total) * 100, 1)}%)</span>`).join('');
+                }
+                if (activeSeg && p >= 0.999) {
+                    const rect = canvas.getBoundingClientRect();
+                    _showChartTip(rect.left + cx, rect.top + cy - r * 0.6,
+                        `<div class="ctp-title">${esc(activeSeg.label)}</div><div class="ctp-row"><span class="ctp-dot" style="background:${activeSeg.color}"></span><span class="ctp-val">${fmt((activeSeg.value/total)*100,1)}%</span></div>`);
+                } else if (p >= 0.999) { _hideChartTip(); }
             }
+            const sig = _chartSig('pie', canvasId, valid.map(s => [s.label, s.value]));
+            _chartRedraw[canvasId] = (hoverPx, hoverPy) => {
+                if (hoverPx == null) { frame(1, null); return; }
+                const ang = Math.atan2(hoverPy - cy, hoverPx - cx);
+                const d = Math.hypot(hoverPx - cx, hoverPy - cy);
+                if (d > r || d < r * 0.55) { frame(1, null); return; }
+                let a = ang;
+                while (a < -Math.PI / 2) a += Math.PI * 2;
+                frame(1, a);
+            };
+            _runChartAnim(canvasId, sig, 600, p => frame(p, null));
+            _bindChartScrub(canvas, null, null, null, true);
+        }
+
+        // نربط أحداث اللمس/السحب مرة واحدة فقط لكل عنصر canvas — بيستدعي _chartRedraw[id] المُسجَّلة
+        // آخر مرة اترسمت فيها هذه الرسمة تحديدًا (بدون إعادة تشغيل حركة الدخول، رسم فوري بس)
+        function _bindChartScrub(canvas, pad, step, n, isPie) {
+            if (canvas.dataset._scrubBound === '1') return;
+            canvas.dataset._scrubBound = '1';
+            canvas.style.touchAction = 'pan-y';
+            const move = (clientX, clientY) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = clientX - rect.left,
+                    y = clientY - rect.top;
+                const fn = _chartRedraw[canvas.id];
+                if (fn) fn(x, y);
+            };
+            const end = () => { const fn = _chartRedraw[canvas.id]; if (fn) fn(null); _hideChartTip(); };
+            canvas.addEventListener('pointerdown', e => move(e.clientX, e.clientY));
+            canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons > 0) move(e.clientX, e.clientY); });
+            canvas.addEventListener('pointerup', end);
+            canvas.addEventListener('pointerleave', end);
+            document.addEventListener('scroll', end, { passive: true });
         }
 
         function redrawDashboardChartsIfNeeded() {
@@ -19087,8 +19605,8 @@
             if (!series || !series.length) return;
             const labels = series.map(r => 'يوم ' + r.age);
             drawLineChart('chartWeight' + suffix, labels, [
-                { data: series.map(r => r.stdW || null), color: '#6B4226', dashed: true },
-                { data: series.map(r => r.effWeight), color: '#D9A544', fill: true, points: true }
+                { data: series.map(r => r.stdW || null), color: '#6B4226', dashed: true, label: 'المعيار' },
+                { data: series.map(r => r.effWeight), color: '#D9A544', fill: true, points: true, label: 'الفعلي' }
             ]);
             drawBarChart('chartMort' + suffix, labels, series.map(r => r.cumMort + r.cumCull), '#C1443C');
             if (!suffix) {
@@ -19097,8 +19615,8 @@
                     const uLabels = uniRecs.map(r => 'يوم ' + r.age);
                     const cvVals = uniRecs.map(r => { const u = computeUniformity(r.weightSample); return u ? +u.cv.toFixed(1) : null; });
                     drawLineChart('chartUniformity', uLabels, [
-                        { data: cvVals, color: '#C1443C', fill: true, points: true },
-                        { data: uLabels.map(() => 8), color: '#9b9690', dashed: true }
+                        { data: cvVals, color: '#C1443C', fill: true, points: true, label: 'التجانس CV%' },
+                        { data: uLabels.map(() => 8), color: '#9b9690', dashed: true, label: 'الحد المستهدف' }
                     ]);
                 }
             }
@@ -19106,7 +19624,7 @@
             const priceLog = getBatchMarketPriceLog(b);
             if (priceLog.length) {
                 drawLineChart('chartMarketPrice' + suffix, priceLog.map(p => p.date.slice(5)),
-                    [{ data: priceLog.map(p => p.price), color: '#B45A2E', fill: true, points: true }]);
+                    [{ data: priceLog.map(p => p.price), color: '#B45A2E', fill: true, points: true, label: 'سعر البورصة' }]);
             } else {
                 drawLineChart('chartMarketPrice' + suffix, [], []);
             }
@@ -20354,6 +20872,29 @@
             setTimeout(() => { const el = document.getElementById('globalSearchInput'); if (el) el.focus(); }, 100);
         }
         function esc2(s) { return (s == null ? '' : String(s)); }
+        // ============ دليل الميزات/الأدوات القابلة للقفز إليها مباشرة من البحث الشامل — إلهام "مركز القيادة"
+        // من تطبيق تانى، بس مدمج فى البحث الموجود بدل شاشة منفصلة (البحث عندنا أصلًا بيغطي البيانات). كل بند:
+        // label (اسم الميزة)، run (الفعل المباشر عند الضغط، بيتنفذ بعد قفل نافذة البحث وتفعيل التبويب المناسب لو لازم). ============
+        function getFeatureDirectory() {
+            return [
+                { label: '🧮 حاسبة تكوين العلف', tab: 'production', run: () => openFeedCalcModal() },
+                { label: '💧 حاسبة تركيز محلول الإماهة/اللقاح فى المياه', tab: 'production', run: () => openWaterCalcModal() },
+                { label: '📖 دليل المصطلحات', tab: 'settings', run: () => showGlossaryFull() },
+                { label: '🩺 دليل الأمراض', tab: 'settings', run: () => showDiseaseLibrary() },
+                { label: '🏷️ إدارة أدوار جهات الاتصال', tab: 'settings', run: () => showContactRolesManager() },
+                { label: '📇 إضافة جهة اتصال سريعة', tab: 'settings', run: () => openContactModal() },
+                { label: '📋 مهام اليوم (كل المستحقات)', tab: 'daily', run: () => showTodayTasksModal() },
+                { label: '📁 أرشيف الدورات', tab: 'settings', run: () => openArchiveModal() },
+                { label: '🖨️ طباعة ورقة تعليمات يومية للعامل', tab: 'settings', run: () => openWorkerSheetPrint() },
+                { label: '📂 استيراد سجل يومي من CSV/Excel', tab: 'settings', run: () => openCsvImportModal() },
+                { label: '⚡ تسجيل انقطاع كهرباء/عطل مولد', tab: 'production', run: () => openOutageModal() },
+                { label: '🐔 إضافة دفعة جديدة', tab: 'dashboard', run: () => openBatchModal() },
+                { label: '👥 إدارة الحسابات والصلاحيات', tab: 'settings', run: () => (typeof openAccountsModal === 'function') && openAccountsModal() },
+                { label: '💊 إضافة تحصين/تطعيم', tab: 'daily', run: () => (typeof openVaccineModal === 'function') && openVaccineModal() },
+                { label: '⏰ إضافة تذكير', tab: 'daily', run: () => (typeof openReminderModal === 'function') && openReminderModal() },
+                { label: '📦 إضافة بروتوكول علاج/دواء', tab: 'daily', run: () => (typeof openProtocolModal === 'function') && openProtocolModal() },
+            ];
+        }
         function runGlobalSearch(qRaw) {
             const q = (qRaw || '').trim();
             const box = document.getElementById('globalSearchResults');
@@ -20361,6 +20902,7 @@
             const qn = q.toLowerCase();
             const has = s => esc2(s).toLowerCase().includes(qn);
             const cats = [
+                { key: 'features', label: '🧭 ميزات وأدوات', items: [] },
                 { key: 'batches', label: '🐔 الدفعات', items: [] },
                 { key: 'records', label: '📅 السجل اليومي', items: [] },
                 { key: 'purchases', label: '🛒 المشتريات', items: [] },
@@ -20368,25 +20910,28 @@
                 { key: 'ops', label: '🛡️ العمليات والأمان الحيوي', items: [] },
                 { key: 'contacts', label: '📇 جهات الاتصال', items: [] },
             ];
+            getFeatureDirectory().forEach(f => {
+                if (has(f.label)) cats[0].items.push({ label: f.label, sub: 'اضغط للفتح مباشرة', tab: f.tab, runFeature: f.run });
+            });
             state.batches.forEach(b => {
                 if (has(b.name) || has(b.location) || has(b.breed)) {
-                    cats[0].items.push({ label: `${esc(b.name)}${b.location ? ' — ' + esc(b.location) : ''}`, sub: `${getSpeciesData(b.species).label} · ${b.startDate}`, batchId: b.id, tab: 'dashboard' });
+                    cats[1].items.push({ label: `${esc(b.name)}${b.location ? ' — ' + esc(b.location) : ''}`, sub: `${getSpeciesData(b.species).label} · ${b.startDate}`, batchId: b.id, tab: 'dashboard' });
                 }
                 (b.records || []).forEach(r => {
-                    if (has(r.notes)) cats[1].items.push({ label: `سجل ${r.date} — ${esc(b.name)}`, sub: esc(r.notes).slice(0, 90), batchId: b.id, tab: 'daily' });
+                    if (has(r.notes)) cats[2].items.push({ label: `سجل ${r.date} — ${esc(b.name)}`, sub: esc(r.notes).slice(0, 90), batchId: b.id, tab: 'daily' });
                 });
                 (b.purchases || []).forEach(p => {
-                    if (has(p.desc) || has(p.supplier) || has(p.lot)) cats[2].items.push({ label: `${esc(p.desc || p.type)} — ${esc(b.name)}`, sub: `${p.date} · ${money(p.total || 0)}${p.supplier ? ' · ' + esc(p.supplier) : ''}`, batchId: b.id, tab: 'inventory' });
+                    if (has(p.desc) || has(p.supplier) || has(p.lot)) cats[3].items.push({ label: `${esc(p.desc || p.type)} — ${esc(b.name)}`, sub: `${p.date} · ${money(p.total || 0)}${p.supplier ? ' · ' + esc(p.supplier) : ''}`, batchId: b.id, tab: 'inventory' });
                 });
                 (b.sales || []).forEach(s => {
-                    if (has(s.buyer)) cats[3].items.push({ label: `بيع (${s.kind === 'meat' ? 'لحم' : 'سبلة'}) — ${esc(b.name)}`, sub: `${s.date} · ${money(s.total || 0)} · ${esc(s.buyer)}`, batchId: b.id, tab: 'inventory' });
+                    if (has(s.buyer)) cats[4].items.push({ label: `بيع (${s.kind === 'meat' ? 'لحم' : 'سبلة'}) — ${esc(b.name)}`, sub: `${s.date} · ${money(s.total || 0)} · ${esc(s.buyer)}`, batchId: b.id, tab: 'inventory' });
                 });
                 (b.biosecurityLog || []).forEach(o => {
-                    if (has(o.note) || has(o.type)) cats[4].items.push({ label: `${esc(o.type)} — ${esc(b.name)}`, sub: `${o.date}${o.note ? ' · ' + esc(o.note).slice(0, 60) : ''}`, batchId: b.id, tab: 'daily' });
+                    if (has(o.note) || has(o.type)) cats[5].items.push({ label: `${esc(o.type)} — ${esc(b.name)}`, sub: `${o.date}${o.note ? ' · ' + esc(o.note).slice(0, 60) : ''}`, batchId: b.id, tab: 'daily' });
                 });
             });
             (state.contacts || []).forEach(c => {
-                if (has(c.name) || has(c.phone) || has(c.role)) cats[5].items.push({ label: esc(c.name), sub: `${esc(c.role || '')} · ${esc(c.phone || '')}`, tab: 'settings' });
+                if (has(c.name) || has(c.phone) || has(c.role)) cats[6].items.push({ label: esc(c.name), sub: `${esc(c.role || '')} · ${esc(c.phone || '')}`, tab: 'settings' });
             });
             const nonEmpty = cats.filter(c => c.items.length);
             if (!nonEmpty.length) { box.innerHTML = '<p style="font-size:12px;color:var(--muted);text-align:center;padding:14px;">لا توجد نتائج مطابقة</p>'; return; }
@@ -20406,6 +20951,7 @@
             closeModal('searchModalOverlay');
             if (it.batchId && currentRole !== 'worker') { setState('activeId', it.batchId); persist(); }
             setTab(it.tab || 'dashboard');
+            if (it.runFeature) setTimeout(it.runFeature, 150); // بعد ما التبويب يترندر، عشان لو الميزة محتاجة عناصر DOM من التبويب ده
         }
 
         // ---------- 4) استيراد بيانات من إكسل/CSV (سجل يومي) ----------
@@ -20786,37 +21332,98 @@
             openGenericModal('📋 مهام اليوم', html);
         }
 
-        // ---------- 9) مكتبة مرجعية سريعة للأمراض الشائعة ----------
-        const DISEASE_LIBRARY = [
-            { name: 'مرض النيوكاسل', symptoms: 'ضيق تنفس وسعال، إسهال أخضر، ارتعاش وأعراض عصبية (التواء الرقبة)، انخفاض حاد فى إنتاج البيض، ارتفاع نفوق مفاجئ.', diff: 'الفرق عن الإنفلونزا: ظهور الأعراض العصبية (التواء الرقبة/الدوران) بوضوح أكبر فى النيوكاسل.' },
-            { name: 'أنفلونزا الطيور', symptoms: 'نفوق مفاجئ بدون أعراض واضحة أحيانًا، تورم الرأس والعرف المزرقّ، إسهال، ضعف عام شديد.', diff: 'نفوق سريع جدًا ومرتفع مقارنة بالأمراض التنفسية الأخرى — يستدعى إبلاغ الجهات البيطرية فورًا.' },
-            { name: 'الجمبورو (IBD)', symptoms: 'إسهال أبيض مائي، ريش منتفش، عزوف عن الأكل، نفوق يبدأ فجأة ويرتفع خلال أيام قليلة عادة بعمر 3-6 أسابيع.', diff: 'يصيب عادة قبل عمر 6 أسابيع ويترك الطائر أكثر عرضة لعدوى ثانوية بعدها بسبب ضعف المناعة.' },
-            { name: 'الكوكسيديا', symptoms: 'إسهال دموي، ريش منتفش وخمول، تراجع فى معدل النمو ووزن غير متجانس بين الطيور.', diff: 'الدم فى الزرق علامة مميزة، غالبًا مرتبط بفرشة رطبة أو كثافة عالية.' },
-            { name: 'الإيكولاي (E. coli)', symptoms: 'ضعف عام، إسهال، التهاب الأكياس الهوائية (يظهر عند التشريح)، تراجع الأداء ونفوق متفرق مستمر بدل موجة حادة.', diff: 'غالبًا عدوى ثانوية تتبع إجهاد بيئي أو ضعف مناعة من مرض آخر — راجع التهوية والكثافة والفرشة.' },
-            { name: 'المتفطرة الغازية (CRD)', symptoms: 'سعال وحشرجة تنفسية، إفرازات أنفية، تراجع طفيف فى النمو، نفوق منخفض عادة إلا مع عدوى مصاحبة.', diff: 'أعراض تنفسية مزمنة ممتدة بدون موجة نفوق حادة، خصوصًا فى الجو البارد أو سوء التهوية.' },
-            { name: 'التسمم بالأفلاتوكسين (علف ملوث)', symptoms: 'تراجع النمو والـFCR بدون سبب واضح، شحوب، تضخم الكبد (عند التشريح)، ضعف مناعة عام.', diff: 'لا توجد أعراض تنفسية أو عصبية مميزة — الشك يقوى مع تدهور الأداء العام رغم سلامة البرنامج الصحي، راجع مصدر وتخزين العلف.' },
-            { name: 'الجفاف/الإجهاد الحراري', symptoms: 'لهث وفرد الأجنحة، تجمّع الطيور بعيدًا عن بعض، تراجع استهلاك العلف وزيادة استهلاك الماء، نفوق مفاجئ فى ساعات الذروة الحارة.', diff: 'يرتبط بتوقيت درجة الحرارة المرتفعة مباشرة وليس عدوى — التبريد والتهوية الفورية هما الحل الأول.' },
-            { name: 'النقرس (Gout)', symptoms: 'خمول، ترسبات بيضاء طباشيرية حول المفاصل أو الأعضاء الداخلية (عند التشريح)، تراجع الشهية.', diff: 'غالبًا مرتبط بمشاكل كلوية من جفاف حاد سابق أو زيادة بروتين/كالسيوم غير متوازنة فى العلف.' },
-        ];
+        // ---------- 9) دليل الأمراض — قابل للتصفح والتعديل الكامل (إضافة/تعديل/حذف) من المستخدم ----------
+        let editingDiseaseId = null;
         function showDiseaseLibrary() {
             const html = `
                 <input id="diseaseSearchInput" type="text" placeholder="ابحث باسم المرض أو عرَض..." style="width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;margin-bottom:8px;" oninput="filterDiseaseLibrary(this.value)">
                 <div id="diseaseLibList"></div>
+                <button class="btn ghost block" style="margin-top:10px;" onclick="openDiseaseEditForm(null)">➕ إضافة مرض جديد للدليل</button>
                 <p style="font-size:10.5px;color:var(--muted);margin-top:10px;">⚠️ مرجع استرشادي سريع فقط وليس بديلًا عن تشخيص طبيب بيطري — عند الشك استشر بيطري العهدة فورًا خصوصًا مع نفوق مرتفع أو مفاجئ.</p>`;
-            openGenericModal('🩺 دليل الأمراض السريع', html);
+            openGenericModal('🩺 دليل الأمراض', html);
             filterDiseaseLibrary('');
         }
         function filterDiseaseLibrary(qRaw) {
             const q = (qRaw || '').trim().toLowerCase();
             const box = document.getElementById('diseaseLibList');
             if (!box) return;
-            const rows = DISEASE_LIBRARY.filter(d => !q || d.name.toLowerCase().includes(q) || d.symptoms.toLowerCase().includes(q));
+            const list = state.diseaseKB || [];
+            const rows = list.filter(d => !q || d.name.toLowerCase().includes(q) || (d.symptomsText || '').toLowerCase().includes(q));
             box.innerHTML = rows.length ? rows.map(d => `
-                <div class="check-row"><div class="txt">
-                    <div style="font-weight:800;color:var(--barn-dark);">🩺 ${esc(d.name)}</div>
-                    <div class="day" style="margin-top:3px;"><b>الأعراض:</b> ${esc(d.symptoms)}</div>
-                    <div class="day" style="margin-top:3px;"><b>يُفرَّق عن غيره بـ:</b> ${esc(d.diff)}</div>
+                <div class="check-row"><button class="del-x" onclick="removeDiseaseFromKB('${d.id}')" title="حذف">✕</button><div class="txt" onclick="openDiseaseEditForm('${d.id}')" style="cursor:pointer;">
+                    <div style="font-weight:800;color:var(--barn-dark);">🩺 ${esc(d.name)} <span style="font-size:10px;color:var(--muted);font-weight:400;">(✏️ اضغط للتعديل)</span></div>
+                    ${d.symptomsText ? `<div class="day" style="margin-top:3px;"><b>الأعراض:</b> ${esc(d.symptomsText)}</div>` : ''}
+                    ${d.diffText ? `<div class="day" style="margin-top:3px;"><b>يُفرَّق عن غيره بـ:</b> ${esc(d.diffText)}</div>` : ''}
+                    <div class="day" style="margin-top:3px;color:var(--muted);">العمر: ${d.ageMin}-${d.ageMax} يوم${(d.requiredSigns||[]).length ? ' · مربوط بتوقّع الحالة الظاهرية اليومية' : ' · مرجعي بس (مفيش توقيع أعراض للمطابقة التلقائية)'}</div>
                 </div></div>`).join('') : '<div class="empty" style="padding:14px;">لا توجد نتائج مطابقة</div>';
+        }
+        function removeDiseaseFromKB(id) {
+            if (!requirePermission('management')) return;
+            showConfirm('سيتم حذف هذا المرض من الدليل نهائيًا. متأكد؟', () => {
+                setState('diseaseKB', (state.diseaseKB || []).filter(d => d.id !== id));
+                persist();
+                filterDiseaseLibrary(document.getElementById('diseaseSearchInput') ? document.getElementById('diseaseSearchInput').value : '');
+                showToast('تم حذف المرض من الدليل');
+            });
+        }
+        // ============ فورم إضافة/تعديل مرض — بما فيه اختيار الأعراض (اختياري) اللي بتربطه بتوقّع الحالة الظاهرية ============
+        function openDiseaseEditForm(id) {
+            editingDiseaseId = id;
+            const d = id ? (state.diseaseKB || []).find(x => x.id === id) : null;
+            const allSelected = new Set();
+            if (d) { (d.requiredSigns || []).forEach(c => allSelected.add(c + ':required')); (d.supportingSigns || []).forEach(c => allSelected.add(c + ':supporting')); }
+            const signsHtml = CLINICAL_SIGN_GROUPS.map(g => `
+                <div style="margin-top:6px;"><div style="font-size:12px;font-weight:700;color:#8a5a34;margin-bottom:3px;">${g.label}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                    ${g.signs.map(s => `<label style="display:flex;align-items:center;gap:3px;background:#fff;border:1px solid #ecd3ba;border-radius:8px;padding:4px 7px;font-size:11px;">
+                        <select data-code="${s.code}" class="dzSignSelect" style="border:none;font-size:10.5px;padding:0;background:transparent;">
+                            <option value="">—</option>
+                            <option value="required" ${allSelected.has(s.code + ':required') ? 'selected' : ''}>أساسي</option>
+                            <option value="supporting" ${allSelected.has(s.code + ':supporting') ? 'selected' : ''}>مساند</option>
+                        </select>${s.label}</label>`).join('')}
+                </div></div>`).join('');
+            const html = `
+                <div class="form-grid">
+                    <div class="field full"><label>اسم المرض</label><input id="dz_name" value="${d ? esc(d.name) : ''}"></div>
+                    <div class="field"><label>أقل عمر (يوم)</label><input type="number" id="dz_ageMin" value="${d ? d.ageMin : 1}"></div>
+                    <div class="field"><label>أكبر عمر (يوم)</label><input type="number" id="dz_ageMax" value="${d ? d.ageMax : 60}"></div>
+                    <div class="field full"><label>الأعراض (وصف حر)</label><textarea id="dz_symptomsText" rows="2">${d ? esc(d.symptomsText || '') : ''}</textarea></div>
+                    <div class="field full"><label>يُفرَّق عن غيره بـ (اختياري)</label><textarea id="dz_diffText" rows="2">${d ? esc(d.diffText || '') : ''}</textarea></div>
+                    <div class="field full"><label>التوصية عند الاشتباه</label><textarea id="dz_recommendation" rows="2">${d ? esc(d.recommendation || '') : ''}</textarea></div>
+                    <div class="field full">
+                        <label>ربط بأعراض الفحص السريري اليومي (اختياري — لو حددت "أساسي" لعرض واحد على الأقل، المرض ده هيظهر تلقائيًا فى توقعات السجل اليومي لو نفس العرض اتسجّل)</label>
+                        ${signsHtml}
+                    </div>
+                </div>
+                <button class="btn ghost block" style="margin-top:10px;" onclick="saveDiseaseToKB()">${d ? '✏️ حفظ التعديل' : '+ إضافة للدليل'}</button>`;
+            openGenericModal(d ? '✏️ تعديل مرض' : '➕ إضافة مرض جديد', html);
+        }
+        function saveDiseaseToKB() {
+            if (!requirePermission('management')) return;
+            const name = document.getElementById('dz_name').value.trim();
+            if (!name) { showToast('اكتب اسم المرض أولاً'); return; }
+            const ageMin = parseInt(document.getElementById('dz_ageMin').value) || 1;
+            const ageMax = parseInt(document.getElementById('dz_ageMax').value) || 60;
+            const symptomsText = document.getElementById('dz_symptomsText').value.trim();
+            const diffText = document.getElementById('dz_diffText').value.trim();
+            const recommendation = document.getElementById('dz_recommendation').value.trim();
+            const requiredSigns = [], supportingSigns = [];
+            document.querySelectorAll('.dzSignSelect').forEach(sel => {
+                if (sel.value === 'required') requiredSigns.push(sel.getAttribute('data-code'));
+                else if (sel.value === 'supporting') supportingSigns.push(sel.getAttribute('data-code'));
+            });
+            const list = (state.diseaseKB || []).slice();
+            if (editingDiseaseId) {
+                const idx = list.findIndex(d => d.id === editingDiseaseId);
+                if (idx > -1) list[idx] = { ...list[idx], name, ageMin, ageMax, symptomsText, diffText, recommendation, requiredSigns, supportingSigns };
+            } else {
+                list.push({ id: uid(), name, ageMin, ageMax, symptomsText, diffText, recommendation, requiredSigns, supportingSigns });
+            }
+            setState('diseaseKB', list);
+            persist();
+            editingDiseaseId = null;
+            showToast('تم الحفظ فى دليل الأمراض ✅');
+            showDiseaseLibrary();
         }
 
         // ---------- 10) شاشة ترحيب وتهيئة أولى لمستخدم جديد ----------
