@@ -51,7 +51,211 @@
             --warning-text: #8A6116;
             --info-bg: #E1EEF3;
             --info-text: #2E6E8E;
+            /* ============ سلم أحجام الخط الموحّد (8 مستويات بدل 20 قيمة متفرقة كانت مستخدمة) ============ */
+            --fs-2xs: 10px; --fs-xs: 11px; --fs-sm: 12.5px; --fs-base: 14px;
+            --fs-md: 15.5px; --fs-lg: 18px; --fs-xl: 22px; --fs-2xl: 28px;
+            /* ============ سلم الاستدارة الموحّد (4 مستويات بدل 12 قيمة متفرقة) ============ */
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 18px; --radius-xl: 22px; --radius-pill: 999px;
+            /* ============ سلم الظلال الموحّد (3 مستويات ارتفاع بدل 12 تعريف متفرق) ============ */
+            --shadow-low: 0 2px 8px rgba(47, 69, 56, .06);
+            --shadow-med: 0 4px 14px rgba(47, 69, 56, .16);
+            --shadow-high: 0 10px 30px rgba(0, 0, 0, .28);
+            /* ============ سلم المسافات الموحّد (8 مستويات، مضاعفات 4px، بدل القيم الحرة المتناثرة) ============ */
+            --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+            --space-5: 20px; --space-6: 24px; --space-7: 32px; --space-8: 40px;
         }
+
+        /* ============ مرحلة 2 من إعادة التصميم: مكوّنات واجهة قابلة لإعادة الاستخدام ============ */
+        /* الهدف: نقل الأنماط المتكررة (كانت كل مرة بتتكتب كـ style="..." داخل الـJS) لكلاسات هنا،
+           عشان أي تعديل شكلي مستقبلي يحصل فى مكان واحد بدل البحث فى 28 ملف JS. */
+
+        /* -- كارت "أهم فعل الآن" (Hero) -- بديل الكارت اللي كان مبني بالكامل inline -- */
+        .hero-priority {
+            margin-bottom: var(--space-4);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            border: 1.5px solid var(--wheat);
+            background: linear-gradient(135deg, #fffdf7, var(--cream));
+            box-shadow: var(--shadow-med);
+        }
+        .hero-priority .eyebrow {
+            font-size: var(--fs-xs);
+            font-weight: 800;
+            color: var(--barn-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-2);
+        }
+        .hero-priority .eyebrow .more-link { font-weight: 700; color: var(--blue); cursor: pointer; font-size: var(--fs-xs); }
+        .hero-priority .lead-text {
+            font-size: var(--fs-md);
+            font-weight: 800;
+            line-height: 1.5;
+            margin-top: var(--space-2);
+            color: var(--ink);
+        }
+        .hero-priority .lead-meta {
+            display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
+            margin-top: var(--space-2);
+        }
+        .hero-priority .rest-list { margin-top: var(--space-3); border-top: 1px dashed #e5ddc8; padding-top: var(--space-2); }
+        .hero-priority .rest-row { display: flex; gap: var(--space-2); align-items: flex-start; padding: var(--space-1) 0; font-size: var(--fs-sm); color: var(--muted); }
+        .hero-priority .rest-row b { color: var(--ink); font-weight: 700; }
+
+        /* -- شبكة كروت مزدوجة (أداء + ربح جنب بعض بدل تحت بعض) -- */
+        .dual-card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        @media (max-width: 480px) {
+            .dual-card-grid { grid-template-columns: 1fr; }
+        }
+        .stat-mini-card {
+            background: var(--paper);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-low);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+        .stat-mini-card .title { font-size: var(--fs-2xs); font-weight: 800; color: var(--muted); }
+        .stat-mini-card .value { font-size: var(--fs-xl); font-weight: 900; line-height: 1.1; }
+        .stat-mini-card .value small { font-size: var(--fs-sm); font-weight: 700; }
+        .stat-mini-card .caption { font-size: var(--fs-2xs); color: var(--muted); }
+
+        /* -- تبويبات فرعية لتصنيف التحليلات (بدل قائمة طويلة واحدة) -- */
+        .subtab-bar { display: flex; gap: var(--space-1); margin-bottom: var(--space-2); flex-wrap: wrap; }
+        .subtab-btn {
+            flex: 1; min-width: 90px; text-align: center; cursor: pointer;
+            padding: var(--space-2) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-size: var(--fs-xs); font-weight: 800;
+            background: var(--cream); color: var(--muted);
+            border: 1px solid var(--line);
+            transition: background .15s, color .15s;
+        }
+        .subtab-btn.active { background: var(--barn-dark); color: #fff; border-color: var(--barn-dark); }
+        .subtab-btn .count { opacity: .75; font-weight: 700; margin-inline-start: 3px; }
+
+        /* -- كارت درجة الصحة (اللون بس بيفضل ديناميكي inline لأنه مبني على قيمة محسوبة، الباقي كله كلاس) -- */
+        .health-score-card {
+            margin-bottom: var(--space-4);
+            padding: var(--space-4);
+            text-align: center;
+            background: linear-gradient(135deg, #fff, #f8f5ed);
+            border-radius: var(--radius-lg);
+            border-width: 2px;
+            border-style: solid;
+        }
+        .health-score-card .caption { font-size: var(--fs-sm); color: var(--muted); margin-bottom: 2px; }
+        .health-score-card .score { font-size: 34px; font-weight: 900; }
+        .health-score-card .score small { font-size: var(--fs-md); }
+        .health-score-card .label { font-size: var(--fs-base); font-weight: 700; }
+        .health-score-card .factors { font-size: var(--fs-xs); color: var(--muted); margin-top: var(--space-2); text-align: right; }
+
+        /* -- مجموعات "تحليلات ذكية" — كل مجموعة بلون مميز يبين نوعها من نظرة واحدة، بدل كل الأكورديونات بنفس اللون الرمادي -- */
+        .insight-group { border-bottom: 1px solid var(--line); }
+        .insight-group:last-child { border-bottom: none; }
+        .insight-group summary {
+            padding: var(--space-3) var(--space-3);
+            cursor: pointer;
+            background: var(--paper);
+            border-inline-start: 4px solid var(--group-color, var(--line));
+        }
+        .insight-group[open] summary { background: var(--group-bg, var(--cream)); }
+        .insight-group summary { display: flex; flex-direction: column; gap: 2px; justify-content: flex-start; }
+        .insight-group summary::after { display: none; }
+        .insight-group .igrp-top { display: flex; align-items: center; gap: var(--space-2); }
+        .insight-group .igrp-top::after {
+            content: '›'; margin-inline-start: auto; font-size: var(--fs-lg); color: var(--muted);
+            transform: rotate(90deg); transition: transform .15s;
+        }
+        .insight-group[open] .igrp-top::after { transform: rotate(-90deg); }
+        .insight-group .igrp-icon {
+            flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-pill);
+            background: var(--group-color, var(--line)); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: var(--fs-sm);
+        }
+        .insight-group .igrp-title { font-weight: 800; font-size: var(--fs-base); color: var(--ink); }
+        .insight-group .igrp-count {
+            background: var(--group-color, var(--line)); color: #fff; border-radius: var(--radius-pill);
+            padding: 1px 8px; font-size: var(--fs-2xs); font-weight: 700; margin-inline-start: var(--space-1);
+        }
+        .insight-group .igrp-desc { font-size: var(--fs-2xs); color: var(--muted); font-weight: 400; margin-top: 2px; margin-inline-start: 34px; }
+        .insight-group[data-gkey="attention"] { --group-color: var(--red); --group-bg: var(--danger-bg); }
+        .insight-group[data-gkey="forecast"] { --group-color: var(--blue); --group-bg: var(--info-bg); }
+        .insight-group[data-gkey="performance"] { --group-color: var(--green); --group-bg: var(--success-bg); }
+        .insight-group[data-gkey="benchmark"] { --group-color: var(--wheat); --group-bg: var(--warning-bg); }
+        .insight-group > div.igrp-body { padding: 0 var(--space-3); }
+
+        /* -- كارت تمييز خفيف (دهبي) لعناصر سريعة أعلى الداشبورد: بورصة اليوم، سلسلة التسجيل -- */
+        .card-accent {
+            margin-bottom: var(--space-4);
+            padding: var(--space-3);
+            display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
+            background: #fffdf7;
+            border: 1px solid var(--wheat);
+            border-radius: var(--radius-lg);
+        }
+        .card-accent .accent-label { font-size: var(--fs-sm); font-weight: 800; color: var(--barn-dark); white-space: nowrap; }
+
+        /* -- أزرار إجراءات سريعة بألوان دلالية موحّدة (تستخدم tokens الحالة الموجودة أصلاً --warning/--danger/--success/--info) -- */
+        .btn.tone-warning { background: var(--warning-bg); color: var(--warning-text); border: 1.5px solid var(--warning-text); }
+        .btn.tone-danger { background: var(--danger-bg); color: var(--danger-text); border: 1.5px solid var(--danger-text); }
+        .btn.tone-success { background: var(--success-bg); color: var(--success-text); border: 1.5px solid var(--success-text); }
+        .btn.tone-info { background: var(--info-bg); color: var(--info-text); border: none; }
+        .daily-status-card {
+            margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4);
+            display: flex; gap: var(--space-3); align-items: center; justify-content: space-around;
+            background: var(--cream); border-radius: var(--radius-lg); box-shadow: var(--shadow-low); border: 1px solid var(--line);
+        }
+        .daily-status-card .item { text-align: center; font-size: var(--fs-sm); }
+        .daily-quick-actions {
+            margin: 0 0 var(--space-4); padding: var(--space-3);
+            display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);
+        }
+
+        /* -- كارت مؤشر أداء الدورة (الحلقة الدائرية) -- */
+        .perf-score-card { margin-bottom: var(--space-4); padding: var(--space-3); }
+        .perf-score-card .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+        .perf-score-card .title { font-size: var(--fs-sm); font-weight: 800; }
+        .perf-score-card .rank-badge { font-size: var(--fs-2xs); color: var(--muted); margin-top: 2px; }
+        .perf-score-ring { position: relative; width: 74px; height: 74px; flex-shrink: 0; }
+        .perf-score-ring svg { transform: rotate(-90deg); }
+        .perf-score-ring .ring-value { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .perf-score-ring .ring-value b { font-size: var(--fs-xl); font-weight: 900; line-height: 1; }
+        .perf-score-ring .ring-value span { font-size: 8.5px; color: var(--muted); font-weight: 700; }
+        .perf-score-card .rows-block { margin-top: var(--space-2); border-top: 1px solid var(--line); padding-top: var(--space-2); }
+        .perf-score-card .abs-block { margin-top: var(--space-2); border-top: 1px dashed var(--line); padding-top: var(--space-2); }
+        .perf-score-card .abs-title { font-size: var(--fs-2xs); font-weight: 800; }
+        .perf-score-card .foot-note { font-size: var(--fs-2xs); color: var(--muted); margin-top: var(--space-2); }
+
+        /* -- كارت تحذير جودة البيانات -- تستخدم tokens الخطر الموجودة أصلاً -- */
+        .data-quality-warning {
+            margin-bottom: var(--space-4); padding: var(--space-3);
+            border: 1px solid var(--red); background: var(--danger-bg); border-radius: var(--radius-lg);
+        }
+        .data-quality-warning .line { font-size: var(--fs-sm); font-weight: 800; color: var(--red); }
+        .data-quality-warning .hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 2px; }
+
+        /* -- كارت قرار البيع البارز (Hero داكن، أهم قرار يومي) -- */
+        .sale-decision-card {
+            margin-bottom: var(--space-4); padding: var(--space-4);
+            background: linear-gradient(135deg, var(--barn-dark), #152119);
+            border-radius: var(--radius-lg); position: relative; overflow: hidden; color: var(--cream);
+        }
+        .sale-decision-card::before { content:'🌾'; position:absolute; font-size:80px; opacity:.08; left:-10px; top:-18px; transform:rotate(-15deg); }
+        .sale-decision-card .eyebrow { position: relative; font-size: var(--fs-2xs); color: var(--wheat-light); font-weight: 700; }
+        .sale-decision-card .headline { position: relative; font-weight: 900; font-size: var(--fs-xl); color: var(--cream); margin-top: var(--space-1); }
+        .sale-decision-card .headline .day-num { color: var(--wheat); }
+        .sale-decision-card .warn-line { position: relative; font-size: var(--fs-xs); color: var(--wheat-light); font-weight: 700; margin-top: 2px; }
+        .sale-decision-card .advice-line { position: relative; font-size: var(--fs-xs); color: rgba(250,247,238,.8); margin-top: var(--space-2); line-height: 1.6; }
+        .sale-decision-card .meta-line { position: relative; font-size: var(--fs-2xs); color: rgba(250,247,238,.55); margin-top: var(--space-2); line-height: 1.6; }
         /* ============ الوضع الليلي (Dark Mode) — تفعيل عبر data-theme="dark" على <html> ============ */
         html[data-theme="dark"] {
             --barn: #4A6B54;
@@ -75,6 +279,10 @@
             --warning-text: #EFC96B;
             --info-bg: #1C2E36;
             --info-text: #7FC3E3;
+            /* ظلال أخف فى الوضع الليلي — نفس الشدة على خلفية غامقة بتطلع "لطخة" واضحة زيادة */
+            --shadow-low: 0 2px 8px rgba(0, 0, 0, .25);
+            --shadow-med: 0 4px 14px rgba(0, 0, 0, .35);
+            --shadow-high: 0 10px 30px rgba(0, 0, 0, .5);
         }
         html[data-theme="dark"] body { background: var(--cream); color: var(--ink); }
         html[data-theme="dark"] .card, html[data-theme="dark"] .modal, html[data-theme="dark"] input,
@@ -148,17 +356,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: var(--fs-xl);
             box-shadow: 0 4px 10px rgba(0, 0, 0, .25);
         }
         .brand h1 {
             margin: 0;
-            font-size: 19px;
+            font-size: var(--fs-lg);
             font-weight: 800;
         }
         .brand .sub {
             margin: 0;
-            font-size: 11.5px;
+            font-size: var(--fs-sm);
             color: #cfd9d0;
             font-weight: 500;
         }
@@ -185,7 +393,7 @@
             border: 1.5px solid rgba(255, 255, 255, .25);
             background: rgba(255, 255, 255, .08);
             color: #fff;
-            font-size: 12.5px;
+            font-size: var(--fs-sm);
             font-weight: 700;
             white-space: nowrap;
             transition: 0.2s;
@@ -235,7 +443,7 @@
             color: var(--barn-dark);
             text-align: center;
             font-weight: 800;
-            font-size: 14px;
+            font-size: var(--fs-base);
             box-shadow: 0 8px 20px rgba(217, 165, 68, .35);
             animation: celebratePop .5s cubic-bezier(.34,1.56,.64,1);
         }
@@ -253,7 +461,7 @@
             border-radius: 999px;
             background: var(--warning-bg);
             color: var(--warning-text);
-            font-size: 11.5px;
+            font-size: var(--fs-sm);
             font-weight: 800;
         }
 
@@ -266,7 +474,7 @@
         .alert-item {
             padding: 9px 12px;
             border-radius: 10px;
-            font-size: 12px;
+            font-size: var(--fs-sm);
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -308,7 +516,7 @@
             border-radius: 12px;
             background: var(--paper);
             border: 1px solid var(--line);
-            font-size: 12px;
+            font-size: var(--fs-sm);
             font-weight: 800;
             color: var(--muted);
             box-shadow: 0 2px 6px rgba(47, 69, 56, .06);
@@ -328,7 +536,7 @@
             left: -6px;
             background: var(--red);
             color: #fff;
-            font-size: 9.5px;
+            font-size: var(--fs-2xs);
             border-radius: 999px;
             padding: 1px 5px;
             font-weight: 900;
@@ -371,19 +579,19 @@
             border: 1px solid var(--line);
         }
         .kpi .lbl {
-            font-size: 11px;
+            font-size: var(--fs-xs);
             color: var(--muted);
             font-weight: 700;
             margin-bottom: 6px;
         }
         .kpi .val {
             font-family: 'Cairo', sans-serif;
-            font-size: 19px;
+            font-size: var(--fs-lg);
             font-weight: 800;
             color: var(--barn-dark);
         }
         .kpi .val small {
-            font-size: 11.5px;
+            font-size: var(--fs-sm);
             font-weight: 600;
             color: var(--muted);
         }
@@ -415,13 +623,15 @@
             gap: 6px;
         }
         .section-head h2 {
-            font-size: 15.5px;
+            font-size: var(--fs-md);
             margin: 0;
             font-weight: 800;
             color: var(--barn-dark);
+            border-inline-start: 4px solid var(--wheat);
+            padding-inline-start: var(--space-2);
         }
         .section-head .tag {
-            font-size: 11px;
+            font-size: var(--fs-xs);
             color: var(--muted);
             font-weight: 600;
         }
@@ -430,7 +640,7 @@
             user-select: none;
         }
         .section-toggle-ic {
-            font-size: 11px;
+            font-size: var(--fs-xs);
             color: var(--muted);
             transition: transform .2s ease;
             margin-inline-start: 4px;
@@ -443,9 +653,9 @@
         }
         .card {
             background: var(--paper);
-            border-radius: 18px;
+            border-radius: var(--radius-lg);
             padding: 16px;
-            box-shadow: 0 2px 10px rgba(47, 69, 56, .06);
+            box-shadow: var(--shadow-low);
             border: 1px solid var(--line);
         }
 
@@ -463,7 +673,7 @@
             grid-column: 1/-1;
         }
         .field label {
-            font-size: 12px;
+            font-size: var(--fs-sm);
             font-weight: 700;
             color: var(--brown);
         }
@@ -473,7 +683,7 @@
             border: 1.5px solid var(--line);
             border-radius: 10px;
             padding: 10px 11px;
-            font-size: 14.5px;
+            font-size: var(--fs-base);
             background: #fff;
             color: var(--ink);
             width: 100%;
@@ -486,7 +696,7 @@
         }
         .field-group-title {
             grid-column: 1/-1;
-            font-size: 12px;
+            font-size: var(--fs-sm);
             font-weight: 800;
             color: var(--barn);
             margin-top: 4px;
@@ -501,36 +711,36 @@
         .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .stepper-btn {
             width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; border: 1px solid var(--line);
-            background: #fff; font-size: 17px; font-weight: 800; color: var(--barn-dark);
+            background: #fff; font-size: var(--fs-lg); font-weight: 800; color: var(--barn-dark);
             display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;
         }
         .stepper-btn:active { background: var(--barn-dark); color: #fff; }
-        .stepper.sm .stepper-btn { width: 24px; height: 24px; font-size: 13px; border-radius: 6px; }
-        .stepper.sm input { font-size: 12.5px; padding: 4px 2px; }
+        .stepper.sm .stepper-btn { width: 24px; height: 24px; font-size: var(--fs-base); border-radius: 6px; }
+        .stepper.sm input { font-size: var(--fs-sm); padding: 4px 2px; }
         /* ============ آلية إدخال جديدة: مقياس تعبيري بالألوان بدل رقم مجرد من 1-10 (تقييم الحالة الصحية) ============ */
         .health-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 4px; }
         .hs-btn {
             border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 7px 2px;
-            font-size: 10px; font-weight: 700; color: var(--muted); cursor: pointer; line-height: 1.6; text-align: center;
+            font-size: var(--fs-2xs); font-weight: 700; color: var(--muted); cursor: pointer; line-height: 1.6; text-align: center;
         }
-        .hs-btn span { display: block; font-size: 16px; }
+        .hs-btn span { display: block; font-size: var(--fs-md); }
         .hs-btn.active { border-color: var(--barn-dark); background: #f8f5ed; color: var(--barn-dark); box-shadow: 0 0 0 1.5px var(--barn-dark) inset; }
         /* ============ حقول متقدمة قابلة للطي (CO2/O2/سرعة الهواء) — تفتح عند الحاجة بدل ظهورها دايمًا ============ */
         .adv-fields { grid-column: 1/-1; }
-        .adv-fields summary { cursor: pointer; font-size: 11.5px; font-weight: 800; color: var(--barn); padding: 6px 2px; list-style: none; }
+        .adv-fields summary { cursor: pointer; font-size: var(--fs-sm); font-weight: 800; color: var(--barn); padding: 6px 2px; list-style: none; }
         .adv-fields summary::-webkit-details-marker { display: none; }
         .adv-fields summary::before { content: '▸ '; }
         .adv-fields[open] summary::before { content: '▾ '; }
         .adv-fields .form-grid { margin-top: 4px; }
         .btn {
             border: none;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             padding: 12px 18px;
             font-weight: 800;
-            font-size: 14px;
+            font-size: var(--fs-base);
             background: var(--barn);
             color: #fff;
-            box-shadow: 0 3px 8px rgba(47, 69, 56, .25);
+            box-shadow: var(--shadow-med);
             transition: 0.2s;
             display: inline-flex;
             align-items: center;
@@ -569,8 +779,17 @@
         }
         .btn.sm {
             padding: 6px 12px;
-            font-size: 11.5px;
-            border-radius: 8px;
+            font-size: var(--fs-sm);
+            border-radius: var(--radius-sm);
+        }
+        /* ============ مستوى جديد أصغر (xs) — بديل موحّد لـ17+ حالة كانت بتستخدم style="padding:..." يدوي
+           متفرق (زي 6px 10px، 3px 8px، 2px 7px...) لأزرار الجداول/الصفوف الضيقة. يحل محلهم تدريجيًا. ============ */
+        .btn.xs {
+            padding: 4px 9px;
+            font-size: var(--fs-xs);
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            gap: 4px;
         }
         .row-actions {
             display: flex;
@@ -578,11 +797,19 @@
             margin-top: 12px;
             flex-wrap: wrap;
         }
+        /* ============ زرار "تأجيل" الموحّد (بديل "خلصت منها" و"🔕" المنفصلين) — خافت البصري عن قصد ============
+           عشان يفضل واضح إنه أقل أهمية من زرار الفعل الدهبي جنبه، ومش بيدّعي حل المشكلة. */
+        .btn.muted-snooze {
+            background: #eef1f6;
+            color: var(--muted);
+            border-color: var(--line);
+            font-weight: 600;
+        }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12.5px;
+            font-size: var(--fs-sm);
         }
         th,
         td {
@@ -591,7 +818,7 @@
             border-bottom: 1px solid var(--line);
         }
         th {
-            font-size: 11px;
+            font-size: var(--fs-xs);
             color: var(--muted);
             font-weight: 800;
         }
@@ -617,7 +844,7 @@
             display: inline-block;
             padding: 2px 8px;
             border-radius: 999px;
-            font-size: 10.5px;
+            font-size: var(--fs-xs);
             font-weight: 800;
         }
         .pill.ok {
@@ -662,7 +889,7 @@
         .stock-lvl-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 10.5px;
+            font-size: var(--fs-xs);
             color: var(--muted);
             margin-bottom: 4px;
         }
@@ -690,7 +917,7 @@
             border-radius: 50%;
             background: rgba(107,66,38,.12);
             color: var(--barn-dark);
-            font-size: 10px;
+            font-size: var(--fs-2xs);
             font-weight: 800;
             font-style: normal;
             cursor: pointer;
@@ -708,14 +935,14 @@
             border-radius: 12px;
             border: 1.5px solid rgba(255,255,255,.5);
             background: rgba(255,255,255,.92);
-            font-size: 13px;
+            font-size: var(--fs-base);
         }
         .search-box-wrap .search-ico {
             position: absolute;
             right: 12px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 14px;
+            font-size: var(--fs-base);
             opacity: .6;
         }
         .search-result-row {
@@ -730,7 +957,7 @@
             border-bottom: none;
         }
         .search-cat-label {
-            font-size: 10.5px;
+            font-size: var(--fs-xs);
             font-weight: 800;
             color: #b8860b;
             margin: 10px 2px 4px;
@@ -764,10 +991,10 @@
             border-bottom: 1px solid var(--line);
         }
         .dash-order-row:last-child { border-bottom: none; }
-        .dash-order-row .grip { color: var(--muted); font-size: 12px; white-space: nowrap; }
+        .dash-order-row .grip { color: var(--muted); font-size: var(--fs-sm); white-space: nowrap; }
         .worker-sheet-print { direction: rtl; font-family: 'Cairo', Tahoma, sans-serif; padding: 18px; }
         .worker-sheet-print h2 { margin: 0 0 4px; }
-        .worker-sheet-print .task-line { padding: 10px 0; border-bottom: 1.5px dashed #999; font-size: 15px; }
+        .worker-sheet-print .task-line { padding: 10px 0; border-bottom: 1.5px dashed #999; font-size: var(--fs-md); }
         .worker-sheet-print .box { display:inline-block; width:16px; height:16px; border:2px solid #333; margin-left:8px; vertical-align:middle; }
 
         .empty {
@@ -776,7 +1003,7 @@
             color: var(--muted);
         }
         .empty .ico {
-            font-size: 32px;
+            font-size: var(--fs-2xl);
             margin-bottom: 8px;
         }
         canvas {
@@ -803,8 +1030,8 @@
         .chart-tooltip-v2.show { opacity: 1; transform: translate(-50%, -100%) translateY(-14px) scale(1); }
         .chart-tooltip-v2.below { transform: translate(-50%, 0) translateY(14px) scale(1); }
         .chart-tooltip-v2.below.show { transform: translate(-50%, 0) translateY(14px) scale(1); }
-        .chart-tooltip-v2 .ctp-title { font-size: 10px; color: var(--wheat-light); font-weight: 700; margin-bottom: 3px; opacity: .85; }
-        .chart-tooltip-v2 .ctp-row { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+        .chart-tooltip-v2 .ctp-title { font-size: var(--fs-2xs); color: var(--wheat-light); font-weight: 700; margin-bottom: 3px; opacity: .85; }
+        .chart-tooltip-v2 .ctp-row { display: flex; align-items: center; gap: 6px; font-size: var(--fs-sm); font-weight: 800; white-space: nowrap; }
         .chart-tooltip-v2 .ctp-row + .ctp-row { margin-top: 3px; }
         .chart-tooltip-v2 .ctp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(255,255,255,.15); }
         .chart-tooltip-v2 .ctp-val { color: var(--wheat-light); font-variant-numeric: tabular-nums; }
@@ -822,7 +1049,7 @@
             gap: 14px;
             margin-top: 8px;
             flex-wrap: wrap;
-            font-size: 11.5px;
+            font-size: var(--fs-sm);
             color: var(--muted);
             font-weight: 700;
         }
@@ -862,7 +1089,7 @@
             background: var(--cream);
             width: 100%;
             max-width: 560px;
-            border-radius: 22px 22px 0 0;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
             padding: 20px;
             padding-top: 26px;
             padding-bottom: calc(20px + env(safe-area-inset-bottom));
@@ -870,6 +1097,7 @@
             overflow-y: auto;
             animation: slideUp .25s ease;
             position: relative;
+            box-shadow: var(--shadow-high);
         }
         /* خط السحب العلوي (drag handle) — إشارة بصرية إن النافذة sheet قابلة للسحب/الإغلاق، زي أغلب تطبيقات الموبايل */
         .modal::before {
@@ -880,16 +1108,29 @@
             transform: translateX(-50%);
             width: 38px;
             height: 4px;
-            border-radius: 999px;
+            border-radius: var(--radius-pill);
             background: var(--line);
         }
         /* زر حذف دائري أحمر لعناصر القوائم القابلة للتعديل (دليل الأمراض، جهات الاتصال، إلخ) */
         .del-x {
             width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%;
-            background: #E5544B; color: #fff; border: none; font-size: 13px; font-weight: 800;
+            background: var(--red); color: #fff; border: none; font-size: var(--fs-sm); font-weight: 800;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-        .del-x:active { background: #c73f36; }
+        .del-x:active { filter: brightness(0.88); }
+        /* ============ 🎨 نظام تصميم موحّد: بادچات المجال والإلحاح (بدل كائنات JS مكرَّرة inline فى كل رسمة) ============ */
+        .badge-domain {
+            display: inline-block; padding: 1px 6px; border-radius: var(--radius-sm);
+            font-size: var(--fs-2xs); font-weight: 800;
+        }
+        .badge-domain-production { background: var(--success-bg); color: var(--green); }
+        .badge-domain-financial  { background: var(--warning-bg); color: #8a6d00; }
+        .badge-domain-ops        { background: var(--info-bg); color: var(--blue); }
+        .badge-domain-weather    { background: var(--danger-bg); color: var(--red); }
+        .badge-urgency { font-size: var(--fs-2xs); font-weight: 800; }
+        .badge-urgency-today      { color: var(--red); }
+        .badge-urgency-week       { color: var(--warning-text); }
+        .badge-urgency-watch      { color: var(--muted); }
         @keyframes slideUp {
             from {
                 transform: translateY(30px);
@@ -902,7 +1143,7 @@
         }
         .modal h3 {
             margin: 0 0 14px;
-            font-size: 16.5px;
+            font-size: var(--fs-md);
             color: var(--barn-dark);
         }
         .close-x {
@@ -911,7 +1152,7 @@
             top: 18px;
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: var(--fs-xl);
             color: var(--muted);
             cursor: pointer;
         }
@@ -925,7 +1166,7 @@
             color: #fff;
             padding: 11px 20px;
             border-radius: 999px;
-            font-size: 13px;
+            font-size: var(--fs-base);
             font-weight: 700;
             box-shadow: 0 5px 16px rgba(0, 0, 0, .25);
             z-index: 99;
@@ -945,7 +1186,7 @@
             border-radius: 50%;
             background: var(--wheat);
             color: var(--barn-dark);
-            font-size: 25px;
+            font-size: var(--fs-2xl);
             border: none;
             box-shadow: 0 6px 16px rgba(0, 0, 0, .25);
             z-index: 40;
@@ -959,7 +1200,7 @@
             border: 1px dashed var(--line);
             border-radius: 10px;
             padding: 9px 12px;
-            font-size: 11px;
+            font-size: var(--fs-xs);
             color: var(--brown);
             margin-top: 6px;
             line-height: 1.7;
@@ -969,7 +1210,7 @@
             justify-content: space-between;
             padding: 9px 0;
             border-bottom: 1px solid var(--line);
-            font-size: 13px;
+            font-size: var(--fs-base);
         }
         .stat-line:last-child {
             border-bottom: none;
@@ -1005,18 +1246,18 @@
             font-family: 'Cairo', sans-serif;
             font-weight: 900;
             color: var(--barn-dark);
-            font-size: 14.5px;
+            font-size: var(--fs-base);
         }
         .feas-wrap summary::-webkit-details-marker { display: none; }
         .feas-wrap summary .chev {
             transition: transform .2s ease;
             color: var(--wheat);
-            font-size: 13px;
+            font-size: var(--fs-base);
         }
         .feas-wrap[open] summary .chev { transform: rotate(180deg); }
         .feas-wrap summary .sub {
             font-weight: 500;
-            font-size: 11.5px;
+            font-size: var(--fs-sm);
             color: var(--muted);
             font-family: 'Tajawal', sans-serif;
             display: block;
@@ -1029,7 +1270,7 @@
             display: inline-block;
             padding: 5px 12px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: var(--fs-sm);
             font-weight: 800;
             font-family: 'Cairo', sans-serif;
         }
@@ -1042,14 +1283,14 @@
         }
         .feas-sub-card h4 {
             margin: 0 0 8px;
-            font-size: 12.5px;
+            font-size: var(--fs-sm);
             color: var(--barn-dark);
             font-family: 'Cairo', sans-serif;
         }
         .feas-scenario-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: var(--fs-sm);
         }
         .feas-scenario-table th, .feas-scenario-table td {
             padding: 7px 6px;
@@ -1059,7 +1300,7 @@
         .feas-scenario-table th {
             color: var(--muted);
             font-weight: 700;
-            font-size: 11px;
+            font-size: var(--fs-xs);
         }
         .feas-scenario-table td:first-child, .feas-scenario-table th:first-child {
             text-align: right;
@@ -1073,7 +1314,7 @@
         }
         .fc-field label {
             display: block;
-            font-size: 10.5px;
+            font-size: var(--fs-xs);
             color: var(--muted);
             margin-bottom: 3px;
         }
@@ -1091,7 +1332,7 @@
             background: transparent;
             padding: 8px 8px;
             font-family: 'Tajawal', sans-serif;
-            font-size: 13px;
+            font-size: var(--fs-base);
             font-weight: 700;
             color: var(--barn-dark);
             width: 100%;
@@ -1102,7 +1343,7 @@
             background: #fff;
         }
         .fc-unit {
-            font-size: 10px;
+            font-size: var(--fs-2xs);
             color: var(--muted);
             padding: 0 8px;
             white-space: nowrap;
@@ -1125,7 +1366,7 @@
             background: var(--danger-bg);
         }
         .big-result .v {
-            font-size: 26px;
+            font-size: var(--fs-2xl);
             font-weight: 900;
             font-family: 'Cairo', sans-serif;
         }
@@ -1133,9 +1374,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 0;
+            padding: var(--space-3) 0;
             border-bottom: 1px solid var(--line);
+            transition: background .12s;
         }
+        .igrp-body .check-row:hover { background: rgba(0,0,0,.015); }
+        .igrp-body .check-row .txt > div:first-child { font-weight: 700; font-size: var(--fs-sm); }
         .settings-subnav {
             display: flex;
             gap: 6px;
@@ -1150,7 +1394,7 @@
             border-radius: 20px;
             border: 1px solid var(--line);
             background: #fff;
-            font-size: 12.5px;
+            font-size: var(--fs-sm);
             font-weight: 700;
             color: var(--muted);
             white-space: nowrap;
@@ -1165,7 +1409,7 @@
         details > div .check-row { padding: 8px 0; }
         details summary { list-style: none; display: flex; align-items: center; justify-content: space-between; }
         details summary::-webkit-details-marker { display: none; }
-        details summary::after { content: '›'; font-size: 18px; transform: rotate(90deg); transition: transform .15s; color: var(--muted); }
+        details summary::after { content: '›'; font-size: var(--fs-lg); transform: rotate(90deg); transition: transform .15s; color: var(--muted); }
         details[open] summary::after { transform: rotate(-90deg); }
         details:last-child { border-bottom: none !important; }
         .check-row:last-child {
@@ -1180,7 +1424,7 @@
             flex: 1;
         }
         .check-row .day {
-            font-size: 11px;
+            font-size: var(--fs-xs);
             color: var(--muted);
         }
         .done-strike {
@@ -1201,7 +1445,7 @@
             border: 1.5px solid var(--line);
             border-radius: 10px;
             padding: 8px 10px;
-            font-size: 12.5px;
+            font-size: var(--fs-sm);
             font-weight: 700;
             cursor: pointer;
         }
@@ -1210,7 +1454,7 @@
         }
         .compare-table th,
         .compare-table td {
-            font-size: 11.5px;
+            font-size: var(--fs-sm);
             padding: 7px 4px;
         }
         .compare-table td.best {
@@ -1275,7 +1519,7 @@
             border-radius: 12px;
             padding: 10px;
             margin-bottom: 12px;
-            font-size: 13px;
+            font-size: var(--fs-base);
         }
         .ref-box .title {
             font-weight: 800;
@@ -1288,14 +1532,14 @@
             margin-top: 4px;
         }
         .ref-box .row span {
-            font-size: 12px;
+            font-size: var(--fs-sm);
         }
         .ref-box .badge-ref {
             background: var(--wheat);
             color: var(--barn-dark);
             padding: 2px 8px;
             border-radius: 999px;
-            font-size: 10px;
+            font-size: var(--fs-2xs);
             font-weight: 700;
         }
         .ref-box .badge-actual {
@@ -1303,12 +1547,12 @@
             color: #fff;
             padding: 2px 8px;
             border-radius: 999px;
-            font-size: 10px;
+            font-size: var(--fs-2xs);
             font-weight: 700;
         }
         .deviation-indicator {
             font-weight: 900;
-            font-size: 13px;
+            font-size: var(--fs-base);
         }
         .deviation-indicator.ok {
             color: var(--green);
@@ -1342,31 +1586,31 @@
             background: var(--paper); border-radius: 20px; padding: 26px 22px;
             width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(0,0,0,.35);
         }
-        .auth-card h2 { font-size: 19px; color: var(--barn-dark); margin-bottom: 4px; }
-        .auth-card .sub { font-size: 12.5px; color: var(--muted); margin-bottom: 18px; }
+        .auth-card h2 { font-size: var(--fs-lg); color: var(--barn-dark); margin-bottom: 4px; }
+        .auth-card .sub { font-size: var(--fs-sm); color: var(--muted); margin-bottom: 18px; }
         .role-pick { display: flex; gap: 10px; margin-bottom: 16px; }
         .role-btn {
             flex: 1; border: 2px solid var(--line); background: var(--cream);
             border-radius: 14px; padding: 16px 8px; text-align: center; cursor: pointer;
             font-family: 'Tajawal', sans-serif; transition: .15s;
         }
-        .role-btn .ico { font-size: 26px; display: block; margin-bottom: 6px; }
-        .role-btn .lbl { font-weight: 800; font-size: 13.5px; color: var(--barn-dark); }
+        .role-btn .ico { font-size: var(--fs-2xl); display: block; margin-bottom: 6px; }
+        .role-btn .lbl { font-weight: 800; font-size: var(--fs-base); color: var(--barn-dark); }
         .role-btn.active { border-color: var(--wheat); background: #FFF7E6; }
         .auth-card input {
             width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px;
-            font-size: 14px; margin-bottom: 10px; background: var(--cream);
+            font-size: var(--fs-base); margin-bottom: 10px; background: var(--cream);
         }
-        .auth-card .btn { width: 100%; padding: 12px; font-size: 14.5px; font-weight: 800; }
-        .auth-err { color: var(--red); font-size: 12.5px; margin: -2px 0 10px; min-height: 14px; }
-        .auth-hint { font-size: 11px; color: var(--muted); margin-top: 12px; text-align: center; }
+        .auth-card .btn { width: 100%; padding: 12px; font-size: var(--fs-base); font-weight: 800; }
+        .auth-err { color: var(--red); font-size: var(--fs-sm); margin: -2px 0 10px; min-height: 14px; }
+        .auth-hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 12px; text-align: center; }
         .role-badge {
             display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,.15);
-            color: #fff; padding: 5px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 700;
+            color: #fff; padding: 5px 12px; border-radius: 999px; font-size: var(--fs-sm); font-weight: 700;
         }
         .logout-btn {
             background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.35); color: #fff;
-            padding: 6px 12px; border-radius: 999px; font-size: 11.5px; cursor: pointer;
+            padding: 6px 12px; border-radius: 999px; font-size: var(--fs-sm); cursor: pointer;
         }
         .owner-only { display: none; }
         body.role-owner .owner-only { display: inline-flex; }
@@ -1753,8 +1997,9 @@
                     </div>
                     <input type="hidden" id="d_health">
                 </div>
-                <div class="field full" id="d_clinicalSection" style="background:#fdf5f0;border:1px solid #ecd3ba;border-radius:10px;padding:9px;">
-                    <label style="margin-bottom:4px;">🩺 الحالة الظاهرية (فحص سريري بصري) — اختياري لكن مهم للتنبؤ المبكر</label>
+                <details class="field full" id="d_clinicalSection" style="background:#fdf5f0;border:1px solid #ecd3ba;border-radius:10px;">
+                    <summary style="padding:9px;font-weight:800;color:#8a5a34;cursor:pointer;">🩺 الحالة الظاهرية (فحص سريري بصري) — اختياري لكن مهم للتنبؤ المبكر</summary>
+                    <div style="padding:0 9px 9px;">
                     <div id="d_clinicalSignsGroups"></div>
                     <div class="field full" style="margin-top:6px;"><label>نسبة الطيور المتأثرة تقريبًا</label>
                         <select id="d_clinicalAffectedPct" onchange="updateClinicalPredictionPreview()">
@@ -1778,7 +2023,8 @@
                         <div id="d_clinical_audio_preview" style="margin-top:6px;"></div>
                     </div>
                     <div id="d_clinicalPredictionBox" style="margin-top:8px;"></div>
-                </div>
+                    </div>
+                </details>
                 <div class="field-group-title">💧 جودة مياه الشرب (اختياري)</div>
                 <div class="field"><label>pH الماء</label><input id="d_waterPh" type="number" inputmode="decimal" step="0.1" min="0" max="14" placeholder="6-8 مثالي"></div>
                 <div class="field"><label>الملوحة/الأملاح الذائبة TDS (ppm)</label><input id="d_waterSalinity" type="number" inputmode="decimal" step="10" placeholder="أقل من 1500 مثالي" min="0"></div>
@@ -2604,7 +2850,7 @@
         }
         function confBadgeHtml(n, opts) {
             const c = confBadge(n, opts);
-            const color = c.level === 'green' ? 'var(--green)' : (c.level === 'mid' ? '#c9a227' : 'var(--muted)');
+            const color = c.level === 'green' ? 'var(--green)' : (c.level === 'mid' ? 'var(--warning-text)' : 'var(--muted)');
             return `<span style="display:inline-block;font-size:10px;font-weight:700;color:${color};background:${c.level==='green'?'rgba(52,168,83,.1)':(c.level==='mid'?'rgba(201,162,39,.12)':'rgba(0,0,0,.05)')};border-radius:8px;padding:1px 7px;">${c.icon} ${c.label}</span>`;
         }
         // ============ مؤشر أداء الدورة الموحّد (0-100) + الترتيب (Rank) بين كل دوراتك المؤرشفة لنفس النوع ============
@@ -4143,6 +4389,36 @@
         const MIN_VENT_CFM_PER_BIRD_BY_WEEK = [0.10, 0.25, 0.35, 0.50, 0.65, 0.70, 0.80, 0.90];
         const CFM_TO_M3H = 1.699; // 1 قدم³/دقيقة = 1.699 م³/ساعة
         const STANDARD_FAN_M3H = 17000; // مروحة قياسية 36 بوصة، سعة تقريبية 10,000 قدم³/دقيقة
+        // ============ 💧 جدولة سقاية الماء بفترات اليوم (Water Period Scheduling) ============
+        // الفكرة: بدل إضافة ماء واحدة تغطي الـ24 ساعة، اليوم بينقسم لعدد فترات يحدده المربي (2/3/4/6...)
+        // بعدد ساعات متساوٍ لكل فترة، وكل فترة ليها إضافة/جرعة مستقلة تمامًا عن باقي الفترات. الجدول
+        // نفسه ممكن يتغيّر مع تقدّم عمر الدفعة (مثلاً يبدأ بـ3 فترات فى الأسبوع الأول ويبقى 4 بعد كده)
+        // — بنفس فكرة b.feedTransitions (نسخ متعددة، كل واحدة ليها startAge، وبنستخدم الأحدث اللي
+        // startAge بتاعها ≤ عمر النهاردة).
+        function computeEqualPeriods(periodCount) {
+            const n = Math.max(1, Math.min(24, Math.round(periodCount || 1)));
+            const base = Math.floor(24 / n);
+            const remainder = 24 - base * n; // لو 24 مش قابلة للقسمة بالظبط (مثلاً 5 فترات = 4,5,5,5,5)، نوزّع الساعة الزيادة على أول فترات
+            const periods = [];
+            let cursor = 0;
+            for (let i = 0; i < n; i++) {
+                const hours = base + (i < remainder ? 1 : 0);
+                periods.push({ startHour: cursor, endHour: cursor + hours, hours });
+                cursor += hours;
+            }
+            return periods;
+        }
+        function formatHourRange(startHour, endHour) {
+            const fmt12 = h => { const hh = ((h % 24) + 24) % 24; const period = hh < 12 ? 'ص' : 'م'; const h12 = hh % 12 === 0 ? 12 : hh % 12; return `${h12.toLocaleString('ar-EG')}:٠٠ ${period}`; };
+            return endHour >= 24 ? `${fmt12(startHour)} - ١٢:٠٠ ص` : `${fmt12(startHour)} - ${fmt12(endHour)}`;
+        }
+        // الجدول النشط النهارده = آخر نسخة startAge بتاعها ≤ العمر الحالي (زي منطق getRefsForDay/feedTransitions تمامًا)
+        function getActiveWaterSchedule(b, age) {
+            const schedules = (b.waterSchedules || []).filter(s => s.startAge <= age);
+            if (!schedules.length) return null;
+            return schedules.reduce((best, s) => (s.startAge > best.startAge ? s : best));
+        }
+
         function computeMinVentTarget(age, liveCount) {
             if (!(liveCount > 0)) return null;
             const weekIdx = Math.min(8, Math.max(1, Math.ceil(age / 7))) - 1;
@@ -5736,15 +6012,6 @@
             const sig = dangerOnly.map(a => a.text).join('|');
             if (dangerOnly.length && sig !== lastDangerAlertSignatures[batchId]) {
                 vibrate([50, 40, 50]);
-                // ⚡ (جديد) إشعار فوري (نفس نظام showKatkotNotification الموجود أصلاً لمواعيد الإضافات/المعاملات)
-                // لكل تنبيه خطر جديد فعليًا (مش كل التنبيهات الخطرة القديمة اللي لسه موجودة من قبل) —
-                // بنقارن بالتوقيع القديم عشان مانزعجش المستخدم بنفس التنبيه تاني كل ما الصفحة تعمل render
-                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                    const prevTexts = new Set((lastDangerAlertSignatures[batchId] || '').split('|'));
-                    const b = state.batches.find(x => x.id === batchId);
-                    dangerOnly.filter(a => !prevTexts.has(a.text)).forEach(a =>
-                        showKatkotNotification('🔴 تنبيه خطر — كتكوت برو', `${b ? b.name + ': ' : ''}${a.text}`, 'danger_' + a.key));
-                }
             }
             lastDangerAlertSignatures[batchId] = sig;
         }
@@ -6292,7 +6559,7 @@
             const suggestedCount = Math.round((sug.density * area) / (targetWeight / 1000));
             box.style.display = '';
             box.innerHTML = `⚖️📊 كثافة مقترحة بناءً على متوسط أفضل ${sug.sampleUsed} دورات (EPEF متوسط ${fmt(sug.epef,0)}) فى دوراتك السابقة (${sug.basedOn}، ${sug.count} دورة إجمالًا): <b>${fmt(sug.density,1)} كجم/م²</b> عند وزن البيع المستهدف
-                ${sug.wasCapped ? `<br><span style="color:#c9a227;">⚠️ تم تقييدها عند الحد الآمن (${fmt(capDensity,1)} كجم/م²) لنظام التهوية/الأرضية المختار — أداؤك التاريخي كان أعلى لكنه يتخطى الحد الآمن الموصى به لهذا الإعداد</span>` : ''}
+                ${sug.wasCapped ? `<br><span style="color:var(--warning-text);">⚠️ تم تقييدها عند الحد الآمن (${fmt(capDensity,1)} كجم/م²) لنظام التهوية/الأرضية المختار — أداؤك التاريخي كان أعلى لكنه يتخطى الحد الآمن الموصى به لهذا الإعداد</span>` : ''}
                 → يقترح استلام <b>${fmt(suggestedCount,0)}</b> كتكوت/صغير لمساحة ${fmt(area,1)} م² (بافتراض نفوق طبيعي حتى نهاية الدورة).
                 <button type="button" class="btn ghost sm" style="margin-top:6px;" onclick="document.getElementById('b_count').value=${suggestedCount};showToast('✅ تم تعبئة العدد المقترح')">استخدم هذا العدد</button>`;
         }
@@ -6905,7 +7172,7 @@
             const box = document.getElementById('d_photo_preview');
             if (!box) return;
             box.innerHTML = dailyPhotoDataArr.length
-                ? dailyPhotoDataArr.map((src, i) => `<div style="position:relative;display:inline-block;margin:0 6px 6px 0;"><img src="${src}" style="max-width:110px;max-height:110px;border-radius:8px;border:1px solid var(--line);"><button type="button" class="btn danger sm" style="position:absolute;top:-8px;left:-8px;padding:2px 7px;" onclick="removeDailyPhoto(${i})">🗑️</button></div>`).join('')
+                ? dailyPhotoDataArr.map((src, i) => `<div style="position:relative;display:inline-block;margin:0 6px 6px 0;"><img src="${src}" style="max-width:110px;max-height:110px;border-radius:8px;border:1px solid var(--line);"><button type="button" class="btn danger xs" style="position:absolute;top:-8px;left:-8px;" onclick="removeDailyPhoto(${i})">🗑️</button></div>`).join('')
                     + (dailyPhotoDataArr.length < MAX_DAILY_PHOTOS ? `<div style="font-size:10.5px;color:var(--muted);">يمكن إضافة ${MAX_DAILY_PHOTOS - dailyPhotoDataArr.length} صورة أخرى</div>` : '')
                 : '';
         }
@@ -6958,7 +7225,7 @@
             const box = document.getElementById('d_clinical_photo_preview');
             if (!box) return;
             box.innerHTML = clinicalPhotoDataArr.length
-                ? clinicalPhotoDataArr.map((src, i) => `<div style="position:relative;display:inline-block;margin:0 6px 6px 0;"><img src="${src}" style="max-width:110px;max-height:110px;border-radius:8px;border:1px solid var(--line);"><button type="button" class="btn danger sm" style="position:absolute;top:-8px;left:-8px;padding:2px 7px;" onclick="removeClinicalPhoto(${i})">🗑️</button></div>`).join('')
+                ? clinicalPhotoDataArr.map((src, i) => `<div style="position:relative;display:inline-block;margin:0 6px 6px 0;"><img src="${src}" style="max-width:110px;max-height:110px;border-radius:8px;border:1px solid var(--line);"><button type="button" class="btn danger xs" style="position:absolute;top:-8px;left:-8px;" onclick="removeClinicalPhoto(${i})">🗑️</button></div>`).join('')
                 : '';
         }
         function removeClinicalPhoto(i) { clinicalPhotoDataArr.splice(i, 1); renderClinicalPhotoPreview(); document.getElementById('d_clinical_photo_input').value = ''; }
@@ -7047,6 +7314,10 @@
             renderClinicalPhotoPreview();
             clinicalAudioDataUrl = s.respiratoryAudio || null;
             renderClinicalAudioPreview();
+            // 🔧 لو السجل بتاع يوم اتسجّل فيه أعراض/صورة/صوت قبل كده، افتح القسم تلقائيًا (بدل ما يتخبى جوّه
+            // details مطوية ومايلاحظش المستخدم إن فيه بيانات موجودة أصلاً وقت المراجعة أو التعديل)
+            const sectionEl = document.getElementById('d_clinicalSection');
+            if (sectionEl && (s.photos || s.respiratoryAudio || Object.keys(s).some(k => k !== 'affectedPct' && (s[k] || []).length))) sectionEl.open = true;
         }
         // معاينة حية للتوقع الاستباقي أثناء تعليم الأعراض — بتتحدّث فورًا من غير ما تحتاج حفظ السجل الأول
         function updateClinicalPredictionPreview() {
@@ -7100,6 +7371,8 @@
                 document.getElementById('d_cull_night').value = 0;
                 highlightHealthScale(null);
                 setClinicalSignsInForm(null);
+                const clinicalSectionEl = document.getElementById('d_clinicalSection');
+                if (clinicalSectionEl) clinicalSectionEl.open = false; // سجل جديد ← يفضل مطوي افتراضيًا لحد ما يتحدد فيه حاجة
                 document.getElementById('d_clinicalPredictionBox').innerHTML = '';
                 if (clinicalMediaRecorder && clinicalMediaRecorder.state === 'recording') clinicalMediaRecorder.stop();
                 ['d_mc_heat_day', 'd_mc_disease_day', 'd_mc_trample_day', 'd_mc_deform_day', 'd_mc_other_day',
@@ -7583,15 +7856,6 @@
             return TABS.filter(t => t.id !== 'settings' && perms.includes(t.id));
         }
 
-        // ⚡ (جديد) الانتقال من أي تنبيه مباشرة لمكان حله — بيستخدم actionTab/actionSubTab اللي حطهم
-        // categorizeAlert على كل تنبيه، فمفيش حاجة مكتوبة يدويًا لكل نوع تنبيه على حدة.
-        function goToAlertAction(actionTab, actionSubTab) {
-            if (!actionTab || !visibleTabs().some(t => t.id === actionTab)) return;
-            setState('activeTab', actionTab);
-            if (actionSubTab && actionTab === 'management') managementSubTab = actionSubTab;
-            persist(); render();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
         function setTab(id) {
             // ✅ تحقق موجود مسبقًا وسليم من ناحية المنطق — لكنه دفاع UI فقط (يمنع التنقل من الواجهة).
             // لا يمنع استدعاء دوال الحفظ مباشرة من الـ Console، لذلك التحصين الحقيقي انتقل لمستوى
@@ -8771,7 +9035,7 @@
             if (!file) return;
             compressImageFile(file, 800, 0.6, (dataUrl) => {
                 bioPhotoData = dataUrl;
-                document.getElementById('bio_photo_preview').innerHTML = `<div style="position:relative;display:inline-block;"><img src="${dataUrl}" style="max-width:140px;border-radius:8px;border:1px solid var(--line);"><button type="button" class="btn danger sm" style="position:absolute;top:-8px;left:-8px;padding:2px 7px;" onclick="bioPhotoData=null;document.getElementById('bio_photo_preview').innerHTML='';document.getElementById('bio_photo_input').value='';">🗑️</button></div>`;
+                document.getElementById('bio_photo_preview').innerHTML = `<div style="position:relative;display:inline-block;"><img src="${dataUrl}" style="max-width:140px;border-radius:8px;border:1px solid var(--line);"><button type="button" class="btn danger xs" style="position:absolute;top:-8px;left:-8px;" onclick="bioPhotoData=null;document.getElementById('bio_photo_preview').innerHTML='';document.getElementById('bio_photo_input').value='';">🗑️</button></div>`;
             });
         }
         function saveBiosecurity() {
@@ -9943,6 +10207,76 @@
             showToast(historyWarning || 'تمت إضافة إضافة المياه ✅');
         }
 
+        // ============ 💧 جدولة سقاية الماء بفترات اليوم — الدوال المُغيّرة للبيانات ============
+        function addWaterSchedule(startAge, periodCount) {
+            if (!requirePermission('management')) return; // مطابق لنمط feedTransitions/protocols
+            const b = getActiveBatch();
+            if (!b) return;
+            startAge = Math.max(1, parseInt(startAge) || 1);
+            const periods = computeEqualPeriods(periodCount).map((p, i) => ({
+                id: 'wp_' + Date.now() + '_' + i, startHour: p.startHour, endHour: p.endHour,
+                additiveName: '', dose: 0, unit: 'جم/لتر', notes: ''
+            }));
+            if (!b.waterSchedules) b.waterSchedules = [];
+            if (b.waterSchedules.some(s => s.startAge === startAge)) { showToast('⚠️ فيه جدول بيبدأ من نفس اليوم ده بالفعل — عدّله بدل ما تضيف واحد جديد'); return; }
+            b.waterSchedules.push({ id: 'ws_' + Date.now(), startAge, periods });
+            b.waterSchedules.sort((a, c) => a.startAge - c.startAge);
+            persist();
+            render();
+            showToast(`✅ اتضاف جدول سقاية جديد من يوم ${startAge} بـ${periods.length} فترات`);
+        }
+        function removeWaterSchedule(id) {
+            if (!requirePermission('management')) return;
+            const b = getActiveBatch();
+            if (!b) return;
+            showConfirm('سيتم حذف نسخة الجدول دي بالكامل. متأكد؟', () => {
+                b.waterSchedules = (b.waterSchedules || []).filter(s => s.id !== id);
+                persist();
+                render();
+                showToast('تم الحذف');
+            });
+        }
+        function updateWaterSchedulePeriod(scheduleId, periodId, field, value) {
+            if (!requirePermission('management')) return;
+            const b = getActiveBatch();
+            if (!b) return;
+            const sch = (b.waterSchedules || []).find(s => s.id === scheduleId);
+            const per = sch && sch.periods.find(p => p.id === periodId);
+            if (!per) return;
+            if (field === 'dose') per.dose = parseFloat(value) || 0;
+            else if (field === 'additiveName') per.additiveName = String(value || '').trim();
+            else if (field === 'unit') per.unit = value;
+            else if (field === 'notes') per.notes = String(value || '').trim();
+            persist();
+            // ⚡ تحسين أداء (نفس نمط المرحلة 1): تحديث كارت الجدول لوحده بدل هدم تبويب الإنتاج كامل
+            refreshWaterScheduleBox();
+        }
+        // تنفيذ/تأشير فترة سقاية بعينها كـ"تمت النهارده" — نفس نمط toggleVaccine/toggleAdditive
+        function toggleWaterPeriodDone(scheduleId, periodId) {
+            if (!requirePermission('production')) return;
+            const b = getActiveBatch();
+            if (!b) return;
+            if (!b.waterScheduleLog) b.waterScheduleLog = [];
+            const dateStr = todayStr();
+            const existing = b.waterScheduleLog.find(l => l.date === dateStr && l.periodId === periodId);
+            if (existing) existing.done = !existing.done;
+            else b.waterScheduleLog.push({ date: dateStr, scheduleId, periodId, done: true });
+            persist();
+            refreshWaterScheduleBox();
+            vibrate(30);
+        }
+        function isWaterPeriodDoneToday(b, periodId) {
+            const dateStr = todayStr();
+            return !!(b.waterScheduleLog || []).find(l => l.date === dateStr && l.periodId === periodId && l.done);
+        }
+        // ⚡ تحديث جزئي — نفس نمط refreshVaccineListBox/refreshFeedAdditiveListBox
+        function refreshWaterScheduleBox() {
+            const box = document.getElementById('waterScheduleBox');
+            const b = getActiveBatch();
+            if (box && b) box.innerHTML = renderWaterScheduleCard(b);
+            else render();
+        }
+
         function editWaterAdditive(id) {
             if (!requirePermission('owner')) return; // 🔒 Red Team fix
             const b = getActiveBatch();
@@ -10175,6 +10509,41 @@
         // هنا بنخزّن النتيجة أول مرة تتحسب، ونعيد استخدامها طول ما بصمة بيانات الدورة (بصمة خفيفة جدًا) لم تتغيّر.
         // لو عدّلت/حذفت أي سجل أو مشترى أو بيع فى دورة مؤرشفة، البصمة بتتغيّر تلقائيًا فيُعاد الحساب مرة واحدة فقط ثم يُخزَّن الجديد.
         const _cycleCache = new Map(); // batch.id -> { fp, metrics, finance }
+        // ============ 🎨 دالة مشتركة (كانت مكررة حرفيًا فى مكانين: لوحة التحكم وتبويب البيئة) ============
+        function waterFeedDeviationColor(deviationPct) {
+            return deviationPct != null && deviationPct >= 15 ? 'var(--red)' : (deviationPct != null && deviationPct >= 8 ? 'var(--warning-text)' : 'var(--green)');
+        }
+
+        // ============ 💧 حساب الهادر التقديري من مياه الشرب (Water Waste Estimate) ============
+        // الفكرة: نقارن الاستهلاك الفعلي المسجَّل يوميًا (waterDay+waterNight) بالاستهلاك المتوقع
+        // حسب نسبة الماء:العلف المرجعية للسلالة (لتر ماء متوقع = كمية العلف المُستهلكة × النسبة
+        // المرجعية). أي زيادة فوق المتوقع = "هادر تقديري" — لكن **مش كل زيادة تسريب بالضرورة**:
+        // ممكن تكون إجهاد حراري أو بداية مرض (نفس المؤشر المستخدم فى waterFeedAnalysis) — عشان كده
+        // النتيجة بتترجع مع توصية صريحة تراجع الحرارة والصحة الأول قبل ما تفتكرها تسريب فى النيبل درينكرز.
+        function computeWaterWasteAnalysis(b, m) {
+            m = m || computeMetrics(b);
+            const spRef = getSpeciesData(b.species);
+            const refWfr = spRef ? spRef.waterFeedRatio : null;
+            if (!refWfr) return null;
+            const series = (b.records || []).filter(r => r.water != null && r.feed != null && r.feed > 0)
+                .map(r => ({ age: r.age, date: r.date, water: r.water, feed: r.feed,
+                    expected: r.feed * refWfr,
+                    waste: Math.max(0, r.water - r.feed * refWfr) }));
+            if (series.length < 3) return { hasEnoughData: false, refWfr };
+            const totalWaste = series.reduce((s, r) => s + r.waste, 0);
+            const totalActual = series.reduce((s, r) => s + r.water, 0);
+            const avgDailyWaste = totalWaste / series.length;
+            const last3 = series.slice(-3);
+            const recentAvgWaste = last3.reduce((s, r) => s + r.waste, 0) / last3.length;
+            const wastePct = totalActual > 0 ? (totalWaste / totalActual) * 100 : 0;
+            const today = series[series.length - 1];
+            return {
+                hasEnoughData: true, refWfr, series, totalWaste, avgDailyWaste, recentAvgWaste,
+                wastePct, todayWaste: today ? today.waste : null, todayDate: today ? today.date : null,
+                daysCounted: series.length
+            };
+        }
+
         function _cycleFingerprint(b) {
             let sum = 0, n = 0;
             for (const r of b.records) { sum += (r.age || 0) * 7 + (r.mort || 0) * 13 + (r.cull || 0) * 17 + (r.feed || 0) * 19 + (r.water || 0) * 23 + (r.weight || 0) * 29; n++; }
@@ -10485,7 +10854,7 @@
             const sig = r != null ? pearsonSignificant(r, n) : null;
             if (sig === false) return `<span style="color:var(--muted);font-weight:700;">⚪ العدد لسه قليل (${n} قراءة) — ممكن يكون صدفة، استنى شوية</span>`;
             if (n >= 15) return `<span style="color:var(--green);font-weight:700;">🟢 بيانات كفاية (${n} قراءة)</span>`;
-            if (n >= 8) return `<span style="color:#c9a227;font-weight:700;">🟡 بيانات متوسطة (${n} قراءة)</span>`;
+            if (n >= 8) return `<span style="color:var(--warning-text);font-weight:700;">🟡 بيانات متوسطة (${n} قراءة)</span>`;
             return `<span style="color:var(--muted);font-weight:700;">⚪ بداية بس (${n} قراءة)</span>`;
         }
 
@@ -10496,13 +10865,16 @@
             if (!b.dismissedAlerts) b.dismissedAlerts = {};
             b.dismissedAlerts[key] = todayStr();
             persist(); render();
-            showToast('تمام ✅ هتفضل مخفية لحد بكرة، ولو المشكلة لسه موجودة هتظهر تاني');
+            showToast('اتأجلت لحد بكرة 🔕 — ولو المشكلة لسه موجودة هتظهر تاني');
         }
-        // زرار "خلصت منها" + زرار فعل اختياري (label + onclick) — يتحطوا فى آخر كل كارت بقسم "يحتاج انتباه الآن"
+        // ============ لغة موحّدة للأزرار فى كل التنبيهات/التحليلات (توحيد بصري 2026): ============
+        // فيه فرق واضح دلوقتي بين نوعين: "فعل حقيقي" (زرار دهبي بارز — بينفّذ حاجة فعلية وبيتسجّل)
+        // مقابل "تأجيل" (زرار رمادي خافت 🔕 — بيخفي البطاقة لحد بكرة بس، مفيش أي ادّعاء إنها اتحلت).
+        // ده بديل "✓ خلصت منها" اللي كانت بتوهم المستخدم إنه حل المشكلة رغم إنها بترجع تاني لو لسه موجودة.
         function insightActions(key, actionLabel, actionOnclick) {
             return `<div class="row-actions" style="margin-top:8px;gap:6px;">
-                ${actionLabel ? `<button class="btn ghost sm" style="flex:1;" onclick="${actionOnclick}">${actionLabel}</button>` : ''}
-                <button class="btn ghost sm" style="flex:1;background:#eef1f6;" onclick="dismissInsight('${key}')">✓ خلصت منها</button>
+                ${actionLabel ? `<button class="btn gold sm" style="flex:1;" onclick="${actionOnclick}">${actionLabel}</button>` : ''}
+                <button class="btn ghost sm muted-snooze" style="flex:${actionLabel ? '0 0 auto' : '1'};" onclick="dismissInsight('${key}')" title="بيخفيها لحد بكرة بس — مش معناها إنها اتحلت">🔕 تأجيل</button>
             </div>`;
         }
 
@@ -10572,17 +10944,16 @@
             showToast('تمام ✅ اتسجّلت كمنفذة');
         }
         function alertRowHtml(a) {
+            // ============ نفس لغة الأزرار الموحّدة زي insightActions: دهبي = فعل حقيقي مُسجَّل، رمادي 🔕 = تأجيل بس ============
             const actionBtn = a.planKey
-                ? `<button class="btn ghost sm" style="flex-shrink:0;padding:3px 8px;" onclick="markPlanDone('${a.planKey}')" title="نفّذتها">✓ نفّذتها</button>`
-                : `<button class="btn ghost sm" style="flex-shrink:0;padding:3px 8px;" onclick="dismissAlert('${a.key}')" title="كتم لحد بكرة">🔕</button>`;
+                ? `<button class="btn gold xs" style="flex-shrink:0;" onclick="markPlanDone('${a.planKey}')" title="نفّذتها">✓ نفّذتها</button>`
+                : `<button class="btn ghost xs muted-snooze" style="flex-shrink:0;" onclick="dismissAlert('${a.key}')" title="بيخفيه لحد بكرة بس — مش معناها إنه اتحل">🔕 تأجيل</button>`;
             // ============ 🔴 إصلاح Red Team (مدموج): شارة شفافية توضّح إن التنبيه أخذ أولوية أقل فى "أهم 3 أفعال" ============
             // لأنه اتكتم كتير قبل كده، بدل ما يبقى تصرّف مخفي فى الخوارزمية من غير ما تعرف السبب.
             const fatigueBadge = (a.level === 'warn' && a.dismissCount >= 3)
                 ? `<span style="font-size:9.5px;color:var(--muted);flex-shrink:0;" title="كتمته ${a.dismissCount} مرة قبل كده — بياخد أولوية أقل فى أهم 3 أفعال">🔕×${a.dismissCount}</span>` : '';
-            // ⚡ (جديد) النص نفسه قابل للضغط — يوديك لتبويب/تبويب فرعي حل المشكلة مباشرة، بدل ما تدور بنفسك
-            const clickable = a.actionTab ? ` onclick="goToAlertAction('${a.actionTab}','${a.actionSubTab || ''}')" style="flex:1;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;"` : ' style="flex:1;"';
             return `<div class="alert-item ${a.level}" style="display:flex;align-items:center;gap:6px;justify-content:space-between;">
-                <span${clickable}>${esc(a.text)}</span>
+                <span style="flex:1;">${esc(a.text)}</span>
                 ${fatigueBadge}
                 ${actionBtn}
             </div>`;
@@ -10608,7 +10979,7 @@
                 html = `<div class="empty"><div class="ico">✅</div>لا توجد تنبيهات حالية.</div>`;
             }
             if (dismissedToday.length) {
-                html += `<details class="alert-group" style="margin-top:6px;"><summary style="cursor:pointer;padding:8px 10px;font-size:12px;color:var(--muted);">🔕 ${dismissedToday.length} تم كتمها اليوم — اضغط للعرض</summary>${dismissedToday.map(a => `<div class="alert-item ${a.level}" style="opacity:.6;display:flex;align-items:center;gap:6px;justify-content:space-between;"><span style="flex:1;">${esc(a.text)}</span><button class="btn ghost sm" style="flex-shrink:0;padding:3px 8px;" onclick="undismissAlert('${a.key}')">↩️ إظهار</button></div>`).join('')}</details>`;
+                html += `<details class="alert-group" style="margin-top:6px;"><summary style="cursor:pointer;padding:8px 10px;font-size:12px;color:var(--muted);">🔕 ${dismissedToday.length} تم كتمها اليوم — اضغط للعرض</summary>${dismissedToday.map(a => `<div class="alert-item ${a.level}" style="opacity:.6;display:flex;align-items:center;gap:6px;justify-content:space-between;"><span style="flex:1;">${esc(a.text)}</span><button class="btn ghost xs" style="flex-shrink:0;" onclick="undismissAlert('${a.key}')">↩️ إظهار</button></div>`).join('')}</details>`;
             }
             return html;
         }
@@ -12654,44 +13025,6 @@
             }
             return alerts;
         }
-        // ============ تصنيف كل تنبيه لمجال (نفس مجالات computeUnifiedPriorities: إنتاج/مالية/تشغيل/بيئة) +
-        // تحديد مكان الحل (تبويب/تبويب فرعي) — يشتغل على أي تنبيه من الـ60+ نوع بدون لمس منطق التوليد نفسه.
-        // مبني على الأيقونة اللي فى أول كل نص (كل تنبيهات الكود متسقة فى استخدام أيقونة مميزة فى البداية)
-        // مع كلمات مفتاحية للحالات اللي الأيقونة نفسها بتتشارك بين أكتر من مجال (زي 📊 و📦 و🔥). ============
-        function categorizeAlert(text) {
-            const t = String(text || '');
-            // 📊 مشترك بين عدة حقول Z-score — التفرقة بالكلمة نفسها
-            if (t.startsWith('📊')) {
-                if (t.includes('العلف')) return { domain: 'production', actionTab: 'daily', actionSubTab: null };
-                if (t.includes('الماء') || t.includes('ماء')) return { domain: 'production', actionTab: 'daily', actionSubTab: null };
-                if (t.includes('حرارة')) return { domain: 'weather', actionTab: 'daily', actionSubTab: null };
-                return { domain: 'production', actionTab: 'daily', actionSubTab: null };
-            }
-            // 🔥 مشترك بين "توسعة التحضين" (تشغيل) و"موجة حرارة متوقعة" (بيئة)
-            if (t.startsWith('🔥')) {
-                if (t.includes('موجة')) return { domain: 'weather', actionTab: 'daily', actionSubTab: null };
-                return { domain: 'ops', actionTab: 'daily', actionSubTab: null };
-            }
-            // 📦 مشترك بين "نواقص مخزون" (تشغيل/شراء) و"تعارض فترة سحب مع عمر البيع" (تشغيل/جدول)
-            if (t.startsWith('📦')) {
-                if (t.includes('سحب')) return { domain: 'ops', actionTab: 'daily', actionSubTab: null };
-                return { domain: 'ops', actionTab: 'management', actionSubTab: 'inventory' };
-            }
-            const rules = [
-                { re: /^💧/, domain: 'production', actionTab: 'daily' },
-                { re: /^🌾/, domain: 'production', actionTab: (t.includes('نفاذ') || t.includes('ناقص') || t.includes('مشتريات')) ? 'management' : 'daily', actionSubTab: (t.includes('نفاذ') || t.includes('ناقص') || t.includes('مشتريات')) ? 'inventory' : null },
-                { re: /^❄️/, domain: 'weather', actionTab: 'daily' },
-                { re: /^🌡️|^🧭|^🧠|^💀|^📏|^⚖️/, domain: 'production', actionTab: 'daily' },
-                { re: /^💰|^🎯|^💳/, domain: 'financial', actionTab: 'management', actionSubTab: 'finance' },
-                { re: /^💉|^🧴|^🍽️/, domain: 'ops', actionTab: 'daily' },
-                { re: /^✅|^🛡️|^🧹|^⚠️/, domain: 'ops', actionTab: 'daily' },
-                { re: /^📉/, domain: 'production', actionTab: 'daily' },
-            ];
-            const hit = rules.find(r => r.re.test(t));
-            if (hit) return { domain: hit.domain, actionTab: hit.actionTab, actionSubTab: hit.actionSubTab || null };
-            return { domain: 'ops', actionTab: 'daily', actionSubTab: null }; // احتياطي — نادرًا ما يتفعّل لو كل النصوص متسقة
-        }
-
         function computeAlerts(b, m) {
             const alerts = [];
             const cfg = AS();
@@ -13195,8 +13528,7 @@
                 }
             }
             alerts.forEach(a => { if (!a.key) a.key = alertKeyFromText(a.text); a.dismissed = isDismissedToday(b, 'alert_' + a.key);
-                a.dismissCount = (b.alertDismissCount && b.alertDismissCount[a.key]) || 0;
-                Object.assign(a, categorizeAlert(a.text)); }); // ⚡ (جديد) تصنيف مجال + مكان الحل — يُستخدم فى العرض والأولويات الموحّدة والإشعارات
+                a.dismissCount = (b.alertDismissCount && b.alertDismissCount[a.key]) || 0; });
             logAlertHistory(b, alerts);
             return alerts;
         }
@@ -13532,7 +13864,7 @@
             score = Math.max(0, Math.min(100, Math.round(score)));
             let label, color;
             if (score >= 85) { label = '🟢 ممتازة'; color = 'var(--green)'; }
-            else if (score >= 65) { label = '🟡 جيدة، تحتاج انتباه بسيط'; color = '#c9a227'; }
+            else if (score >= 65) { label = '🟡 جيدة، تحتاج انتباه بسيط'; color = 'var(--warning-text)'; }
             else if (score >= 45) { label = '🟠 تحتاج متابعة عاجلة'; color = '#e08a2b'; }
             else { label = '🔴 حرجة — تدخّل فوري'; color = 'var(--red)'; }
             factors.sort((a, c) => c.weight - a.weight);
@@ -13545,7 +13877,7 @@
         // كل إشارة متعلّمة بالمجال اللي جاية منه ودرجة الإلحاح (اليوم / هذا الأسبوع / مراقبة) عشان الأولوية تبقى مفهومة فورًا.
         function computeUnifiedPriorities(b, m, fin, alerts, ins, ops, hs, saleAdv) {
             const items = [];
-            const push = (domain, icon, text, weight, actionTab, actionSubTab, alertKey) => items.push({ domain, icon, text, weight, actionTab: actionTab || 'daily', actionSubTab: actionSubTab || null, alertKey: alertKey || null });
+            const push = (domain, icon, text, weight) => items.push({ domain, icon, text, weight });
 
             // --- 🌱 إنتاج: من نفس عوامل مؤشر الصحة (نفوق/وزن/اتجاه/تجانس/سبب النفوق)، مع فرز عوامل التشغيل لقسمها الخاص ---
             hs.factors.forEach(f => {
@@ -13588,19 +13920,23 @@
                 }
             }
 
-            // --- 💰 مالية + 🌡️ بيئة/طقس + 🛡️/📦 تشغيل: كل تنبيهات الخطر/التحذير غير المكتومة — بمجالها المصنَّف
-            // من categorizeAlert (بدل المطابقة النصية المحدودة اللي كانت بتلقط 3 أنماط بس من 60+ نوع تنبيه) ---
+            // --- 💰 مالية + 🌡️ بيئة/طقس + 🛡️ تشغيل: نلتقطها من alerts المحسوبة أصلاً بمطابقة نصية دقيقة (بدون إعادة حساب المنطق) ---
+            const domainRules = [
+                { re: /تكلفة كيلو اللحم|مستحق سداد|مستحق تحصيل/, domain: 'financial', icon: '💰' },
+                { re: /الإجهاد البيئي|ثاني أكسيد الكربون|الطقس المتوقع/, domain: 'weather', icon: '🌡️' },
+                { re: /نواقص فى المخزن/, domain: 'ops', icon: '📦' },
+            ];
             alerts.forEach(a => {
                 if (a.level !== 'danger' && a.level !== 'warn') return;
                 if (a.dismissed) return; // المستخدم كتمها اليوم بنفسه — منعرضهاش كأولوية عاجلة تانى
-                const domain = a.domain || 'ops';
-                const icon = { production: '🌱', financial: '💰', weather: '🌡️', ops: '🛡️' }[domain] || '🛡️';
+                const rule = domainRules.find(r => r.re.test(a.text));
+                if (!rule) return;
                 let w = a.level === 'danger' ? 8 : 5;
                 // ============ 🔴 إصلاح Red Team (مدموج): حلقة تغذية راجعة لإجهاد التنبيهات (Alert Fatigue) ============
                 // تحذير اتكتم كتير قبل كده ياخد أولوية أقل فى "أهم 3 أفعال" — بدون ما يختفي من قائمة التنبيهات
                 // الكاملة. تنبيهات "الخطر" مستثناة عمدًا وبتفضل بأولويتها الكاملة دايمًا لأنها سلامة/مخاطرة حرجة.
                 if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
-                push(domain, icon, a.text.replace(/^\S+\s*/, ''), w, a.actionTab, a.actionSubTab, a.key);
+                push(rule.domain, rule.icon, a.text.replace(/^\S+\s*/, ''), w);
             });
 
             const seen = new Set();
@@ -13648,54 +13984,54 @@
             // ============ كارت "مؤشر أداء الدورة" الموحّد — رقم واحد (0-100) + ترتيب (Rank) بين كل دوراتك المؤرشفة لنفس النوع ============
             const perfRank = computeFarmPerformanceRank(b, m, fin);
             const perfScoreCardHtml = (() => {
-                if (!perfRank) return `<div class="card" style="margin-bottom:14px;padding:12px;text-align:center;">
-                        <div style="font-size:12px;font-weight:800;">🏅 مؤشر أداء الدورة + الترتيب</div>
-                        <div style="font-size:11px;color:var(--muted);margin-top:4px;">يظهر تلقائيًا لما يكون عندك 3 دورات مؤرشفة على الأقل لنفس النوع بعمر 20 يوم فأكثر (رُفع الحد من دورتين لـ3 عشان النسب المعروضة تبقى موثوقة إحصائيًا) — كل ما أرشفت دورات أكتر كل ما كان الترتيب أدق</div>
+                if (!perfRank) return `<div class="card perf-score-card" style="text-align:center;">
+                        <div class="title">🏅 مؤشر أداء الدورة + الترتيب</div>
+                        <div class="foot-note">يظهر تلقائيًا لما يكون عندك 3 دورات مؤرشفة على الأقل لنفس النوع بعمر 20 يوم فأكثر (رُفع الحد من دورتين لـ3 عشان النسب المعروضة تبقى موثوقة إحصائيًا) — كل ما أرشفت دورات أكتر كل ما كان الترتيب أدق</div>
                     </div>`;
-                const scoreColor = perfRank.score >= 70 ? 'var(--green)' : (perfRank.score >= 40 ? '#c9a227' : 'var(--red)');
+                const scoreColor = perfRank.score >= 70 ? 'var(--green)' : (perfRank.score >= 40 ? 'var(--warning-text)' : 'var(--red)');
                 const rankBadge = perfRank.rank.position === 1
                     ? `🥇 أفضل دورة سجّلتها على الإطلاق (#1 من ${perfRank.rank.total})`
                     : `#${perfRank.rank.position} من ${perfRank.rank.total} دورة`;
                 const rows = perfRank.breakdown.map(x => {
-                    const c = x.pct >= 70 ? 'var(--green)' : (x.pct >= 40 ? '#c9a227' : 'var(--red)');
+                    const c = x.pct >= 70 ? 'var(--green)' : (x.pct >= 40 ? 'var(--warning-text)' : 'var(--red)');
                     return `${statLine(`${x.label}`, `${x.pct}%`, {vStyle:`color:${c};font-weight:700;`})}`;
                 }).join('');
-                return `<div class="card" style="margin-bottom:14px;padding:12px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                return `<div class="card perf-score-card">
+                    <div class="head">
                         <div>
-                            <div style="font-size:12px;font-weight:800;">🏅 مؤشر أداء الدورة (مقارنة بتاريخك الخاص)</div>
-                            <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${rankBadge}</div>
+                            <div class="title">🏅 مؤشر أداء الدورة (مقارنة بتاريخك الخاص)</div>
+                            <div class="rank-badge">${rankBadge}</div>
                             <div style="margin-top:4px;">${confBadgeHtml(perfRank.sampleSize)}</div>
                         </div>
-                        <div style="position:relative;width:74px;height:74px;flex-shrink:0;">
-                            <svg width="74" height="74" viewBox="0 0 74 74" style="transform:rotate(-90deg);">
+                        <div class="perf-score-ring">
+                            <svg width="74" height="74" viewBox="0 0 74 74">
                                 <circle cx="37" cy="37" r="31" fill="none" stroke="var(--line)" stroke-width="7"/>
                                 <circle cx="37" cy="37" r="31" fill="none" stroke="${scoreColor}" stroke-width="7" stroke-linecap="round"
                                     stroke-dasharray="${2*Math.PI*31}" stroke-dashoffset="${2*Math.PI*31*(1-perfRank.score/100)}"/>
                             </svg>
-                            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                                <b style="font-size:20px;font-weight:900;color:${scoreColor};line-height:1;">${perfRank.score}</b>
-                                <span style="font-size:8.5px;color:var(--muted);font-weight:700;">من 100</span>
+                            <div class="ring-value">
+                                <b style="color:${scoreColor};">${perfRank.score}</b>
+                                <span>من 100</span>
                             </div>
                         </div>
                     </div>
-                    <div style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px;">${rows}</div>
-                    ${perfRank.absolute ? `<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px;">
-                        <div style="font-size:10.5px;font-weight:800;">📏 مرجع مطلق مستقل (معيار السلالة القياسي عند يوم ${perfRank.absolute.atAge}، مش تاريخك أنت)</div>
+                    <div class="rows-block">${rows}</div>
+                    ${perfRank.absolute ? `<div class="abs-block">
+                        <div class="abs-title">📏 مرجع مطلق مستقل (معيار السلالة القياسي عند يوم ${perfRank.absolute.atAge}، مش تاريخك أنت)</div>
                         ${statLine(`معدل التحويل مقابل المعيار القياسي`, `${perfRank.absolute.fcrDiffPct==null?'—':(perfRank.absolute.fcrDiffPct>=0?'+':'')+fmt(perfRank.absolute.fcrDiffPct,1)+'%'}`, {vStyle:`font-weight:700;color:${perfRank.absolute.fcrDiffPct==null?'var(--muted)':(perfRank.absolute.fcrDiffPct<=0?'var(--green)':'var(--red)')};`})}
-                        <div style="font-size:9.5px;color:var(--muted);margin-top:2px;">ده مش نسبي لتاريخك — ده مقارنة مباشرة بمنحنى العلف/الوزن الرسمي للسلالة، فمفيد حتى لو كل دوراتك السابقة كانت متوسطة الأداء</div>
+                        <div class="foot-note">ده مش نسبي لتاريخك — ده مقارنة مباشرة بمنحنى العلف/الوزن الرسمي للسلالة، فمفيد حتى لو كل دوراتك السابقة كانت متوسطة الأداء</div>
                     </div>` : ''}
-                    <div style="font-size:10px;color:var(--muted);margin-top:6px;">💡 النسبة بجانب كل مؤشر فوق = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ده ترتيب نسبي مقابل نفسك بس، مش مقياس عالمي مطلق (استخدم المرجع المطلق تحت لده).</div>
+                    <div class="foot-note">💡 النسبة بجانب كل مؤشر فوق = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ده ترتيب نسبي مقابل نفسك بس، مش مقياس عالمي مطلق (استخدم المرجع المطلق تحت لده).</div>
                 </div>`;
             })();
             // ============ مؤشر كثافة التسجيل: تحذير أعلى التحليلات لو التغطية اليومية ضعيفة، عشان يعرف المستخدم أن دقة كل التحليلات التالية محدودة بجودة تسجيله ============
             const recComp = computeRecordingCompleteness(b, m);
             const dataConf = computeDataConfidence(b, m);
             const recCompHtml = (recComp.expectedDays >= 5 && recComp.pct < 70) || dataConf ? `
-                <div class="card" style="margin-bottom:14px;padding:10px 12px;border:1px solid var(--red);background:#fff5f5;">
-                    ${(recComp.expectedDays >= 5 && recComp.pct < 70) ? `<div style="font-size:12px;font-weight:800;color:var(--red);">⚠️ تغطية تسجيل منخفضة: ${fmt(recComp.pct,0)}% فقط من أيام الدورة (${recComp.actualDays} من ${recComp.expectedDays} يوم) مُسجَّلة فعليًا</div>` : ''}
-                    ${dataConf ? `<div style="font-size:12px;font-weight:800;color:var(--red);${(recComp.expectedDays >= 5 && recComp.pct < 70) ? 'margin-top:6px;' : ''}">⚠️ فاتك تسجيل الوزن ${dataConf.missingWeight} من آخر ${dataConf.ofDays} أيام${dataConf.missingFeed?' والعلف '+dataConf.missingFeed+' يوم':''}</div>` : ''}
-                    <div style="font-size:11px;color:var(--muted);margin-top:2px;">التحليلات والتنبؤات بالأسفل أقل دقة مع تسجيل متقطع — سجّل يوميًا لأفضل النتائج</div>
+                <div class="card data-quality-warning">
+                    ${(recComp.expectedDays >= 5 && recComp.pct < 70) ? `<div class="line">⚠️ تغطية تسجيل منخفضة: ${fmt(recComp.pct,0)}% فقط من أيام الدورة (${recComp.actualDays} من ${recComp.expectedDays} يوم) مُسجَّلة فعليًا</div>` : ''}
+                    ${dataConf ? `<div class="line" style="${(recComp.expectedDays >= 5 && recComp.pct < 70) ? 'margin-top:6px;' : ''}">⚠️ فاتك تسجيل الوزن ${dataConf.missingWeight} من آخر ${dataConf.ofDays} أيام${dataConf.missingFeed?' والعلف '+dataConf.missingFeed+' يوم':''}</div>` : ''}
+                    <div class="hint">التحليلات والتنبؤات بالأسفل أقل دقة مع تسجيل متقطع — سجّل يوميًا لأفضل النتائج</div>
                 </div>` : '';
             // ============ (جديد) شفافية مصدر المرجع المعياري المستخدم فى المقارنة — عشان المستخدم يعرف بيتقارن بإيه بالظبط ============
             const refBreedKey = detectBreedKey(b.breed);
@@ -13718,7 +14054,7 @@
             // ============ توقّع FCR النهائي مبكرًا — يديك وقت تتدخل (تعديل تغذية/بيئة) قبل ما الدورة تخلص فعليًا ============
             const fcrPredHtml = !ins.fcrPrediction ? '' : (() => {
                 const fp = ins.fcrPrediction;
-                const diffColor = fp.diffPct == null ? 'inherit' : (fp.diffPct <= 0 ? 'var(--green)' : (fp.diffPct <= 8 ? '#c9a227' : 'var(--red)'));
+                const diffColor = fp.diffPct == null ? 'inherit' : (fp.diffPct <= 0 ? 'var(--green)' : (fp.diffPct <= 8 ? 'var(--warning-text)' : 'var(--red)'));
                 return `<div class="check-row"><div class="txt">
                     <div>🔮 FCR متوقَّع يوم ${fp.targetAge} (نهاية الدورة): <b style="color:${diffColor};">${fmt(fp.predictedFcr,2)}</b> ${fp.predictedFcrLow!=null?`<span style="color:var(--muted);font-weight:600;">(نطاق ${fmt(fp.predictedFcrLow,2)}–${fmt(fp.predictedFcrHigh,2)})</span>`:''} ${fp.stdFcrAtTarget?`(المعياري ${fmt(fp.stdFcrAtTarget,2)})`:''} ${predTrackRecord ? confBadgeHtml(predTrackRecord.cycles) : ''}</div>
                     <div class="day">مبني على نسبة أداء استهلاك العلف الفعلي مقارنة بمنحنى السلالة (${fmt(fp.feedPerfRatio*100,0)}% من معدل السلالة${fp.feedPerfRatioLong!=null?`، مزيج بين آخر أيام (${fmt(fp.feedPerfRatioShort*100,0)}%) وأداء الدورة كاملة (${fmt(fp.feedPerfRatioLong*100,0)}%)`:''}) + إسقاط النفوق بمعدل آخر 7 أيام${fp.diffPct!=null?` — ${fp.diffPct<=0?'أفضل من':'أعلى من'} المعياري بـ ${fmt(Math.abs(fp.diffPct),1)}%`:''}</div>
@@ -13727,15 +14063,14 @@
             })();
             // ============ 🎨 كارت قرار البيع البارز (خارج الأكورديون) — نفس بيانات saleHtml تحت لكن بواجهة مميزة لأنه أهم قرار عملي يومي ============
             const saleDecisionCardHtml = !saleAdv.osd ? '' : `
-            <div class="card" style="margin-bottom:14px;padding:16px;background:linear-gradient(135deg,var(--barn-dark),#152119);border:none;position:relative;overflow:hidden;">
-                <div style="position:absolute;font-size:80px;opacity:.08;left:-10px;top:-18px;transform:rotate(-15deg);">🌾</div>
-                <div style="position:relative;font-size:10.5px;color:var(--wheat-light);font-weight:700;">🎯 قرار البيع (حسب بورصة الدواجن)</div>
-                <div style="position:relative;font-family:inherit;font-weight:900;font-size:24px;color:var(--cream);margin-top:4px;">
-                    يوم <span style="color:var(--wheat);">${saleAdv.osd.optimalDay}</span>
+            <div class="card sale-decision-card">
+                <div class="eyebrow">🎯 قرار البيع (حسب بورصة الدواجن)</div>
+                <div class="headline">
+                    يوم <span class="day-num">${saleAdv.osd.optimalDay}</span>
                 </div>
-                ${saleAdv.osd.limitingFactor==='density'?'<div style="position:relative;font-size:11px;color:var(--wheat-light);font-weight:700;margin-top:2px;">⚠️ بسبب الكثافة/المساحة، قبل الحد الاقتصادي</div>':''}
-                <div style="position:relative;font-size:11px;color:rgba(250,247,238,.8);margin-top:8px;line-height:1.6;">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
-                <div style="position:relative;font-size:10px;color:rgba(250,247,238,.55);margin-top:6px;line-height:1.6;">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم${saleAdv.osd.priceSource==='market'?' (مُدخَل يدويًا)':' (من متوسط مبيعات سابقة)'} · ${saleAdv.osd.weightDataPoints} وزنة فعلية ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
+                ${saleAdv.osd.limitingFactor==='density'?'<div class="warn-line">⚠️ بسبب الكثافة/المساحة، قبل الحد الاقتصادي</div>':''}
+                <div class="advice-line">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
+                <div class="meta-line">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم${saleAdv.osd.priceSource==='market'?' (مُدخَل يدويًا)':' (من متوسط مبيعات سابقة)'} · ${saleAdv.osd.weightDataPoints} وزنة فعلية ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
             </div>`;
             // ============ قرار البيع: ملخص "نقطة البيع الاقتصادية المثلى" مبني على بورصة الدواجن + أداء القطيع الفعلي (نسخة الأكورديون التفصيلية) ============
             const saleHtml = !saleAdv.osd ? `<div class="check-row"><div class="txt">
@@ -13749,6 +14084,13 @@
                 </div></div>`;
             // ============ توقع الربح الحي للدورة — لو استمرت على نفس المنوال حتى يوم البيع الموصى به، يتحدّث تلقائيًا مع كل تسجيل جديد أو تغيير سعر البورصة ============
             const liveProfit = computeLiveProfitForecast(b, m, fin, saleAdv);
+            // ============ 🎨 كارت الربح الحي المصغّر (جنب كارت مؤشر الأداء فى dual-card-grid) — نفس بيانات liveProfitHtml تحت لكن ملخّص سريع بارز ============
+            const liveProfitCardHtml = !liveProfit ? '' : `<div class="stat-mini-card">
+                    <div class="title">💹🔮 توقع الربح الحي حتى يوم ${liveProfit.targetDay}</div>
+                    <div class="value" style="color:${liveProfit.projectedProfit>=0?'var(--green)':'var(--red)'};">${money(liveProfit.projectedProfit)}<small> / ${money(liveProfit.projectedProfitPerBird)} للطائر</small></div>
+                    <div class="caption">لو استمرت الدورة على نفس المنوال ${liveProfit.daysRemaining} يوم كمان</div>
+                    <div class="caption">${liveProfit.confidence==='green'?'🟢 مبني على بيانات وزن كافية':(liveProfit.confidence==='mid'?'🟡 دقة متوسطة — سجّل أوزان أكتر':'⚪ بيانات قليلة لسه — تقريبي')}</div>
+                </div>`;
             const liveProfitHtml = !liveProfit ? '' : `<div class="check-row"><div class="txt">
                     <div>💹🔮 توقع الربح الحي (لو استمرت الدورة لحد يوم البيع المُوصى به يوم ${liveProfit.targetDay}، بعد ${liveProfit.daysRemaining} يوم)</div>
                     <div class="day" style="margin-top:4px;"><b style="font-size:14px;color:${liveProfit.projectedProfit>=0?'var(--green)':'var(--red)'};">${money(liveProfit.projectedProfit)}</b> إجمالي الدورة، أو <b>${money(liveProfit.projectedProfitPerBird)}</b> لكل طائر</div>
@@ -13778,7 +14120,7 @@
             const corrLine = (label, corr, count, actionHint) => {
                 if (corr == null) return `<div class="check-row"><div class="txt"><div>${label}</div><div class="day">بيانات غير كافية بعد (${count} قراءة مسجّلة، يحتاج 5 على الأقل)</div></div></div>`;
                 const strength = Math.abs(corr) >= 0.5 ? 'قوي' : Math.abs(corr) >= 0.3 ? 'متوسط' : 'ضعيف';
-                const strengthColor = Math.abs(corr) >= 0.5 ? 'var(--red)' : Math.abs(corr) >= 0.3 ? '#c9a227' : 'var(--muted)';
+                const strengthColor = Math.abs(corr) >= 0.5 ? 'var(--red)' : Math.abs(corr) >= 0.3 ? 'var(--warning-text)' : 'var(--muted)';
                 const clear = Math.abs(corr) >= 0.3;
                 const direction = corr > 0 ? 'كلما ارتفعت القيمة، زاد النفوق معها' : 'كلما ارتفعت القيمة، قلّ النفوق معها';
                 const weakDetail = `أقرب ما توصّلنا له من بيانات هذه الدفعة: ارتباط ضعيف (r=${fmt(corr,2)}) ${corr>0?'موجب':'سالب'} — مش كافي للاعتماد عليه كنمط حقيقي (المطلوب r≥0.30 تقريبًا)، فضّل مراقبة العامل ده يدويًا لحد ما العدد يكبر`;
@@ -13845,7 +14187,7 @@
                 const eb = ins.envStressBest;
                 const clear = Math.abs(eb.corr) >= 0.3;
                 const strength = Math.abs(eb.corr) >= 0.5 ? 'قوي' : 'متوسط';
-                const strengthColor = Math.abs(eb.corr) >= 0.5 ? 'var(--red)' : '#c9a227';
+                const strengthColor = Math.abs(eb.corr) >= 0.5 ? 'var(--red)' : 'var(--warning-text)';
                 const lagTxt = eb.lag === 0 ? 'فى نفس اليوم' : (eb.lag === 1 ? 'بعد يوم واحد' : 'بعد يومين');
                 if (clear && isDismissedToday(b, 'envStress')) return '';
                 return `<div class="check-row"><div class="txt">
@@ -13961,7 +14303,7 @@
                 const u = getLatestUniformity(b);
                 if (!u) return '';
                 const label = u.cv <= 8 ? 'ممتاز' : (u.cv <= 12 ? 'متوسط' : 'ضعيف');
-                const color = u.cv <= 8 ? 'var(--green)' : (u.cv <= 12 ? '#c9a227' : 'var(--red)');
+                const color = u.cv <= 8 ? 'var(--green)' : (u.cv <= 12 ? 'var(--warning-text)' : 'var(--red)');
                 return `<div class="check-row"><div class="txt">
                         <div>📏 تجانس القطيع (يوم ${u.age}، عيّنة ${u.n} طائر): <b style="color:${color};">${label} (تفاوت ${fmt(u.cv,1)}%)</b></div>
                         <div class="day">${fmt(u.pctWithin10,0)}% من العيّنة وزنها قريب من المتوسط (±10% من ${fmt(u.mean,0)} جم) — كل ما زادت هذه النسبة كل ما كان القطيع أكثر تجانسًا. الهدف المعتاد: تفاوت أقل من 8%</div>
@@ -13980,7 +14322,7 @@
                 const ri = ins.riskIndex;
                 if (ri.level === 'ok') return '';
                 if (isDismissedToday(b, 'riskIndex')) return '';
-                const color = ri.level === 'danger' ? 'var(--red)' : ri.level === 'warn' ? '#c9a227' : 'var(--green)';
+                const color = ri.level === 'danger' ? 'var(--red)' : ri.level === 'warn' ? 'var(--warning-text)' : 'var(--green)';
                 const label = ri.level === 'danger' ? '🔴 مرتفع' : ri.level === 'warn' ? '🟡 متوسط' : '🟢 منخفض';
                 const reasonsHtml = ri.reasons.map(r => `<div style="padding:2px 0;">• ${r}</div>`).join('');
                 return `<div class="check-row" style="background:rgba(217,165,68,.06);"><div class="txt">
@@ -14054,7 +14396,7 @@
             const epefProj = computeEpefProjection(b, m);
             const epefProjHtml = !epefProj ? '' : (() => {
                 const vsBest = epefProj.bestEpef ? epefProj.projEpef - epefProj.bestEpef : null;
-                const color = vsBest == null ? 'var(--muted)' : (vsBest >= 0 ? 'var(--green)' : (vsBest >= -20 ? '#c9a227' : 'var(--red)'));
+                const color = vsBest == null ? 'var(--muted)' : (vsBest >= 0 ? 'var(--green)' : (vsBest >= -20 ? 'var(--warning-text)' : 'var(--red)'));
                 return `<div class="check-row"><div class="txt">
                     <div>🎯 EPEF نهائي متوقع (لو استمريت بنفس المعدل الحالي حتى يوم ${epefProj.targetAge}): <b style="color:${color};">${fmt(epefProj.projEpef,0)}</b> ${confBadgeHtml(epefProj.sampleSize)}</div>
                     <div class="day">وزن متوقع ${fmt(epefProj.projWeightKg*1000,0)} جم · بقاء متوقع ${fmt(epefProj.projLiveCountPct,1)}% · FCR بنفس المعدل الحالي ${fmt(epefProj.projFcr,2)}${epefProj.bestEpef ? ` — مقابل أفضل EPEF فعلي محقق سابقًا: ${fmt(epefProj.bestEpef,0)}` : ' (لا توجد دورة مؤرشفة سابقة للمقارنة بعد)'}</div>
@@ -14085,7 +14427,7 @@
             // ===== 3) مؤشر كفاءة اليوم =====
             const effScore = computeDailyEfficiencyScore(b, m);
             const effScoreHtml = effScore == null ? '' : (() => {
-                const color = effScore >= 80 ? 'var(--green)' : effScore >= 60 ? '#c9a227' : 'var(--red)';
+                const color = effScore >= 80 ? 'var(--green)' : effScore >= 60 ? 'var(--warning-text)' : 'var(--red)';
                 return `<div class="check-row"><div class="txt">
                     <div>⚡ مؤشر كفاءة اليوم المركّب${glossHtml('dailyEfficiency')}: <b style="color:${color};font-size:16px;">${effScore}/100</b></div>
                     <div class="day">يجمع النمو والعلف والنفوق والبيئة فى رقم واحد — كل ما اقترب من 100 كل ما اليوم كان مطابق للمثالي</div>
@@ -14107,7 +14449,7 @@
             const upcomingVacc = computeUpcomingVaccines7d(b, m);
             const upcomingVaccHtml = (!upcomingVacc.length || isDismissedToday(b, 'upcomingVacc')) ? '' : `<div class="check-row"><div class="txt">
                 <div>💉 لقاحات مستحقة خلال 7 أيام قادمة</div>
-                <div class="day">${upcomingVacc.map(v => `<span style="color:${v.importance==='عاجل'?'var(--red)':v.importance==='قريب'?'#c9a227':'var(--muted)'};font-weight:700;">${v.importance}</span> — ${esc(v.name)} (يوم ${v.day}، بعد ${v.daysAway} يوم)`).join('<br>')}</div>
+                <div class="day">${upcomingVacc.map(v => `<span style="color:${v.importance==='عاجل'?'var(--red)':v.importance==='قريب'?'var(--warning-text)':'var(--muted)'};font-weight:700;">${v.importance}</span> — ${esc(v.name)} (يوم ${v.day}، بعد ${v.daysAway} يوم)`).join('<br>')}</div>
                 ${insightActions('upcomingVacc', '💉 تسجيل تحصين/علاج', 'openVaccineModal()')}
             </div></div>`;
             // ===== 7) مقارنة العنابر النشطة — مدموجة بالفعل فى قسم "نظرة عامة على كل الدفعات/العنابر النشطة" بالأسفل، بدون تكرار هنا =====
@@ -14116,7 +14458,7 @@
             // ===== 10) خطر الأمراض التنفسية =====
             const respRisk = computeRespiratoryRisk(b, m);
             const respRiskHtml = (!respRisk || isDismissedToday(b, 'respRisk')) ? '' : `<div class="check-row"><div class="txt">
-                <div style="color:${respRisk.level==='high'?'var(--red)':'#c9a227'};font-weight:800;">🫁 احتمالية إجهاد/مشاكل تنفسية: ${respRisk.level==='high'?'مرتفعة':'متوسطة'}</div>
+                <div style="color:${respRisk.level==='high'?'var(--red)':'var(--warning-text)'};font-weight:800;">🫁 احتمالية إجهاد/مشاكل تنفسية: ${respRisk.level==='high'?'مرتفعة':'متوسطة'}</div>
                 <div class="day">${respRisk.avgHumid!=null?`متوسط رطوبة آخر 5 أيام ${fmt(respRisk.avgHumid,0)}%`:''}${respRisk.avgNh3!=null?` · أمونيا ${fmt(respRisk.avgNh3,0)}ppm`:''} · الموسم الحالي ${respRisk.season} — راجع معدلات التهوية الدنيا الآن قبل ظهور أعراض فعلية</div>
                 ${insightActions('respRisk', '🌬️ تسجيل قراءة بيئية', "openDailyModal('day')")}
             </div></div>`;
@@ -14126,7 +14468,7 @@
                 if (!wf) return `<div class="check-row"><div class="txt"><div>💧🌾 نسبة الماء:العلف اليومية (مؤشر إجهاد مبكر)</div><div class="day">بيانات غير كافية بعد (يحتاج تسجيل العلف والماء يوميًا فى 5 أيام على الأقل)</div></div></div>`;
                 const baseline = wf.refWfr || wf.overallAvg;
                 const devTxt = wf.deviationPct != null ? `${wf.deviationPct>=0?'+':''}${fmt(wf.deviationPct,0)}%` : '—';
-                const devColor = wf.deviationPct != null && wf.deviationPct >= 15 ? 'var(--red)' : (wf.deviationPct != null && wf.deviationPct >= 8 ? '#c9a227' : 'var(--green)');
+                const devColor = waterFeedDeviationColor(wf.deviationPct);
                 const isHigh = wf.deviationPct != null && wf.deviationPct >= 8;
                 if (isHigh && isDismissedToday(b, 'waterFeedRatio')) return '';
                 // ⚠️ إصلاح: كان بيعرض "مرتبط بارتفاع النفوق" لمجرد |r|≥0.3 من غير فحص دلالة إحصائية
@@ -14151,23 +14493,28 @@
             // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
             const hiddenInsightGroups = (state.appSettings && state.appSettings.insightGroupsHidden) || [];
             const insightGroup = (gkey, title, icon, desc, arr, openByDefault) => (!arr.length || hiddenInsightGroups.includes(gkey)) ? '' : `
-                <details ${openByDefault ? 'open' : ''} style="border-bottom:1px solid var(--line);">
-                    <summary style="padding:10px 12px;cursor:pointer;background:#faf8f2;">
-                        <div style="display:flex;flex-direction:column;gap:1px;">
-                            <span style="font-weight:800;font-size:13px;">${icon} ${title} <span style="background:var(--line);color:var(--muted);border-radius:10px;padding:1px 7px;font-size:10.5px;font-weight:700;">${arr.length}</span></span>
-                            <span style="font-size:10.5px;color:var(--muted);font-weight:400;">${desc}</span>
+                <details class="insight-group" data-gkey="${gkey}" ${openByDefault ? 'open' : ''}>
+                    <summary>
+                        <div class="igrp-top">
+                            <span class="igrp-icon">${icon}</span>
+                            <span class="igrp-title">${title}</span>
+                            <span class="igrp-count">${arr.length}</span>
                         </div>
+                        <div class="igrp-desc">${desc}</div>
                     </summary>
-                    <div>${arr.join('')}</div>
+                    <div class="igrp-body">${arr.join('')}</div>
                 </details>`;
-            const totalInsights = ['attention','forecast','performance','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
-                .reduce((s, k) => s + ({attention: groupAttentionArr, forecast: groupForecastArr, performance: groupPerformanceArr, benchmark: groupBenchmarkArr}[k].length), 0);
+            // ============ إعادة هيكلة 2026: "يحتاج انتباه الآن" اتشالت من هنا نهائيًا — بقت مدموجة مع كل التنبيهات ============
+            // فى قسم واحد موحّد "⚠️ يحتاج متابعتك الآن" (اتبنى تحت، قبل مكانه القديم فوق "🩺 درجة صحة الدفعة").
+            // السبب: كانت نفس الفكرة ("حاجة عاجلة محتاجة تتصرف فيها") معروضة فى 3 أماكن مختلفة بالداشبورد
+            // (hero-priority + هنا + allAlertsSection) بميكانيكية وتسميات مختلفة — ده كان اللي بيلخبط.
+            // "تحليلات ذكية" دلوقتي بقت مخصصة بس للتحليل التفسيري/الاستشرافي (مش للتنبيهات العاجلة).
+            const totalInsights = ['forecast','performance','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
+                .reduce((s, k) => s + ({forecast: groupForecastArr, performance: groupPerformanceArr, benchmark: groupBenchmarkArr}[k].length), 0);
             const insightsSection = !totalInsights ? '' : `<div class="section"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
-                <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">اضغط على أي مجموعة بالأسفل لعرض تفاصيلها — "يحتاج انتباه" مفتوحة افتراضيًا لأنها الأهم. تقدر تخفي فئة كاملة نهائيًا من "الإعدادات ← تخصيص ترتيب لوحة التحكم".</p>
-                ${perfScoreCardHtml}
+                <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فوق فى "⚠️ يحتاج متابعتك الآن".</p>
                 <div class="card" style="padding:0;overflow:hidden;">
-                    ${insightGroup('attention', 'يحتاج انتباه الآن', '⚠️', 'مخاطر ومؤشرات تستاهل تتصرف فيها دلوقتي', groupAttentionArr, true)}
-                    ${insightGroup('forecast', 'توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, false)}
+                    ${insightGroup('forecast', 'توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, true)}
                     ${insightGroup('performance', 'أداء وكفاءة', '📊', 'تحليل وصفي لأداء الدورة الحالية (تكلفة، تجانس، أثر الإضافات)', groupPerformanceArr, false)}
                     ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
                 </div>
@@ -14214,40 +14561,62 @@
             const hs = computeHealthScore(b, m, alerts, ins, ops);
             // ============ 🎯 أهم 3 أفعال الآن: من محرك القرار الموحّد (إنتاج + مالية + تشغيل + بيئة/طقس فى مكان واحد) ============
             const unified = computeUnifiedPriorities(b, m, fin, alerts, ins, ops, hs, saleAdv);
-            const domainStyle = { production: { bg: '#eef7ee', color: 'var(--green)' }, financial: { bg: '#fff7e0', color: '#8a6d00' },
-                ops: { bg: '#eef2fb', color: '#2b4fa8' }, weather: { bg: '#fdeeee', color: 'var(--red)' } };
-            const urgencyStyle = { 'اليوم': 'var(--red)', 'هذا الأسبوع': '#c9a227', 'مراقبة': 'var(--muted)' };
-            const prioritiesSection = unified.top3.length ? `
-            <div class="card" style="margin-bottom:14px;padding:12px;border:1px solid var(--wheat);background:#fffdf7;">
-                <div style="font-size:12.5px;font-weight:800;color:var(--barn-dark);margin-bottom:8px;">🎯 أهم 3 أفعال عليك اتخاذها الآن</div>
-                ${unified.top3.map((p, i) => `<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;${i<unified.top3.length-1?'border-bottom:1px dashed #e5ddc8;':''}${p.actionTab?'cursor:pointer;':''}"${p.actionTab?` onclick="goToAlertAction('${p.actionTab}','${p.actionSubTab||''}')"`:''}>
-                    <div style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--barn-dark);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;">${i+1}</div>
-                    <div style="flex:1;">
-                        <div style="display:flex;gap:6px;align-items:center;margin-bottom:2px;flex-wrap:wrap;">
-                            <span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:8px;background:${domainStyle[p.domain].bg};color:${domainStyle[p.domain].color};">${p.icon} ${unified.domainLabels[p.domain]}</span>
-                            <span style="font-size:10px;font-weight:800;color:${urgencyStyle[p.urgency]};">⏱️ ${p.urgency}</span>
-                        </div>
-                        <div style="font-size:12px;line-height:1.5;${p.actionTab?'text-decoration:underline dotted;text-underline-offset:3px;':''}">${esc(p.text)}</div>
-                        ${p.recurringNote ? `<div style="font-size:10px;color:#b8860b;font-weight:700;margin-top:2px;">${esc(p.recurringNote)}</div>` : ''}
-                    </div>
-                </div>`).join('')}
-                <p style="font-size:10px;color:var(--muted);margin:8px 0 0;">💡 مجمّعة من كل بيانات الدفعة (إنتاج/مالية/تشغيل/بيئة) ومرتبة بالأولوية — راجعها أول حاجة كل يوم.</p>
-            </div>` : '';
-            const allAlertsHtml = renderAlertsList(alerts);
-            const allAlertsSection = `
-            <div class="section" style="margin-top:0;"><details class="card" style="padding:12px;">
-                <summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;">
-                    <span>⚠️ كل التنبيهات الحالية</span>
-                    <span class="tag">${alerts.filter(a=>!a.dismissed).length}</span>
-                </summary>
-                <div style="margin-top:10px;">
-                    <button class="btn ghost sm" style="margin-bottom:8px;" onclick="showAlertHistoryModal()">📜 السجل التاريخي</button>
-                    <div class="alert-banner">${allAlertsHtml}</div>
+            // 🎨 نظام تصميم موحّد: بادچات المجال والإلحاح بقت كلاسات CSS مركزية (.badge-domain-*/.badge-urgency-*
+            // فى main.css) بدل كائنات JS بتتبني من الصفر فى كل رسمة — تغيير اللون دلوقتي مكان واحد بس، مش هنا وهناك.
+            const urgencyClass = { 'اليوم': 'badge-urgency-today', 'هذا الأسبوع': 'badge-urgency-week', 'مراقبة': 'badge-urgency-watch' };
+            // 🎨 إعادة تصميم (مرحلة 2 — بصري فقط، نفس بيانات unified.top3 بالظبط): بدل عرض 3 أفعال بنفس
+            // الوزن البصري، أهم فعل (top3[0]) بيبقى بارز فى كارت Hero علوي، والباقي (top3[1..]) قايمة مختصرة تحته.
+            const heroPick = unified.top3[0];
+            const restPicks = unified.top3.slice(1);
+            const prioritiesSection = !heroPick ? '' : `
+            <div class="hero-priority">
+                <div class="eyebrow"><span>🎯 أهم فعل عليك اتخاذه الآن</span></div>
+                <div class="lead-meta">
+                    <span class="badge-domain badge-domain-${heroPick.domain}">${heroPick.icon} ${unified.domainLabels[heroPick.domain]}</span>
+                    <span class="badge-urgency ${urgencyClass[heroPick.urgency]}">⏱️ ${heroPick.urgency}</span>
                 </div>
-            </details></div>`;
+                <div class="lead-text">${esc(heroPick.text)}</div>
+                ${heroPick.recurringNote ? `<div style="font-size:var(--fs-xs);color:#b8860b;font-weight:700;margin-top:4px;">${esc(heroPick.recurringNote)}</div>` : ''}
+                ${restPicks.length ? `<div class="rest-list">
+                    ${restPicks.map((p, i) => `<div class="rest-row">
+                        <b>${i+2}.</b>
+                        <span class="badge-domain badge-domain-${p.domain}" style="flex-shrink:0;">${p.icon}</span>
+                        <span>${esc(p.text)} <span class="badge-urgency ${urgencyClass[p.urgency]}" style="margin-inline-start:4px;">${p.urgency}</span></span>
+                    </div>`).join('')}
+                </div>` : ''}
+                <p style="font-size:var(--fs-2xs);color:var(--muted);margin:var(--space-2) 0 0;">💡 مجمّعة من كل بيانات الدفعة (إنتاج/مالية/تشغيل/بيئة) ومرتبة بالأولوية — راجعها أول حاجة كل يوم.</p>
+            </div>`;
+            // ============ إعادة هيكلة 2026: قسم واحد موحّد بدل 3 أماكن منفصلة كانت بتعرض "حاجة عاجلة" ============
+            // (كان فيه: hero-priority + accordion "يحتاج انتباه الآن" جوه تحليلات ذكية + accordion منفصل
+            // "كل التنبيهات الحالية"). دلوقتي: hero-priority لسه فوق كملخص تنفيذي لأهم 3 أفعال، وكل الباقي
+            // (تنبيهات محرك computeAlerts + تحليلات "يحتاج انتباه" الإحصائية) بقى فى قسم واحد هنا، ظاهر
+            // بالكامل من غير طي (مش accordion) لأنه محتوى عاجل، مش تفصيلة تتقفل.
+            const allAlertsHtml = renderAlertsList(alerts);
+            const attentionInsightsHtml = groupAttentionArr.length
+                ? `<div style="margin-top:${allAlertsHtml.includes('لا توجد تنبيهات') ? '0' : '4px'};">${groupAttentionArr.join('')}</div>` : '';
+            const totalAttentionCount = alerts.filter(a => !a.dismissed).length + groupAttentionArr.length;
+            const unifiedAttentionSection = (!totalAttentionCount && !attentionInsightsHtml) ? `
+            <div class="section" style="margin-top:0;"><div class="card" style="padding:14px;text-align:center;color:var(--muted);font-size:13px;">
+                ✅ مفيش حاجة محتاجة متابعتك دلوقتي
+            </div></div>` : `
+            <div class="section" style="margin-top:0;">
+                <div class="section-head"><h2>⚠️ يحتاج متابعتك الآن</h2></div>
+                <p style="font-size:10.5px;color:var(--muted);margin:-4px 2px 8px;">
+                    🔕 <b>تأجيل</b> = بيخفي البطاقة لحد بكرة بس، مش معناها إنك حليت المشكلة. الزرار الدهبي = فعل حقيقي بيتسجّل فعليًا.
+                    لو محتاج تفهم الاتجاه العام/التوقعات المبنية على اللي هنا، هتلاقيها فى "🔬 تحليلات ذكية" تحت.
+                </p>
+                <div class="card" style="padding:10px 12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                        <span class="tag">${totalAttentionCount} بند</span>
+                        <button class="btn ghost xs" onclick="showAlertHistoryModal()">📜 السجل التاريخي</button>
+                    </div>
+                    <div class="alert-banner">${allAlertsHtml}</div>
+                    ${attentionInsightsHtml}
+                </div>
+            </div>`;
             const quickMarketPriceSection = `
-            <div class="card" style="margin-bottom:14px;padding:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fffdf7;border:1px solid var(--wheat);">
-                <div style="font-size:12.5px;font-weight:800;color:var(--barn-dark);white-space:nowrap;">📊 بورصة اليوم (ج/كجم حي)</div>
+            <div class="card-accent">
+                <div class="accent-label">📊 بورصة اليوم (ج/كجم حي)</div>
                 <input id="dashMarketPriceInput_${b.id}" type="number" step="0.05" min="0" placeholder="مثال: 47.5"
                     value="${getLatestMarketPrice(b) != null ? getLatestMarketPrice(b) : ''}" style="flex:1;min-width:90px;">
                 <button class="btn gold sm owner-only" onclick="updateMarketPriceFromDashboard('${b.id}')">💾 حفظ</button>
@@ -14269,13 +14638,14 @@
             ${recCompHtml}
             ${quickMarketPriceSection}
             ${prioritiesSection}
+            ${liveProfitCardHtml ? `<div class="dual-card-grid">${perfScoreCardHtml}${liveProfitCardHtml}</div>` : perfScoreCardHtml}
             ${saleDecisionCardHtml}
-            ${allAlertsSection}
-            <div class="card" style="margin-bottom:14px;padding:14px;text-align:center;background:linear-gradient(135deg,#fff,#f8f5ed);border:2px solid ${hs.color};">
-                <div style="font-size:12.5px;color:var(--muted);margin-bottom:2px;">🩺 درجة صحة الدفعة (آنية + استباقية)${glossHtml('healthScore')}</div>
-                <div style="font-size:34px;font-weight:900;color:${hs.color};">${hs.score}<small style="font-size:16px;">/100</small></div>
-                <div style="font-size:13px;font-weight:700;color:${hs.color};">${hs.label}</div>
-                ${hs.factors.length ? `<div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:right;">${hs.factors.map(f => `• ${f.label}`).join('<br>')}</div>` : ''}
+            ${unifiedAttentionSection}
+            <div class="health-score-card" style="border-color:${hs.color};">
+                <div class="caption">🩺 درجة صحة الدفعة (آنية + استباقية)${glossHtml('healthScore')}</div>
+                <div class="score" style="color:${hs.color};">${hs.score}<small>/100</small></div>
+                <div class="label" style="color:${hs.color};">${hs.label}</div>
+                ${hs.factors.length ? `<div class="factors">${hs.factors.map(f => `• ${f.label}`).join('<br>')}</div>` : ''}
             </div>
             <div class="kpi-grid">
                 <div class="kpi"><div class="lbl">📅 عمر القطيع</div><div class="val">${m.todayAge} <small>يوم</small></div></div>
@@ -14363,18 +14733,18 @@
             // لسجلات قديمة قبل الإصلاح (dayEntered/nightEntered غير معرَّفين)، نرجع للطريقة القديمة كتقدير احتياطي. ============
             const dayDone = !!(todayRec && (todayRec.dayEntered !== undefined ? todayRec.dayEntered : (todayRec.feedDay != null || todayRec.mortDay != null)));
             const nightDone = !!(todayRec && (todayRec.nightEntered !== undefined ? todayRec.nightEntered : (todayRec.feedNight != null || todayRec.mortNight != null)));
-            const statusCard = `<div class="card" style="margin-bottom:10px;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:space-around;background:#f8f5ed;">
-                <div style="text-align:center;font-size:12.5px;">☀️ نهار اليوم<br><b style="color:${dayDone?'var(--green)':'var(--red)'};">${dayDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
-                <div style="text-align:center;font-size:12.5px;">🌙 ليل اليوم<br><b style="color:${nightDone?'var(--green)':'var(--red)'};">${nightDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
+            const statusCard = `<div class="daily-status-card">
+                <div class="item">☀️ نهار اليوم<br><b style="color:${dayDone?'var(--green)':'var(--red)'};">${dayDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
+                <div class="item">🌙 ليل اليوم<br><b style="color:${nightDone?'var(--green)':'var(--red)'};">${nightDone?'✅ تم التسجيل':'⏳ لم يُسجَّل بعد'}</b></div>
             </div>`;
             // إجراءات سريعة مجمّعة فى بطاقة واحدة بدل صفوف منفصلة متناثرة
-            const quickBtns = statusCard + `<div class="card" style="margin:0 0 12px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            const quickBtns = statusCard + `<div class="card daily-quick-actions">
                 <button class="btn gold" onclick="openDailyModal('day')">☀️ تسجيل النهار</button>
-                <button class="btn ghost" style="background:#eef1f6;" onclick="openDailyModal('night')">🌙 تسجيل الليل</button>
-                <button class="btn" style="background:#fff4e0;color:#8a5a12;border:1.5px solid #e0b45c;" onclick="openQuickIntModal()">➕ إضافة خارج الجدول</button>
-                <button class="btn" style="background:#fdecec;color:#9c2b2b;border:1.5px solid #e5a3a3;" onclick="openIncidentModal()">📓 تسجيل حادثة</button>
+                <button class="btn tone-info" onclick="openDailyModal('night')">🌙 تسجيل الليل</button>
+                <button class="btn tone-warning" onclick="openQuickIntModal()">➕ إضافة خارج الجدول</button>
+                <button class="btn tone-danger" onclick="openIncidentModal()">📓 تسجيل حادثة</button>
                 <button class="btn ghost" onclick="openBiosecurityModal()">🛡️ أمان حيوي سريع</button>
-                <button class="btn ghost" style="background:#e7f5ec;color:#1c6b3f;" onclick="shareWhatsapp()">📲 مشاركة واتساب</button>
+                <button class="btn tone-success" onclick="shareWhatsapp()">📲 مشاركة واتساب</button>
             </div>`;
             if (b.records.length === 0) return quickBtns + renderDailyEventsSection(b) + `<div class="card empty"><div class="ico">📋</div>لا توجد سجلات يومية بعد. سجّل قراءة النهار أو الليل من الأزرار أعلاه.</div>`;
             const realDates = new Set(b.records.map(r => r.date));
@@ -14458,7 +14828,7 @@
             const today = todayStr();
             const bioTypes = ['👨‍⚕️ زيارة طبيب بيطري', '🚗 دخول زائر', '🚙 دخول مركبة/سيارة', '🧴 تطهير ورش مطهرات', '🚪 تعقيم مدخل العنبر', '🐀 مكافحة قوارض/حشرات', '📌 أخرى'];
             const bioRows = [...(b.biosecurityLog || [])].sort((a,c)=>c.date.localeCompare(a.date)).slice(0, 15).map(e => `
-                <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}" style="font-size:9.5px;">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td style="text-align:right;">${esc(e.type)}${e.photo ? ` <button class="btn ghost sm" style="padding:2px 6px;" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td style="text-align:right;font-size:11px;color:var(--muted);">${esc(e.note)||''}</td>
+                <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}" style="font-size:9.5px;">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td style="text-align:right;">${esc(e.type)}${e.photo ? ` <button class="btn ghost xs" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td style="text-align:right;font-size:11px;color:var(--muted);">${esc(e.note)||''}</td>
                 <td><button class="btn ghost sm owner-only" onclick="editBiosecurity('${e.id}')">✏️</button> <button class="btn danger sm owner-only" onclick="deleteBiosecurity('${e.id}')">حذف</button></td></tr>`).join('');
             const bioBeforePhotos = (b.biosecurityLog || []).filter(e => e.stage === 'before' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
             const bioAfterPhotos = (b.biosecurityLog || []).filter(e => e.stage === 'after' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
@@ -14872,7 +15242,7 @@
             // ===== مؤشر محسوب: خطر تنفسي =====
             const respRisk = computeRespiratoryRisk(b, m);
             const respRiskHtml = !respRisk ? '' : `<div class="check-row"><div class="txt">
-                <div style="color:${respRisk.level==='high'?'var(--red)':'#c9a227'};font-weight:800;">🫁 احتمالية إجهاد/مشاكل تنفسية: ${respRisk.level==='high'?'مرتفعة':'متوسطة'}</div>
+                <div style="color:${respRisk.level==='high'?'var(--red)':'var(--warning-text)'};font-weight:800;">🫁 احتمالية إجهاد/مشاكل تنفسية: ${respRisk.level==='high'?'مرتفعة':'متوسطة'}</div>
                 <div class="day">${respRisk.avgHumid!=null?`متوسط رطوبة آخر 5 أيام ${fmt(respRisk.avgHumid,0)}%`:''}${respRisk.avgNh3!=null?` · أمونيا ${fmt(respRisk.avgNh3,0)}ppm`:''} · الموسم الحالي ${respRisk.season} — راجع معدلات التهوية الدنيا الآن قبل ظهور أعراض فعلية</div>
             </div></div>`;
             const envInsightsHtml = respRiskHtml ? `<div class="section"><div class="section-head"><h2>📊 مؤشرات البيئة</h2></div>
@@ -14940,6 +15310,64 @@
             else render();
         }
         // ============ Water Section (جزء من تبويب الإنتاج): إضافات الماء + جودة المياه + نسبة الماء:العلف ============
+        // ============ 💧 كارت جدولة سقاية الماء بفترات اليوم ============
+        function renderWaterScheduleCard(b) {
+            const age = computeMetrics(b).todayAge;
+            const active = getActiveWaterSchedule(b, age);
+            const allSchedules = [...(b.waterSchedules || [])].sort((a, c) => a.startAge - c.startAge);
+
+            const activeHtml = !active ? `<div class="empty" style="padding:14px;">مفيش جدول سقاية معرَّف لعمر النهاردة (يوم ${age}) — ضيف جدول من تحت.</div>` :
+                `<div style="font-size:10.5px;color:var(--muted);padding:4px 12px 8px;">📅 الجدول الساري من يوم ${active.startAge} — مقسَّم ${active.periods.length} فترات</div>` +
+                active.periods.map(p => {
+                    const done = isWaterPeriodDoneToday(b, p.id);
+                    const hasAdditive = p.additiveName && p.additiveName.trim();
+                    return `<div class="check-row">
+                        <input type="checkbox" ${done?'checked':''} onchange="toggleWaterPeriodDone('${active.id}','${p.id}')">
+                        <div class="txt">
+                            <div style="font-weight:${done?'600':'800'};" class="${done?'done-strike':''}">🕐 ${formatHourRange(p.startHour, p.endHour)} <span class="pill" style="font-size:10px;">${p.hours} ساعة</span></div>
+                            <div class="day">
+                                <input type="text" value="${esc(p.additiveName||'')}" placeholder="اسم الإضافة (اختياري)" oninput="updateWaterSchedulePeriod('${active.id}','${p.id}','additiveName',this.value)" style="width:110px;display:inline-block;font-size:11px;padding:3px 6px;margin-inline-end:4px;">
+                                ${hasAdditive ? `<input type="number" value="${p.dose||''}" placeholder="الجرعة" oninput="updateWaterSchedulePeriod('${active.id}','${p.id}','dose',this.value)" style="width:55px;display:inline-block;font-size:11px;padding:3px 6px;margin-inline-end:4px;">
+                                <select onchange="updateWaterSchedulePeriod('${active.id}','${p.id}','unit',this.value)" style="width:auto;display:inline-block;font-size:11px;padding:3px 4px;">
+                                    <option ${p.unit==='جم/لتر'?'selected':''}>جم/لتر</option>
+                                    <option ${p.unit==='مل/لتر'?'selected':''}>مل/لتر</option>
+                                    <option ${p.unit==='جم/1000 طائر'?'selected':''}>جم/1000 طائر</option>
+                                </select>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+            const managerRows = allSchedules.map(s => `<div class="check-row">
+                <div class="txt">
+                    <div>${s.id === (active && active.id) ? '👈 ' : ''}من يوم <b>${s.startAge}</b> — ${s.periods.length} فترات (${s.periods.map(p=>p.hours).join('+')} ساعة)</div>
+                    <div class="day">${s.periods.map(p => formatHourRange(p.startHour,p.endHour)).join(' · ')}</div>
+                </div>
+                <button class="btn danger sm owner-only" onclick="removeWaterSchedule('${s.id}')">🗑️</button>
+            </div>`).join('') || '<div class="empty" style="padding:10px;">مفيش جداول محفوظة لسه.</div>';
+
+            return `
+                <div id="waterScheduleBox">${activeHtml}</div>
+                <details style="margin-top:8px;">
+                    <summary style="cursor:pointer;font-weight:700;font-size:12px;padding:8px 4px;color:var(--muted);">⚙️ إدارة جداول السقاية (${allSchedules.length})</summary>
+                    <div style="padding:8px 4px;">
+                        <div class="form-grid" style="margin-bottom:8px;">
+                            <div class="field"><label>يبدأ من يوم</label><input type="number" id="ws_startAge" placeholder="مثال: 1" min="1"></div>
+                            <div class="field"><label>عدد الفترات</label>
+                                <select id="ws_periodCount">
+                                    <option value="2">فترتين (12+12)</option>
+                                    <option value="3" selected>3 فترات (8+8+8)</option>
+                                    <option value="4">4 فترات (6+6+6+6)</option>
+                                    <option value="6">6 فترات (4×6)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn gold block sm" onclick="addWaterSchedule(document.getElementById('ws_startAge').value, document.getElementById('ws_periodCount').value)">+ إضافة جدول جديد</button>
+                        <div style="margin-top:10px;">${managerRows}</div>
+                    </div>
+                </details>`;
+        }
+
         function renderWaterSection(b, m) {
             m = m || computeMetrics(b);
             const today = m.todayAge;
@@ -14957,11 +15385,21 @@
             const waterFeedRatioHtml = !wf ? '' : (() => {
                 const baseline = wf.refWfr || wf.overallAvg;
                 const devTxt = wf.deviationPct != null ? `${wf.deviationPct>=0?'+':''}${fmt(wf.deviationPct,0)}%` : '—';
-                const devColor = wf.deviationPct != null && wf.deviationPct >= 15 ? 'var(--red)' : (wf.deviationPct != null && wf.deviationPct >= 8 ? '#c9a227' : 'var(--green)');
+                const devColor = waterFeedDeviationColor(wf.deviationPct);
                 const isHigh = wf.deviationPct != null && wf.deviationPct >= 8;
                 return `<div class="check-row"><div class="txt">
                     <div>💧🌾 نسبة الماء:العلف — آخر 3 أيام: <b>${fmt(wf.recentAvg,2)}</b> مقابل المرجعي ${fmt(baseline,2)} (<b style="color:${devColor};">${devTxt}</b>)</div>
                     <div class="day">${isHigh ? 'ارتفاع ملحوظ عن الطبيعي — غالبًا يسبق أعراض الإجهاد الحراري أو المرض بيوم أو يومين' : 'ضمن النطاق الطبيعي تقريبًا'}</div>
+                </div></div>`;
+            })();
+
+            const wwa = computeWaterWasteAnalysis(b, m);
+            const waterWasteHtml = (!wwa || !wwa.hasEnoughData) ? '' : (() => {
+                const level = wwa.wastePct >= 20 ? 'var(--red)' : wwa.wastePct >= 10 ? 'var(--warning-text)' : 'var(--green)';
+                const icon = wwa.wastePct >= 20 ? '🔴' : wwa.wastePct >= 10 ? '🟡' : '🟢';
+                return `<div class="check-row"><div class="txt">
+                    <div>🚰 هادر مياه تقديري (مقارنة بنسبة العلف المرجعية): <b style="color:${level};">${icon} ${fmt(wwa.recentAvgWaste,1)} لتر/يوم</b> (${fmt(wwa.wastePct,0)}% من الاستهلاك)</div>
+                    <div class="day">تراكمي على الدورة: ${fmt(wwa.totalWaste,0)} لتر عبر ${wwa.daysCounted} يوم مسجَّل — ${wwa.wastePct>=15 ? 'نسبة مرتفعة، يستاهل تفحص النيبل درينكرز/الحلمات من تسريب فعلي أولًا، وتراجع الحرارة والصحة العامة لو مفيش تسريب واضح' : 'ضمن نطاق مقبول تقريبًا'}</div>
                 </div></div>`;
             })();
 
@@ -14970,11 +15408,15 @@
                 <button class="btn ghost sm owner-only" style="flex:1;" onclick="openWaterCalcModal()">🧮 حاسبة احتياج الماء</button>
                 <button class="btn ghost sm owner-only" style="flex:1;" onclick="openProtocolModal()">🧬 بروتوكولات محفوظة</button>
             </div>
-            <div class="section" style="margin-top:0;"><div class="section-head"><h2>💧 برنامج إضافات الماء</h2>
+            <div class="section" style="margin-top:0;"><div class="section-head"><h2>🕐 جدولة سقاية الماء بفترات اليوم</h2></div>
+                <p style="font-size:10.5px;color:var(--muted);margin:0 0 8px;">قسّم الـ24 ساعة لفترات متساوية (زي 8+8+8 أو 6+6+6+6)، وحدّد لكل فترة إضافتها وجرعتها المستقلة — والجدول نفسه يقدر يتغيّر مع عمر الدفعة.</p>
+                <div class="card" style="padding:0;">${renderWaterScheduleCard(b)}</div>
+            </div>
+            <div class="section"><div class="section-head"><h2>💧 برنامج إضافات الماء</h2>
                 <button class="btn ghost sm owner-only" onclick="document.getElementById('waterAddModalOverlay').classList.add('show')">+ إضافة</button></div>
                 <div class="card" id="waterAdditiveListBox" style="padding:0;">${waterAddRows||'<div class="empty" style="padding:14px;">لا توجد إضافات ماء.</div>'}</div>
             </div>
-            ${(waterQualityHtml||waterFeedRatioHtml) ? `<div class="section"><div class="section-head"><h2>📊 مؤشرات جودة واستهلاك المياه</h2></div><div class="card" style="padding:0;">${waterQualityHtml}${waterFeedRatioHtml}</div></div>` : ''}
+            ${(waterQualityHtml||waterFeedRatioHtml||waterWasteHtml) ? `<div class="section"><div class="section-head"><h2>📊 مؤشرات جودة واستهلاك المياه</h2></div><div class="card" style="padding:0;">${waterQualityHtml}${waterFeedRatioHtml}${waterWasteHtml}</div></div>` : ''}
             <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 التسجيل اليومي لكميات الماء وقراءات جودته لسه فى تبويب "📅 السجل اليومي" زي ما هو.</p>`;
         }
 
@@ -16024,16 +16466,22 @@
                 <td>${avgPrice>0?fmt(avgPrice,2):'—'}</td><td>${money(bm.total)}</td><td>${money(avgTicket)}</td><td>${bm.lastDate}</td></tr>`;
             }).join('');
             const reorderHtml = reorderSuggestions.length ? `
-            <div class="section" style="margin-top:0;"><div class="section-head"><h2>🛒 اقتراح إعادة الطلب</h2><span class="tag">تغطية ${REORDER_TARGET_DAYS} أيام</span></div>
+            <div class="section" style="margin-top:0;"><div class="section-head"><h2>🛒 اقتراح إعادة الطلب <span style="font-weight:600;color:var(--muted);font-size:11px;">(تقديري — مش إلزامي)</span></h2><span class="tag">تغطية ${REORDER_TARGET_DAYS} أيام</span></div>
                 <div class="card scroll-x"><table><thead><tr><th>الصنف</th><th>الكمية المقترحة</th><th>التكلفة التقديرية</th><th>المتبقي حاليًا</th><th></th></tr></thead><tbody>
-                ${reorderSuggestions.map(r => `<tr><td style="text-align:right;">${esc(r.name)}</td><td>${fmt(r.qty,1)} ${r.unit}</td><td>${r.cost!=null?money(r.cost):'—'}</td><td>${r.irregular?'<span style="color:var(--muted);">نفد (استخدام غير منتظم)</span>':(r.daysLeft!=null?'~'+fmt(r.daysLeft,0)+' يوم':'نفد')}</td><td><button class="btn ghost sm owner-only" onclick="quickReorderPurchase('${r.name.replace(/'/g,"\\'")}', ${r.qty}, '${r.unit}')">🛒 تسجيل شراء</button></td></tr>`).join('')}
+                ${reorderSuggestions.map((r,i) => `<tr id="reorderRow_${i}"><td style="text-align:right;">${esc(r.name)}</td><td>${fmt(r.qty,1)} ${r.unit}</td><td>${r.cost!=null?money(r.cost):'—'}</td><td>${r.irregular?'<span style="color:var(--muted);">نفد (استخدام غير منتظم)</span>':(r.daysLeft!=null?'~'+fmt(r.daysLeft,0)+' يوم':'نفد')}</td><td><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;"><button class="btn ghost sm owner-only" onclick="quickReorderPurchase('${r.name.replace(/'/g,"\\'")}', ${r.qty}, '${r.unit}')">🛒 تسجيل شراء</button><button class="btn ghost sm" onclick="dismissReorderSuggestion(${i})" title="مش هشتريه دلوقتي">🙈 تجاهل</button></div></td></tr>`).join('')}
                 </tbody></table></div>
-                <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الكمية المقترحة محسوبة لتغطية ${REORDER_TARGET_DAYS} أيام قادمة بناءً على متوسط الصرف الفعلي آخر 14 يوم لأصناف الاستهلاك المنتظم فقط. أصناف الاستخدام غير المنتظم (جرعة/معزز لمرة واحدة) بتظهر بس لما رصيدها ينفد فعلاً، بكمية آخر جرعة اتصرفت — راجعها قبل الشراء، فهي تقدير وليست قرارًا نهائيًا.</p>
+                <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الكمية المقترحة محسوبة لتغطية ${REORDER_TARGET_DAYS} أيام قادمة بناءً على متوسط الصرف الفعلي آخر 14 يوم لأصناف الاستهلاك المنتظم فقط. أصناف الاستخدام غير المنتظم (جرعة/معزز لمرة واحدة) بتظهر بس لما رصيدها ينفد فعلاً، بكمية آخر جرعة اتصرفت — دي تنبيهات تقديرية بتساعدك تاخد القرار، مش أوامر لازم تنفّذها؛ لو مش عايز تشتري الصنف دلوقتي، اضغط "تجاهل".</p>
 
             </div>` : '';
             return `
             ${renderExpirySection(b)}
             ${reorderHtml}
+            <div class="subtab-bar" id="invSubtabBar">
+                <button class="subtab-btn active" data-subtab="stock" onclick="switchInventorySubTab('stock')">📦 المخزون</button>
+                <button class="subtab-btn" data-subtab="purchases" onclick="switchInventorySubTab('purchases')">🛒 المشتريات<span class="count">${b.purchases.length}</span></button>
+                <button class="subtab-btn" data-subtab="sales" onclick="switchInventorySubTab('sales')">💰 المبيعات<span class="count">${b.sales.length}</span></button>
+            </div>
+            <div class="inv-subtab-panel" data-panel="stock">
             <div class="section" style="margin-top:0;"><div class="section-head"><h2>📦 أرصدة المخزن</h2>${items.length?`<span class="tag">💰 القيمة التقديرية: ${money(totalInvValue)}</span>`:''}</div>
                 ${items.length>5?`<div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
                     <input type="text" placeholder="🔍 بحث باسم الصنف أو التصنيف..." oninput="liveFilterTable(this,'inventoryItemsBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
@@ -16057,7 +16505,9 @@
                 </div>
                 ${(payables.total===0 && receivables.total===0)?`<div style="font-size:11px;opacity:.8;margin-top:8px;">لا مستحقات آجلة حاليًا — كل المشتريات والمبيعات مسددة بالكامل.</div>`:''}
             </div></div>
-            <div class="section"><div class="section-head"><h2>🛒 المشتريات</h2><span class="tag">إجمالي: ${money(fin.totalPurchases)}</span><button class="btn ghost sm" onclick="openPurchaseModal()">+ تسجيل</button></div>
+            </div>
+            <div class="inv-subtab-panel" data-panel="purchases" style="display:none;">
+            <div class="section" style="margin-top:0;"><div class="section-head"><h2>🛒 المشتريات</h2><span class="tag">إجمالي: ${money(fin.totalPurchases)}</span><button class="btn ghost sm" onclick="openPurchaseModal()">+ تسجيل</button></div>
                 ${b.purchases.length>5?`<div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
                     <input type="text" placeholder="🔍 بحث بالوصف أو المورد أو النوع..." oninput="liveFilterTable(this,'purchasesBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
                     <span id="purchasesBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
@@ -16067,7 +16517,9 @@
             <div class="section"><div class="section-head"><h2>🚚 مقارنة الموردين</h2></div>
                 ${renderTableOrEmpty(!!supplierRows, '<th>المورد</th><th>عدد التعاملات</th><th>آخر صنف</th><th>آخر سعر</th><th>متوسط السعر</th><th>إجمالي المشتريات</th><th>آخر تعامل</th>', supplierRows, '🚚', 'أضف اسم المورد عند تسجيل الشراء لمتابعة الأسعار ومقارنتها هنا.')}
             </div>
-            <div class="section"><div class="section-head"><h2>💰 المبيعات</h2><span class="tag">إجمالي: ${money(fin.salesRevenue)}</span><button class="btn ghost sm" onclick="openSaleModal()">+ تسجيل</button></div>
+            </div>
+            <div class="inv-subtab-panel" data-panel="sales" style="display:none;">
+            <div class="section" style="margin-top:0;"><div class="section-head"><h2>💰 المبيعات</h2><span class="tag">إجمالي: ${money(fin.salesRevenue)}</span><button class="btn ghost sm" onclick="openSaleModal()">+ تسجيل</button></div>
                 ${b.sales.length>5?`<div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
                     <input type="text" placeholder="🔍 بحث بالمشتري أو النوع..." oninput="liveFilterTable(this,'salesBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
                     <span id="salesBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
@@ -16076,7 +16528,21 @@
             </div>
             <div class="section"><div class="section-head"><h2>🤝 مقارنة المشترين</h2></div>
                 ${renderTableOrEmpty(!!buyerRows, '<th>المشتري</th><th>عدد التعاملات</th><th>إجمالي الوزن</th><th>متوسط السعر</th><th>إجمالي المبيعات</th><th>متوسط قيمة العملية</th><th>آخر تعامل</th>', buyerRows, '🤝', 'أضف اسم المشتري عند تسجيل البيع لمتابعة أداء كل عميل ومقارنتهم هنا.')}
+            </div>
             </div>`;
+        }
+
+        // تجاهل اقتراح إعادة طلب صنف مُعيّن من العرض الحالي فقط (مش قرار نهائي، مجرد إخفاء بصري) — لو الصنف لسه محتاج إعادة طلب هيظهر تاني فى المرة الجاية
+        function dismissReorderSuggestion(index) {
+            const row = document.getElementById(`reorderRow_${index}`);
+            if (row) row.remove();
+        }
+
+        // تبديل التبويب الفرعي داخل تبويب المخزون (مخزون / مشتريات / مبيعات) — عرض/إخفاء بصري فقط، لا يلمس أي بيانات أو state
+        function switchInventorySubTab(key) {
+            document.querySelectorAll('.inv-subtab-panel').forEach(p => { p.style.display = (p.dataset.panel === key) ? '' : 'none'; });
+            const bar = document.getElementById('invSubtabBar');
+            if (bar) bar.querySelectorAll('.subtab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.subtab === key); });
         }
 
         // حذف صنف من المخزن نهائيًا (يختلف عن "حذف/تسوية" التي تُصفّر الرصيد فقط وتُبقي الصنف موجودًا).
@@ -17685,7 +18151,7 @@
                 html += `<div class="card" style="padding:0;">` + kb.map(e => {
                     const solTxt = e.bestSolution
                         ? `🏆 أفضل حل: <b>${esc(e.bestSolution.name)}</b> — نجح فى ${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة
-                           <button class="btn ghost sm" style="margin-right:6px;padding:2px 8px;" onclick="quickApplyIncidentSolution('${esc(e.bestSolution.name).replace(/'/g,"\\'")}')">⚡ طبّقه دلوقتي</button>`
+                           <button class="btn ghost xs" style="margin-right:6px;" onclick="quickApplyIncidentSolution('${esc(e.bestSolution.name).replace(/'/g,"\\'")}')">⚡ طبّقه دلوقتي</button>`
                         : `لسه مفيش حل مُثبت مرتبط بهذا النمط فى بياناتك`;
                     const diseaseBadge = e.likelyDisease ? `<span style="background:#fde8e8;color:#a33;border-radius:8px;padding:1px 7px;font-size:10.5px;font-weight:700;margin-right:4px;">🩺 ${esc(e.likelyDisease)}</span>` : '';
                     const seasonBadge = e.seasonalHint ? `<span style="background:#fff3d6;color:#8a6800;border-radius:8px;padding:1px 7px;font-size:10.5px;font-weight:700;">🗓️ مرتبط بفصل ${e.seasonalHint}</span>` : '';
@@ -17841,10 +18307,10 @@
                     <div class="day">${esc(c.role)} · ${esc(c.phone)}</div>
                 </div>
                 <div class="row-actions" style="gap:6px;">
-                    <a class="btn ghost" style="padding:6px 10px;font-size:12px;" href="${telLink(c.phone)}">☎️ اتصال</a>
-                    <a class="btn ghost" style="padding:6px 10px;font-size:12px;color:#25D366;" href="${waLink(c.phone)}" target="_blank" rel="noopener">💬 واتساب</a>
-                    <button class="btn ghost" style="padding:6px 10px;font-size:12px;" onclick="openContactModal('${c.id}')">✏️</button>
-                    <button class="btn ghost" style="padding:6px 10px;font-size:12px;color:var(--red);" onclick="deleteContact('${c.id}')">🗑️</button>
+                    <a class="btn ghost xs" href="${telLink(c.phone)}">☎️ اتصال</a>
+                    <a class="btn ghost xs" style="color:#25D366;" href="${waLink(c.phone)}" target="_blank" rel="noopener">💬 واتساب</a>
+                    <button class="btn ghost xs" onclick="openContactModal('${c.id}')">✏️</button>
+                    <button class="btn ghost xs" style="color:var(--red);" onclick="deleteContact('${c.id}')">🗑️</button>
                 </div></div>`).join('') : '<div class="empty" style="padding:14px;"><div class="ico">📇</div>لا توجد جهات اتصال محفوظة بعد.</div>';
             return `<div class="card" style="padding:0;">${rows}</div>
                 <div style="display:flex;gap:8px;margin-top:10px;">
@@ -18291,8 +18757,8 @@
                             <div class="day">${s.sizeKB} ك.ب</div>
                         </div>
                         <div class="row-actions" style="gap:6px;">
-                            <button class="btn ghost" style="padding:6px 10px;font-size:12px;" onclick="restoreLocalSnapshot('${s.id}')">استرجاع</button>
-                            <button class="btn ghost" style="padding:6px 10px;font-size:12px;color:var(--red);" onclick="deleteLocalSnapshot('${s.id}')">حذف</button>
+                            <button class="btn ghost xs" onclick="restoreLocalSnapshot('${s.id}')">استرجاع</button>
+                            <button class="btn ghost xs" style="color:var(--red);" onclick="deleteLocalSnapshot('${s.id}')">حذف</button>
                         </div></div>`).join('') : '<div class="empty" style="padding:10px;">لا توجد لقطات محلية بعد.</div>'}
                 </div>
             </div>
@@ -18348,7 +18814,7 @@
                         const wp = computeWorkerPerformance();
                         if (!wp) return `<div class="empty" style="padding:14px;"><div class="ico">👷</div>لا توجد سجلات مرتبطة بعمّال بعد — المقياس بيبدأ يتجمّع من أول سجل يومي يُحفظ من الآن.</div>`;
                         return wp.map(r => {
-                            const onTimeColor = r.onTimePct == null ? 'var(--muted)' : (r.onTimePct >= 80 ? 'var(--green)' : (r.onTimePct >= 50 ? '#c9a227' : 'var(--red)'));
+                            const onTimeColor = r.onTimePct == null ? 'var(--muted)' : (r.onTimePct >= 80 ? 'var(--green)' : (r.onTimePct >= 50 ? 'var(--warning-text)' : 'var(--red)'));
                             return `<div class="check-row"><div class="txt">
                                 <div style="font-weight:800;">${r.name === 'المالك' ? '👑' : '👷'} ${esc(r.name)}</div>
                                 <div class="day" style="margin-top:4px;">
@@ -18502,7 +18968,7 @@
                         if (r.fcrC) metricTxt.push(`تحويل: تحسّن فى ${r.fcrC.improved}/${r.fcrC.n}`);
                         if (r.mortC) metricTxt.push(`نفوق: تحسّن فى ${r.mortC.improved}/${r.mortC.n}`);
                         if (r.avgCostPerCycle != null) metricTxt.push(`تكلفة ~${fmt(r.avgCostPerCycle,0)} ج/دورة`);
-                        const color = r.verdict === 'improve' ? 'var(--green)' : (r.verdict === 'worsen' ? 'var(--red)' : (r.verdict === 'none' ? 'var(--muted)' : '#c9a227'));
+                        const color = r.verdict === 'improve' ? 'var(--green)' : (r.verdict === 'worsen' ? 'var(--red)' : (r.verdict === 'none' ? 'var(--muted)' : 'var(--warning-text)'));
                         return `${statLine(`${esc(r.name)} (${r.cycles} دورة)`, `${r.verdictLabel}`, {vStyle:`color:${color};font-weight:800;`})}
                         <div style="font-size:10.5px;color:var(--muted);margin:-2px 0 4px;">${metricTxt.join(' · ')}</div>`;
                     }).join('')}</div>
@@ -21177,8 +21643,8 @@
                         <input type="checkbox" ${hidden.includes(k) ? '' : 'checked'} onchange="toggleDashboardSectionVisible('${esc(k).replace(/'/g, "\\'")}', this.checked)" title="إظهار/إخفاء">
                         <div style="flex:1;font-size:12.5px;">${esc(k)}</div>
                         <span class="grip">
-                            <button class="btn ghost sm" style="padding:4px 8px;" ${i === 0 ? 'disabled' : ''} onclick="moveDashboardSection(${i},-1)">⬆️</button>
-                            <button class="btn ghost sm" style="padding:4px 8px;" ${i === order.length - 1 ? 'disabled' : ''} onclick="moveDashboardSection(${i},1)">⬇️</button>
+                            <button class="btn ghost xs" ${i === 0 ? 'disabled' : ''} onclick="moveDashboardSection(${i},-1)">⬆️</button>
+                            <button class="btn ghost xs" ${i === order.length - 1 ? 'disabled' : ''} onclick="moveDashboardSection(${i},1)">⬇️</button>
                         </span>
                     </div>`).join('')}
             </div>
@@ -21189,7 +21655,6 @@
         // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
         function renderInsightGroupsSettings() {
             const groups = [
-                { key: 'attention', label: '⚠️ يحتاج انتباه الآن' },
                 { key: 'forecast', label: '🔮 توقعات' },
                 { key: 'performance', label: '📊 أداء وكفاءة' },
                 { key: 'benchmark', label: '🌍 مقارنات ومعايير' },
@@ -21321,7 +21786,7 @@
             const sec = (title, rows) => rows.length ? `<div style="font-weight:800;color:var(--barn);font-size:12.5px;margin:10px 0 4px;">${title}</div>${rows.join('')}` : '';
             const html = `
                 <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">${t.date} · عمر القطيع ${t.age} يوم${t.hasToday ? '' : ' · <b style="color:var(--red);">⚠️ لم يُسجَّل سجل اليوم بعد</b>'}</div>
-                ${sec('🔔 تنبيهات عاجلة', t.urgentAlerts.map(a => `<div class="check-row"><div class="txt"><div style="color:${a.level === 'danger' ? 'var(--red)' : '#c9a227'};">${esc(a.text)}</div></div></div>`))}
+                ${sec('🔔 تنبيهات عاجلة', t.urgentAlerts.map(a => `<div class="check-row"><div class="txt"><div style="color:${a.level === 'danger' ? 'var(--red)' : 'var(--warning-text)'};">${esc(a.text)}</div></div></div>`))}
                 ${sec('💉 تحصينات مستحقة اليوم', t.dueVacc.map(v => `<div class="check-row"><input type="checkbox" onchange="dailyToggleVaccine('${v.id}');closeModal('genericModalOverlay');showToast('✅ تم التسجيل')"><div class="txt">${esc(v.name)}</div></div>`))}
                 ${sec('🧴 معاملات مستحقة اليوم', t.dueTreat.map(x => `<div class="check-row"><input type="checkbox" onchange="dailyToggleTreatment('${x.id}');closeModal('genericModalOverlay');showToast('✅ تم التسجيل')"><div class="txt">${esc(x.name)}</div></div>`))}
                 ${sec('🌾 إضافات علف/ماء مستحقة', [...t.activeFeed.map(a => `<div class="check-row"><div class="txt">🌾 ${esc(a.name)}</div></div>`), ...t.activeWater.map(a => `<div class="check-row"><div class="txt">💧 ${esc(a.name)}</div></div>`)])}
