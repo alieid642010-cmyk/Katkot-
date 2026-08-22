@@ -34,6 +34,9 @@
             --wheat: #D9A544;
             --wheat-light: #F0C975;
             --cream: #FAF7EE;
+            /* لون كتابة ثابت لكروت الـ hero الغامقة (زي كارت قرار البيع) — مقصود إنه ما يتأثرش بالوضع الليلي
+               لأن خلفية الكارت نفسها غامقة دايمًا فى الوضعين، بعكس --cream اللي معناها بيتغيّر مع الثيم */
+            --hero-ink: #FAF7EE;
             --paper: #FFFFFF;
             --brown: #6B4226;
             --red: #C1443C;
@@ -102,6 +105,16 @@
         .hero-priority .rest-list { margin-top: var(--space-3); border-top: 1px dashed #e5ddc8; padding-top: var(--space-2); }
         .hero-priority .rest-row { display: flex; gap: var(--space-2); align-items: flex-start; padding: var(--space-1) 0; font-size: var(--fs-sm); color: var(--muted); }
         .hero-priority .rest-row b { color: var(--ink); font-weight: 700; }
+
+        /* -- تأثير بصري مؤقت لما زرار "نفّذ الآن" ينقل المستخدم بـScroll لقسم تحليلات (مش مودال) -- */
+        .priority-action-highlight {
+            animation: priorityHighlightPulse 2.2s ease-out;
+        }
+        @keyframes priorityHighlightPulse {
+            0%   { box-shadow: 0 0 0 3px var(--gold, #D9A544); }
+            70%  { box-shadow: 0 0 0 3px var(--gold, #D9A544); }
+            100% { box-shadow: none; }
+        }
 
         /* -- شبكة كروت مزدوجة (أداء + ربح جنب بعض بدل تحت بعض) -- */
         .dual-card-grid {
@@ -243,18 +256,32 @@
         .data-quality-warning .line { font-size: var(--fs-sm); font-weight: 800; color: var(--red); }
         .data-quality-warning .hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 2px; }
 
-        /* -- كارت قرار البيع البارز (Hero داكن، أهم قرار يومي) -- */
+        /* -- كارت قرار البيع البارز (Hero داكن، أهم قرار يومي) --
+           ⚠️ إصلاح: الكارت ده خلفيته غامقة ثابتة فى كل الأوضاع (فاتح/ليلي) بقصد التصميم، فمينفعش نستخدم
+           var(--cream) للكتابة عليه لأن --cream بتتغيّر معنى فى الوضع الليلي لتبقى لون خلفية الصفحة الغامق
+           (مش أبيض/كريمي زي فى الوضع الفاتح) — ده كان بيخلي الكتابة (خصوصًا .headline) بنفس لون الخلفية
+           تقريبًا فى الوضع الليلي (سوداء على سوداء) فتختفي. استخدمنا --hero-ink بدالها: قيمة كريمي فاتحة
+           ثابتة مش مرتبطة بالثيم، لأن خلفية الكارت نفسها ثابتة الغُمقان دايمًا. */
         .sale-decision-card {
             margin-bottom: var(--space-4); padding: var(--space-4);
-            background: linear-gradient(135deg, var(--barn-dark), #152119);
-            border-radius: var(--radius-lg); position: relative; overflow: hidden; color: var(--cream);
+            background: linear-gradient(135deg, #1F2F26, #152119);
+            border-radius: var(--radius-lg); position: relative; overflow: hidden; color: var(--hero-ink, #FAF7EE);
         }
         .sale-decision-card::before { content:'🌾'; position:absolute; font-size:80px; opacity:.08; left:-10px; top:-18px; transform:rotate(-15deg); }
         .sale-decision-card .eyebrow { position: relative; font-size: var(--fs-2xs); color: var(--wheat-light); font-weight: 700; }
-        .sale-decision-card .headline { position: relative; font-weight: 900; font-size: var(--fs-xl); color: var(--cream); margin-top: var(--space-1); }
+        .sale-decision-card .headline { position: relative; font-weight: 900; font-size: var(--fs-xl); color: var(--hero-ink, #FAF7EE); margin-top: var(--space-1); }
         .sale-decision-card .headline .day-num { color: var(--wheat); }
         .sale-decision-card .warn-line { position: relative; font-size: var(--fs-xs); color: var(--wheat-light); font-weight: 700; margin-top: 2px; }
         .sale-decision-card .advice-line { position: relative; font-size: var(--fs-xs); color: rgba(250,247,238,.8); margin-top: var(--space-2); line-height: 1.6; }
+        /* -- سطر توقع الربح الحي المدموج جوّه كارت قرار البيع (بدل ما يبقى كارت منفصل) -- */
+        .sale-decision-card .profit-line {
+            position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+            margin-top: var(--space-2); padding: var(--space-2) var(--space-3);
+            background: rgba(250,247,238,.08); border-radius: var(--radius-md);
+        }
+        .sale-decision-card .profit-label { font-size: var(--fs-2xs); font-weight: 700; color: rgba(250,247,238,.8); }
+        .sale-decision-card .profit-value { font-size: var(--fs-md); font-weight: 900; }
+        .sale-decision-card .profit-value small { font-size: var(--fs-2xs); font-weight: 700; opacity: .75; }
         .sale-decision-card .meta-line { position: relative; font-size: var(--fs-2xs); color: rgba(250,247,238,.55); margin-top: var(--space-2); line-height: 1.6; }
         /* ============ الوضع الليلي (Dark Mode) — تفعيل عبر data-theme="dark" على <html> ============ */
         html[data-theme="dark"] {
@@ -1723,7 +1750,6 @@
             <button class="btn gold block-owner-btn" id="newBatchBtn" style="padding:13px 22px;font-size:15px;font-weight:800;width:100%;margin-top:12px;box-shadow:0 6px 16px rgba(0,0,0,.18);display:none;" onclick="openBatchModal()">+ دفعة تسمين جديدة</button>
         </div>
         <div class="batch-switch" id="batchSwitch"></div>
-        <div class="alert-banner" id="alertBanner"></div>
     </header>
 
     <main>
@@ -2585,10 +2611,19 @@
             <div class="form-grid">
                 <div class="field full"><label>اسم التحصين</label><input id="v_name" list="dl_invItems" placeholder="مثال: جمبورو (الثالثة)"></div>
                 <div class="field"><label>عمر القطيع المستهدف (يوم)</label><input id="v_day" type="number" inputmode="decimal" min="0"></div>
-                <div class="field"><label>الكمية المستخدمة (اختياري) — تُخصم من المخزن عند تنفيذ التحصين</label><input id="v_qty" type="number" inputmode="decimal" step="0.01" placeholder="مثال: 100" min="0"></div>
-                <div class="field"><label>الوحدة</label>
+                <div class="field full"><label>طريقة حساب الجرعة</label>
+                    <select id="v_doseMode" onchange="toggleVaccineDoseModeFields()">
+                        <option value="fixed">كمية ثابتة (تُدخل يدويًا)</option>
+                        <option value="perBirds">أمبولات لكل عدد فراخ (تُحسب تلقائيًا من عدد القطيع الحي الحالي)</option>
+                    </select>
+                </div>
+                <div class="field" id="v_fixedDoseWrap"><label>الكمية المستخدمة (اختياري) — تُخصم من المخزن عند تنفيذ التحصين</label><input id="v_qty" type="number" inputmode="decimal" step="0.01" placeholder="مثال: 100" min="0"></div>
+                <div class="field" id="v_fixedUnitWrap"><label>الوحدة</label>
                     <select id="v_unit"><option>جرعة</option><option>عبوة</option><option>مل</option><option>جم</option><option>قطعة</option></select>
                 </div>
+                <div class="field" id="v_ampoulesWrap" style="display:none;"><label>عدد الأمبولات</label><input id="v_ampoulesPerGroup" type="number" inputmode="decimal" step="0.01" placeholder="مثال: 1" min="0"></div>
+                <div class="field" id="v_birdsWrap" style="display:none;"><label>لكل عدد فراخ</label><input id="v_birdsPerGroup" type="number" inputmode="decimal" step="1" placeholder="مثال: 1000" min="1"></div>
+                <div class="field full" id="v_ampNote" style="display:none;"><p style="font-size:11px;color:var(--muted);margin:0;">مثال: أمبولة واحدة لكل 1000 فرخة → لو القطيع الحي 2600 فرخة هيحسب تلقائيًا 3 أمبولات (تقريب لأعلى) عند التنفيذ.</p></div>
             </div>
             <div class="row-actions"><button class="btn block" id="vaccineModalBtn" onclick="saveVaccine()">إضافة</button></div>
         </div>
@@ -4707,6 +4742,71 @@
             ];
         }
 
+        // ============ 🩺 (جديد) توصيات صحية/بيطرية تلقائية عند تراجع الأداء الفعلي أو المتوقع عن الهدف ============
+        // فجوة كانت موجودة (Red Team — أداء/توقعات): دليل الأمراض (diseaseKB) وقاعدة معرفة حوادث المزرعة
+        // (computeIncidentKnowledgeBase) كانا مربوطين عمليًا بس بحالة دخول "أعراض ظاهرية" فى السجل اليومي
+        // (clinicalSigns) — أي مؤشر أداء أو توقع ساء (FCR/وزن/نفوق) من غير ما حد يسجّل عرض ظاهري (زي حالة
+        // التسمم بالأفلاتوكسين اللي أصلًا مالهاش توقيع أعراض واضح يتفحص بصريًا) كان بيتعامل معاه بجملة عامة
+        // ("راجع التغذية/الصحة") من غير أي توصية محددة. الدالة دي بتتنادى بمجرد ما مؤشر أداء حالي أو توقع
+        // مستقبلي يطلع سلبي عن الهدف المرصود، وبتجمع 3 مصادر معًا فى توصية واحدة:
+        //   (1) الذاكرة المرضية: علاجات/تحصينات مُسجَّلة فعليًا لهذه الدفعة قريبة من العمر الحالي، + قاعدة
+        //       معرفة حوادث المزرعة نفسها المبنية من الدورات المؤرشفة السابقة (نمط متكرر + أفضل حل نجح فعليًا).
+        //   (2) البروتوكولات المحفوظة على مستوى المزرعة لنفس النوع (state.protocols) — جاهزة لإعادة التطبيق.
+        //   (3) دليل الأمراض البيطري العام (state.diseaseKB) — مع تفضيل الأمراض اللي توقيعها الأساسي "تراجع
+        //       أداء" بدون عرض ظاهري مميز (requiredSigns فاضية، زي الأفلاتوكسين والنقرس)، لأن غياب عرض ظاهري
+        //       مُسجَّل هنا مش دليل إن مفيش مشكلة — العلامة الوحيدة المتاحة هى تراجع الأداء نفسه.
+        // ملحوظة: التوصيات هنا "احتمالات تستحق المراجعة"، مش تشخيص نهائي — الصياغة فى formatUnderperformanceRecommendationText
+        // بتوضّح كده عمدًا، وبتحيل لاستشارة الطبيب البيطري فى الحالات الأشد (زي دليل الأمراض نفسه).
+        function getUnderperformanceRecommendations(b, m, category) {
+            if (!b || !m) return null;
+            const age = m.todayAge;
+            const diseaseSource = (typeof state !== 'undefined' && state.diseaseKB && state.diseaseKB.length) ? state.diseaseKB : getDefaultDiseaseKB();
+            const ageMatches = diseaseSource.filter(d => age >= (d.ageMin != null ? d.ageMin : 0) && age <= (d.ageMax != null ? d.ageMax : 999));
+            // أولوية 1: أمراض توقيعها "تراجع أداء" بدون عرض ظاهري مميز — الأنسب لإشارة أداء/توقع سلبي بدون أعراض مُسجَّلة
+            const silent = ageMatches.filter(d => !d.requiredSigns || d.requiredSigns.length === 0);
+            // أولوية 2: أمراض ليها عرض ظاهري لكن من ضمن أعراضها المساندة تراجع علف/ماء (إشارة أضعف، تستحق مراجعة برضه)
+            const secondary = ageMatches.filter(d => (d.requiredSigns && d.requiredSigns.length > 0) &&
+                (d.supportingSigns || []).includes('feed_water_drop'));
+            const diseaseHints = [...silent, ...secondary].slice(0, 3).map(d => ({ id: d.id, name: d.name, recommendation: d.recommendation || d.diffText || '' }));
+
+            // (1) الذاكرة المرضية الخاصة بالدفعة نفسها — هل فى علاج/تحصين اتنفّذ فعلاً قريب من العمر الحالي (آخر 5 أيام)؟
+            const recentTreatments = (b.treatmentLog || []).filter(t => t.done && t.day <= age && t.day >= age - 5).map(t => t.name);
+            const recentVaccines = (b.vaccineLog || []).filter(v => v.done && v.day <= age && v.day >= age - 5).map(v => v.name);
+
+            // (1ب) قاعدة معرفة حوادث المزرعة عبر الدورات المؤرشفة السابقة — نمط متكرر قريب من نفس العمر + أفضل حل نجح تاريخيًا
+            let farmHistory = null;
+            if (typeof computeIncidentKnowledgeBase === 'function') {
+                const kb = computeIncidentKnowledgeBase(b.species);
+                const hit = kb && kb.filter(e => Math.abs(e.ageCenter - age) <= 3).sort((x, y) => y.cyclesAffected - x.cyclesAffected)[0];
+                if (hit) farmHistory = hit;
+            }
+
+            // (2) البروتوكولات المحفوظة على مستوى المزرعة لنفس النوع
+            const savedProtocols = ((typeof state !== 'undefined' && state.protocols) ? state.protocols : [])
+                .filter(p => p.species === b.species).slice(0, 3).map(p => ({ id: p.id, name: p.name, savedAt: p.savedAt }));
+
+            if (!diseaseHints.length && !farmHistory && !savedProtocols.length) return null;
+            return { category, age, diseaseHints, farmHistory, savedProtocols, recentTreatments, recentVaccines };
+        }
+
+        // نسخة نصية موجزة جاهزة للإدراج مباشرة داخل نص تنبيه/بطاقة أولوية — بتلخّص أقوى مصدرين بس عشان النص يفضل قابل للقراءة
+        // (النسخة الكاملة بكل المصادر تُعرض لاحقًا فى كارت مخصص لو احتجنا تفصيل أكتر — هنا مجرد سطر توصية مدمج فى تنبيه موجود)
+        function formatUnderperformanceRecommendationText(rec) {
+            if (!rec) return '';
+            const parts = [];
+            if (rec.farmHistory && rec.farmHistory.bestSolution) {
+                parts.push(`جرّب "${rec.farmHistory.bestSolution.name}" (نجح سابقًا فى ${fmt(rec.farmHistory.bestSolution.successRate * 100, 0)}% من ${rec.farmHistory.bestSolution.timesUsed} محاولة بدورات سابقة قريبة من نفس العمر)`);
+            }
+            if (rec.diseaseHints && rec.diseaseHints.length) {
+                const d = rec.diseaseHints[0];
+                parts.push(`احتمال يستحق المراجعة: "${d.name}"${d.recommendation ? ' — ' + d.recommendation : ''}`);
+            }
+            if (!parts.length && rec.savedProtocols && rec.savedProtocols.length) {
+                parts.push(`راجع بروتوكول "${rec.savedProtocols[0].name}" المحفوظ لنفس النوع`);
+            }
+            return parts.join(' | ');
+        }
+
         // ==================== State & Storage ====================
 
         // ============ معايير متقدمة قابلة للتعديل (تدفئة/تنبيهات/أداء/جدوى) ============
@@ -6656,7 +6756,7 @@
             if (id === 'saleModalOverlay') editingSaleId = null;
             if (id === 'customModalOverlay') editingCustomId = null;
             if (id === 'batchModalOverlay') { editingBatchId = null; document.getElementById('batchModalTitle').textContent = 'بدء دفعة تسمين جديدة'; document.getElementById('batchModalBtn').textContent = 'حفظ وبدء المتابعة'; }
-            if (id === 'vaccineModalOverlay') { editingVaccineId = null; document.getElementById('vaccineModalTitle').textContent = 'إضافة تحصين للبرنامج'; document.getElementById('vaccineModalBtn').textContent = 'إضافة'; }
+            if (id === 'vaccineModalOverlay') { editingVaccineId = null; document.getElementById('vaccineModalTitle').textContent = 'إضافة تحصين للبرنامج'; document.getElementById('vaccineModalBtn').textContent = 'إضافة'; document.getElementById('v_doseMode').value = 'fixed'; document.getElementById('v_ampoulesPerGroup').value = ''; document.getElementById('v_birdsPerGroup').value = ''; toggleVaccineDoseModeFields(); }
             if (id === 'treatModalOverlay') { editingTreatmentId = null; document.getElementById('treatModalTitle').textContent = treatModalDefaultTitle(getActiveBatch()); document.getElementById('treatModalBtn').textContent = '➕ إضافة للبرنامج'; if (document.getElementById('t_dayHint')) document.getElementById('t_dayHint').textContent = 'اكتب يومًا واحدًا، أو أيام متكررة بفاصلة/شرطة — يُنشأ بند مستقل لكل يوم بنفس التفاصيل'; }
             if (id === 'reminderModalOverlay') { editingReminderId = null; document.getElementById('reminderModalTitle').textContent = 'إضافة تنبيه جديد'; document.getElementById('reminderModalBtn').textContent = 'حفظ التنبيه'; }
             if (id === 'feedAddModalOverlay') { editingFeedAdditiveId = null; document.getElementById('feedAddModalTitle').textContent = '➕ إضافة علفية'; document.getElementById('feedAddModalBtn').textContent = 'إضافة'; }
@@ -7593,6 +7693,10 @@
             document.getElementById('reminderModalOverlay').classList.add('show'); }
 
         function openVaccineModal() { if (!getActiveBatch()) { showToast('أضف دفعة أولاً'); return; }
+            document.getElementById('v_doseMode').value = 'fixed';
+            document.getElementById('v_ampoulesPerGroup').value = '';
+            document.getElementById('v_birdsPerGroup').value = '';
+            toggleVaccineDoseModeFields();
             document.getElementById('vaccineModalOverlay').classList.add('show'); }
 
         function treatModalDefaultTitle(b) {
@@ -7638,7 +7742,6 @@
         function onFabClick() {
             const t = state.activeTab;
             if (t === 'daily') openDailyModal('day');
-            else if (t === 'management' && managementSubTab === 'inventory') openPurchaseModal();
             else openDailyModal('day');
         }
 
@@ -9355,9 +9458,9 @@
             editingMovementId = null;
             stockMode = mode;
             document.getElementById('stockModalTitle').textContent = mode === 'in' ? `إضافة كمية إلى: ${it.name}` :
-                mode === 'adjust' ? `🗑️ حذف / تسوية كمية من: ${it.name} (لا تُحسب كاستهلاك)` : `تسجيل استهلاك من: ${it.name}`;
+                mode === 'adjust' ? `✏️ تعديل رصيد: ${it.name} (تصحيح/تلف/جرد — لا يُحسب كاستهلاك)` : `تسجيل استهلاك من: ${it.name}`;
             document.getElementById('stockModalBtn').textContent = mode === 'in' ? 'إضافة للمخزن' :
-                mode === 'adjust' ? 'حذف من المخزن' : 'تسجيل الاستهلاك';
+                mode === 'adjust' ? 'حفظ التعديل' : 'تسجيل الاستهلاك';
             document.getElementById('st_name').value = it.name;
             document.getElementById('st_category').value = it.category;
             document.getElementById('st_unit').value = it.unit;
@@ -9445,18 +9548,41 @@
                 render(); });
         }
 
+        // (جديد) إظهار/إخفاء حقول طريقة حساب جرعة التحصين حسب الاختيار (كمية ثابتة / أمبولات لكل عدد فراخ)
+        function toggleVaccineDoseModeFields() {
+            const mode = document.getElementById('v_doseMode').value;
+            const perBirds = mode === 'perBirds';
+            document.getElementById('v_fixedDoseWrap').style.display = perBirds ? 'none' : '';
+            document.getElementById('v_fixedUnitWrap').style.display = perBirds ? 'none' : '';
+            document.getElementById('v_ampoulesWrap').style.display = perBirds ? '' : 'none';
+            document.getElementById('v_birdsWrap').style.display = perBirds ? '' : 'none';
+            document.getElementById('v_ampNote').style.display = perBirds ? '' : 'none';
+        }
+
         function saveVaccine() {
             if (!requirePermission('owner')) return; // 🔒 Red Team fix (جولة 2): deleteVaccine محمية بـ owner، الحفظ/التعديل كان مكشوف
             const b = getActiveBatch();
             if (!b) return;
             const name = document.getElementById('v_name').value.trim();
             const day = parseInt(document.getElementById('v_day').value);
-            const qty = parseFloat(document.getElementById('v_qty').value) || 0;
-            const unit = document.getElementById('v_unit').value;
+            const doseMode = document.getElementById('v_doseMode').value === 'perBirds' ? 'perBirds' : 'fixed';
+            let qty = 0, unit = document.getElementById('v_unit').value;
+            let ampoulesPerGroup = 0, birdsPerGroup = 0;
+            if (doseMode === 'perBirds') {
+                ampoulesPerGroup = parseFloat(document.getElementById('v_ampoulesPerGroup').value) || 0;
+                birdsPerGroup = parseInt(document.getElementById('v_birdsPerGroup').value, 10) || 0;
+                if (!ampoulesPerGroup || !birdsPerGroup) { showToast('أدخل عدد الأمبولات وعدد الفراخ لكل جرعة'); return; }
+                unit = 'أمبول';
+                // نحسب الكمية المبدئية بعدد القطيع الحي الحالي — تُعاد حسبتها تلقائيًا وقت تنفيذ التحصين الفعلي لتعكس أي تغيير فى عدد القطيع
+                const mNow = computeMetrics(b);
+                qty = Math.ceil(mNow.liveCount / birdsPerGroup) * ampoulesPerGroup;
+            } else {
+                qty = parseFloat(document.getElementById('v_qty').value) || 0;
+            }
             if (!name || !day) { showToast('أكمل البيانات'); return; }
             if (editingVaccineId) {
                 const v = b.vaccineLog.find(x => x.id === editingVaccineId);
-                if (v) { v.day = day; v.name = name; v.qty = qty; v.unit = unit; }
+                if (v) { v.day = day; v.name = name; v.qty = qty; v.unit = unit; v.doseMode = doseMode; v.ampoulesPerGroup = ampoulesPerGroup; v.birdsPerGroup = birdsPerGroup; }
                 b.vaccineLog.sort((a, c) => a.day - c.day);
                 editingVaccineId = null;
                 persist();
@@ -9468,7 +9594,7 @@
                 showToast('تم تحديث التحصين ✅');
                 return;
             }
-            b.vaccineLog.push({ id: uid(), day, name, done: false, doneDate: null, qty, unit });
+            b.vaccineLog.push({ id: uid(), day, name, done: false, doneDate: null, qty, unit, doseMode, ampoulesPerGroup, birdsPerGroup });
             b.vaccineLog.sort((a, c) => a.day - c.day);
             persist();
             closeModal('vaccineModalOverlay');
@@ -9490,6 +9616,10 @@
             document.getElementById('v_day').value = v.day;
             document.getElementById('v_qty').value = v.qty || '';
             if (document.getElementById('v_unit')) document.getElementById('v_unit').value = v.unit || document.getElementById('v_unit').value;
+            document.getElementById('v_doseMode').value = v.doseMode === 'perBirds' ? 'perBirds' : 'fixed';
+            document.getElementById('v_ampoulesPerGroup').value = v.ampoulesPerGroup || '';
+            document.getElementById('v_birdsPerGroup').value = v.birdsPerGroup || '';
+            toggleVaccineDoseModeFields();
             document.getElementById('vaccineModalTitle').textContent = '✏️ تعديل التحصين';
             document.getElementById('vaccineModalBtn').textContent = 'حفظ التعديل';
             document.getElementById('vaccineModalOverlay').classList.add('show');
@@ -9501,6 +9631,12 @@
             if (!v) return;
             const doseUnit = v.unit || 'جرعة';
             const turningOn = !v.done;
+            // (جديد) لو الجرعة محسوبة بالأمبول لكل عدد فراخ، نعيد حساب الكمية بعدد القطيع الحي الفعلي
+            // وقت التنفيذ (مش وقت إضافة التحصين للبرنامج) — عشان أي نفوق لحد دلوقتي يتحسب صح
+            if (turningOn && v.doseMode === 'perBirds' && v.birdsPerGroup > 0 && v.ampoulesPerGroup > 0) {
+                const mNow = computeMetrics(b);
+                v.qty = Math.ceil(mNow.liveCount / v.birdsPerGroup) * v.ampoulesPerGroup;
+            }
             if (!turningOn) {
                 // التراجع عن تنفيذ سابق: يُرجع الكمية للمخزن دائمًا، لا حاجة للتحقق من الرصيد
                 v.done = false;
@@ -12297,10 +12433,20 @@
             const maxDensity = getMaxSafeDensity(b);
             const effArea = getEffectiveFloorArea(b); // فى البطاريات = مساحة العنبر × عدد الأدوار
 
+            // ===== سقف واقعي لعمر البيع: العمر المستهدف اللي المربي حدده للدفعة (b.targetAge) لو موجود،
+            // وإلا عمر الدورة القياسي للسلالة من الكتالوج (مثلاً 42 يوم للبروللر روص/كوب) =====
+            // ⚠️ إصلاح: بدون السقف ده، اللوب كان بيمتد لحد +21 يوم من غير أي علاقة بعمر البيع الواقعي،
+            // وجدول النمو المرجعي فيه نقاط بيانات لحد يوم 49 (قياسية/نظرية)، فكان ممكن النظام يوصي
+            // بالاستمرار لحد يوم 49 لو الربح الحدي النظري فضل موجب — رقم محدش بيستمر لحد بيه فعليًا فى التربية،
+            // خصوصًا للبروللر اللي بيتباع غالبًا فى حدود 32-40 يوم.
+            const speciesData = getSpeciesData(b.species, b.breed);
+            const practicalMaxAge = b.targetAge > 0 ? b.targetAge : (speciesData.cycleDays || (startAge + 21));
+            const dayCeiling = Math.min(startAge + 21, Math.max(practicalMaxAge, startAge));
+
             const rows = [];
             let optimalDay = null, densityLimitDay = null;
             let liveProj = m.liveCount;
-            for (let day = startAge; day <= startAge + 21; day++) {
+            for (let day = startAge; day <= dayCeiling; day++) {
                 if (day > startAge) liveProj = Math.max(liveProj * (1 - dailyMortRate), 0);
                 const stdWToday = getRefValue(b, 'weight', day) || 0;
                 const stdWYesterday = getRefValue(b, 'weight', day - 1) || 0;
@@ -13508,8 +13654,11 @@
                 if (histRatesAtAge.length >= 2) {
                     const avgHistRate = histRatesAtAge.reduce((a, c) => a + c, 0) / histRatesAtAge.length;
                     if (avgHistRate > cfg.mortCompareMinRate && m.mortRate > avgHistRate * cfg.mortCompareHighMult && (m.mortRate - avgHistRate) > 1) {
+                        // 🩺 (جديد) أداء سلبي عن الهدف (نفوق أعلى من التاريخي) — نرفق توصية من الذاكرة المرضية/البروتوكولات/دليل الأمراض بدل ما نسيب "راجع الأسباب" عامة بدون اتجاه
+                        const mortRec = getUnderperformanceRecommendations(b, m, 'mortality');
+                        const mortRecTxt = mortRec ? formatUnderperformanceRecommendationText(mortRec) : '';
                         alerts.push({ level: 'danger',
-                            text: `📉 نسبة النفوق الحالية (${fmt(m.mortRate,1)}%) أعلى من متوسط أدائك التاريخي عند نفس العمر (${fmt(avgHistRate,1)}%) لدفعات سابقة من نفس النوع — راجع الأسباب المحتملة` });
+                            text: `📉 نسبة النفوق الحالية (${fmt(m.mortRate,1)}%) أعلى من متوسط أدائك التاريخي عند نفس العمر (${fmt(avgHistRate,1)}%) لدفعات سابقة من نفس النوع — راجع الأسباب المحتملة${mortRecTxt ? ` 🩺 ${mortRecTxt}` : ''}` });
                     } else if (avgHistRate > cfg.mortCompareMinRate && m.mortRate < avgHistRate * cfg.mortCompareLowMult) {
                         alerts.push({ level: 'info',
                             text: `✅ نسبة النفوق الحالية (${fmt(m.mortRate,1)}%) أفضل من متوسطك التاريخي عند نفس العمر (${fmt(avgHistRate,1)}%) — استمر على نفس النهج` });
@@ -13521,8 +13670,11 @@
                     if (histFcrs.length >= 2) {
                         const avgHistFcr = histFcrs.reduce((a, c) => a + c, 0) / histFcrs.length;
                         if (m.fcr > avgHistFcr * 1.1) {
+                            // 🩺 (جديد) نفس فكرة تنبيه النفوق أعلاه — أداء سلبي عن الهدف (FCR أضعف من التاريخي) بيرفق توصية من نفس المصادر الثلاثة
+                            const fcrRec = getUnderperformanceRecommendations(b, m, 'fcr');
+                            const fcrRecTxt = fcrRec ? formatUnderperformanceRecommendationText(fcrRec) : '';
                             alerts.push({ level: 'warn',
-                                text: `🌾 معامل التحويل الغذائي الحالي (${fmt(m.fcr,2)}) أعلى (أضعف) من متوسطك التاريخي (${fmt(avgHistFcr,2)}) — يزيد من تكلفة الإنتاج` });
+                                text: `🌾 معامل التحويل الغذائي الحالي (${fmt(m.fcr,2)}) أعلى (أضعف) من متوسطك التاريخي (${fmt(avgHistFcr,2)}) — يزيد من تكلفة الإنتاج${fcrRecTxt ? ` 🩺 ${fcrRecTxt}` : ''}` });
                         }
                     }
                 }
@@ -13662,13 +13814,13 @@
             if (state.activeTab === 'custom') setState('activeTab', 'dashboard'); // تبويب البنود الإضافية أُلغي
             if (state.activeTab === 'ops') setState('activeTab', 'daily'); // تبويب العمليات والأمان الحيوي أُدمج داخل السجل اليومي
             if (state.activeTab === 'feed' || state.activeTab === 'environment' || state.activeTab === 'alerts') setState('activeTab', 'production'); // اتجمعوا فى تبويب الإنتاج
-            if (state.activeTab === 'finance' || state.activeTab === 'inventory' || state.activeTab === 'compare') { managementSubTab = state.activeTab === 'compare' ? 'compare' : state.activeTab; setState('activeTab', 'management'); } // اتجمعوا فى تبويب الإدارة والتخطيط
+            if (state.activeTab === 'inventory') setState('activeTab', 'dashboard'); // (جديد) المخزون بقى كارت فى الداشبورد، مبقاش تبويب مستقل ولا جزء من الإدارة
+            if (state.activeTab === 'finance' || state.activeTab === 'compare') { managementSubTab = state.activeTab; setState('activeTab', 'management'); } // اتجمعوا فى تبويب الإدارة والتخطيط
             if (currentRole === 'worker' && !visibleTabs().some(t => t.id === state.activeTab)) setState('activeTab', 'daily');
             renderSwitch();
             const b = getActiveBatch();
             const main = document.getElementById('mainContent');
             document.getElementById('fabAdd').style.display = (b && state.activeTab !== 'management' && state.activeTab !== 'settings') ? 'block' : 'none';
-            document.getElementById('alertBanner').innerHTML = '';
             refreshInvDatalist();
 
             if (state.activeTab === 'settings') {
@@ -13703,12 +13855,6 @@
             notifyNewDangerAlerts(alerts, b.id); // ============ اهتزاز مرة واحدة فقط عند ظهور تنبيه خطر جديد (بغض النظر عن التبويب الحالي) ============
 
             renderTabbar(alerts.filter(a => !a.dismissed).length);
-            // الشريط العلوي مفيد كتذكير أثناء العمل فى تبويبات تانية، لكن فى الداشبورد (فيه "🎯 أهم 3 أفعال" والقائمة الكاملة) بيبقى تكرار حرفي — نخفيه هناك فقط.
-            if (state.activeTab === 'dashboard') {
-                document.getElementById('alertBanner').innerHTML = '';
-            } else {
-                renderAlertBanner(alerts);
-            }
 
             if (state.activeTab === 'dashboard') main.innerHTML = renderDashboard(b, m, fin, alerts);
             else if (state.activeTab === 'daily') main.innerHTML = renderDailyTab(b, m);
@@ -13720,7 +13866,7 @@
             if (state.activeTab === 'dashboard') requestAnimationFrame(() => requestAnimationFrame(() => { applyDashboardCustomization(); applySectionCollapsing('dashboard'); drawDashboardCharts(b, m, fin); }));
             if (state.activeTab === 'management' && managementSubTab === 'finance') requestAnimationFrame(() => requestAnimationFrame(() => { applySectionCollapsing('finance'); drawFinanceCharts(fin); drawDashboardCharts(b, m, fin, 'Rep'); }));
             if (state.activeTab === 'management' && managementSubTab === 'compare') requestAnimationFrame(() => { applySectionCollapsing('compare'); requestAnimationFrame(() => drawTrendCharts()); });
-            if (state.activeTab === 'daily' || state.activeTab === 'production' || (state.activeTab === 'management' && managementSubTab === 'inventory')) requestAnimationFrame(() => applySectionCollapsing(state.activeTab === 'management' ? 'inventory' : state.activeTab));
+            if (state.activeTab === 'daily' || state.activeTab === 'production') requestAnimationFrame(() => applySectionCollapsing(state.activeTab));
             if (state.activeTab === 'management' && managementSubTab === 'expansion') requestAnimationFrame(() => applySectionCollapsing('expansion'));
         }
 
@@ -13748,23 +13894,10 @@
             }).join('');
         }
 
-        function renderAlertBanner(alerts) {
-            // ============ 🔴 إصلاح Red Team (مدموج): نفس معادلة الوزن المستخدمة فى "أهم 3 أفعال" — عشان تنبيه اتكتم ============
-            // كتير قبل كده منيفضلش يظهر بنفس الوضوح فى الشريط العلوي (تناقض بين البانر والقائمة الذكية).
-            const scored = alerts.filter(a => (a.level === 'danger' || a.level === 'warn') && !a.dismissed)
-                .map(a => {
-                    let w = a.level === 'danger' ? 8 : 5;
-                    if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
-                    return { ...a, _w: w };
-                })
-                .sort((x, y) => y._w - x._w);
-            const top = scored.slice(0, 3);
-            if (top.length === 0) return;
-            const extra = scored.length - top.length;
-            document.getElementById('alertBanner').innerHTML = top.map(a =>
-                `<div class="alert-item ${a.level}">${esc(a.text)}</div>`).join('')
-                + (extra > 0 ? `<div style="font-size:10.5px;color:var(--muted);padding:3px 8px;">+${extra} تنبيه آخر — التفاصيل فى الداشبورد أو تبويب الإنتاج</div>` : '');
-        }
+        // ============ 🔴 إصلاح Red Team: الشريط العلوي الثابت (alertBanner) اتشال نهائيًا ============
+        // كان بيظهر باستمرار أسفل اسم الدفعة فى كل تبويب (ما عدا الداشبورد) — تكرار بصري دايم لنفس
+        // التنبيهات المتاحة أصلاً فى "⚠️ يحتاج متابعتك الآن" بالداشبورد وفى شارة عدد التنبيهات فوق التبويبات
+        // نفسها (renderTabbar)، وكان بياخد حيز ثابت من الشاشة فى كل تبويب تانى من غير قيمة إضافية حقيقية.
 
         // ============ Dashboard ============
         // ============ درجة صحة الدفعة (Health Score) — رقم واحد من 100 يلخّص الأداء العام ============
@@ -13875,23 +14008,74 @@
         // بدل ما يفضل المستخدم يقرا تنبيهات + مؤشر مخاطر + رؤى ذكية منفصلين ويفسّرهم لوحده، الدالة دي بتجمع كل إشارة
         // من نفس الدوال المحسوبة أصلاً (من غير إعادة حساب أي منطق من جديد) وترتبها بأولوية موحدة، وتطلع أهم 3 أفعال بس.
         // كل إشارة متعلّمة بالمجال اللي جاية منه ودرجة الإلحاح (اليوم / هذا الأسبوع / مراقبة) عشان الأولوية تبقى مفهومة فورًا.
+        // ============ 🎯 الفعل التنفيذي المرتبط بكل أولوية: مش وصف بس — رابط مباشر لتنفيذ الإجراء فعليًا ============
+        // كل بند فى "أهم فعل الآن" لازم يوصّل المستخدم لمكان التنفيذ الفعلي بضغطة واحدة (فتح المودال الصحيح،
+        // أو نقله للتبويب/القسم المسؤول عن حل المشكلة دي بالظبط) — مش مجرد جملة يقرأها ويقفل الداشبورد.
+        function priorityActionFor(kind, extra) {
+            switch (kind) {
+                case 'weightHealthLog': return { type: 'fn', fn: 'openDailyModal', arg: 'essentials', label: '⚖️ سجّل الوزن/الصحة الآن' };
+                case 'biosecurity': return { type: 'fn', fn: 'openBiosecurityModal', label: '🛡️ افتح تشيك ليست الأمان الحيوي' };
+                case 'feedLot': return { type: 'scroll', id: 'smartInsightsSection', label: '🌾 راجع تحليل شحنة العلف' };
+                case 'additive': return { type: 'scroll', id: 'smartInsightsSection', label: '💊 راجع تحليل الإضافة' };
+                case 'waterFeed': return { type: 'fn', fn: 'openDailyModal', arg: 'day', label: '💧 سجّل قراءات اليوم' };
+                case 'fcrPred': return { type: 'scroll', id: 'smartInsightsSection', label: '🔮 راجع توقع الـFCR' };
+                case 'sale': return { type: 'fn', fn: 'openSaleModal', label: '🎯 سجّل عملية البيع' };
+                case 'finance': return { type: 'tab', tab: 'management', sub: 'finance', label: '💰 افتح الإدارة والتخطيط' };
+                case 'stock': return { type: 'fn', fn: 'openPurchaseModal', label: '📦 سجّل توريد مخزون' };
+                case 'weather': return { type: 'fn', fn: 'openDailyModal', arg: 'day', label: '🌡️ سجّل قراءات البيئة' };
+                default: return null;
+            }
+        }
+
+        // ============ 🎯 منفّذ الفعل الفعلي — بيوصل المستخدم لمكان التنفيذ الحقيقي، مش عرض/كلام مرسل ============
+        // بيتنفّذ من زرار "⚡ نفّذ الآن" فى كارت "أهم فعل عليك اتخاذه الآن". كل بند بيحمل action محدد سلفًا
+        // وقت حسابه فى computeUnifiedPriorities (مش تخمين وقت الضغط) — فالتنفيذ هنا مجرد توجيه دقيق:
+        // فتح المودال الصحيح مباشرة، أو النقل للتبويب/القسم المسؤول، أو Scroll لمكان التحليل التفصيلي.
+        function runPriorityAction(idx) {
+            const queue = window._katkotPriorityActions || [];
+            const action = queue[idx];
+            if (!action) { showToast('مفيش فعل تلقائي متاح للبند ده — راجعه يدويًا من التبويب المناسب'); return; }
+            try {
+                if (action.type === 'fn') {
+                    const fn = window[action.fn];
+                    if (typeof fn !== 'function') throw new Error('fn-missing:' + action.fn);
+                    if (action.arg !== undefined) fn(action.arg); else fn();
+                } else if (action.type === 'tab') {
+                    if (action.sub) managementSubTab = action.sub; // لازم تتحدد قبل setTab عشان render() يقرأها صح من أول رسمة
+                    setTab(action.tab);
+                } else if (action.type === 'scroll') {
+                    const el = document.getElementById(action.id);
+                    if (!el) throw new Error('scroll-target-missing:' + action.id);
+                    // لو القسم المستهدف جوه <details> مطوي، افتحه الأول عشان المستخدم يشوف المحتوى فعليًا
+                    const det = el.tagName === 'DETAILS' ? el : el.querySelector('details');
+                    if (det) det.open = true;
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    el.classList.add('priority-action-highlight');
+                    setTimeout(() => el.classList.remove('priority-action-highlight'), 2200);
+                }
+            } catch (e) {
+                console.error('runPriorityAction failed:', e);
+                showToast('تعذّر فتح المكان المخصص تلقائيًا — استخدم التبويبات فى الأسفل للوصول له يدويًا');
+            }
+        }
+
         function computeUnifiedPriorities(b, m, fin, alerts, ins, ops, hs, saleAdv) {
             const items = [];
-            const push = (domain, icon, text, weight) => items.push({ domain, icon, text, weight });
+            const push = (domain, icon, text, weight, action) => items.push({ domain, icon, text, weight, action: action || null });
 
             // --- 🌱 إنتاج: من نفس عوامل مؤشر الصحة (نفوق/وزن/اتجاه/تجانس/سبب النفوق)، مع فرز عوامل التشغيل لقسمها الخاص ---
             hs.factors.forEach(f => {
                 if (/تنبيه خطر و.*تحذير نشط/.test(f.label)) return; // عامل عام (عدد التنبيهات) مش فعل محدد — الإشارات الفردية المهمة بتتلقط أصلاً من alerts تحت
                 const isOps = /تشيك ليست|أمان حيوي/.test(f.label);
-                push(isOps ? 'ops' : 'production', isOps ? '🛡️' : '🌱', f.label, f.weight);
+                push(isOps ? 'ops' : 'production', isOps ? '🛡️' : '🌱', f.label, f.weight, priorityActionFor(isOps ? 'biosecurity' : 'weightHealthLog'));
             });
-            if (ins.deviationNarrative) push('production', '🌱', ins.deviationNarrative.text, 9);
+            if (ins.deviationNarrative) push('production', '🌱', ins.deviationNarrative.text, 9, priorityActionFor('weightHealthLog'));
             if (ins.feedLotAnalysis && ins.feedLotAnalysis.flagged) {
                 const fl = ins.feedLotAnalysis.flagged;
                 const flTxt = fl.reason === 'weight' ? `متوسط انحراف الوزن ${fmt(fl.avgDev,1)}% مقابل متوسط ${fmt(ins.feedLotAnalysis.avgDevAll,1)}% فى باقي الشحنات`
                     : fl.reason === 'fcr' ? `معدل تحويل الفترة ${fmt(fl.periodFcr,2)} مقابل متوسط ${fmt(ins.feedLotAnalysis.avgFcrAll,2)} فى باقي الشحنات`
                     : `معدل نفوق ${fmt(fl.mortPerDay,2)} طائر/يوم مقابل متوسط ${fmt(ins.feedLotAnalysis.avgMortRate,2)} فى باقي الدورة`;
-                push('production', '🌾', `راجع شحنة العلف "${fl.lot}" مع المورد — ${flTxt}`, 8);
+                push('production', '🌾', `راجع شحنة العلف "${fl.lot}" مع المورد — ${flTxt}`, 8, priorityActionFor('feedLot'));
             }
             if (ins.additiveAnalysis && ins.additiveAnalysis.flagged) {
                 const aa = ins.additiveAnalysis.flagged;
@@ -13901,30 +14085,43 @@
                 const aaTxt = topReason === 'weight' ? `الوزن أضعف من المعتاد بـ ${fmt(aa.inactiveDev - aa.activeDev,1)}% وقت سريانه`
                     : topReason === 'fcr' ? `معدل التحويل أسوأ (${fmt(aa.activeFcr,2)} مقابل ${fmt(aa.inactiveFcr,2)}) وقت سريانه`
                     : `معدل نفوق ${fmt(aa.activeMortRate,2)} طائر/يوم وقت سريانه مقابل ${fmt(aa.inactiveMortRate,2)} خارج فترته`;
-                push('production', '💊', `راجع جرعة/توقيت "${aa.name}" (${aa.kind}) — ${aaTxt}`, 7);
+                push('production', '💊', `راجع جرعة/توقيت "${aa.name}" (${aa.kind}) — ${aaTxt}`, 7, priorityActionFor('additive'));
             }
             if (ins.waterFeedAnalysis && ins.waterFeedAnalysis.deviationPct != null && ins.waterFeedAnalysis.deviationPct >= 15) {
-                push('production', '💧', `نسبة الماء:العلف ارتفعت ${fmt(ins.waterFeedAnalysis.deviationPct,0)}% عن المعتاد فى آخر 3 أيام — راجع الحرارة والتهوية والصحة العامة الآن قبل ظهور أعراض واضحة`, 8);
+                push('production', '💧', `نسبة الماء:العلف ارتفعت ${fmt(ins.waterFeedAnalysis.deviationPct,0)}% عن المعتاد فى آخر 3 أيام — راجع الحرارة والتهوية والصحة العامة الآن قبل ظهور أعراض واضحة`, 8, priorityActionFor('waterFeed'));
             }
             // توقّع FCR (مضاف حديثًا) كإشارة إنتاج استباقية — قبل كده محدش كان بياخده فى الاعتبار ضمن الأولويات
+            // 🩺 (جديد) لو التوقع سلبي عن الهدف، منسيبش الجملة عامة ("عدّل التغذية") — نرفق توصية محددة من الذاكرة
+            // المرضية/البروتوكولات/دليل الأمراض، لأن FCR متوقَّع أضعف كتير من المعياري ممكن يكون سببه صحي مش تغذوي بس
             if (ins.fcrPrediction && ins.fcrPrediction.diffPct != null && ins.fcrPrediction.diffPct > 8) {
-                push('production', '🔮', `FCR المتوقَّع عند البيع (${fmt(ins.fcrPrediction.predictedFcr,2)}) أعلى من المعياري بـ ${fmt(ins.fcrPrediction.diffPct,1)}% — فرصتك تتدخل الآن بتعديل التغذية قبل نهاية الدورة`, Math.min(ins.fcrPrediction.diffPct * 0.5, 8));
+                const fcrPredRec = getUnderperformanceRecommendations(b, m, 'fcrPrediction');
+                const fcrPredRecTxt = fcrPredRec ? formatUnderperformanceRecommendationText(fcrPredRec) : '';
+                push('production', '🔮', `FCR المتوقَّع عند البيع (${fmt(ins.fcrPrediction.predictedFcr,2)}) أعلى من المعياري بـ ${fmt(ins.fcrPrediction.diffPct,1)}% — فرصتك تتدخل الآن بتعديل التغذية قبل نهاية الدورة${fcrPredRecTxt ? ` | 🩺 ${fcrPredRecTxt}` : ''}`, Math.min(ins.fcrPrediction.diffPct * 0.5, 8), priorityActionFor('fcrPred'));
+            }
+            // 🩺 (جديد) نفس الفكرة للوزن المتوقع عند البيع لو أقل من المعياري — كانت بتُحتسب بس فى نقاط "مؤشر الصحة"
+            // (computeHealthScore) كخصم رقمي بدون أي توصية عملية مرفقة فى قائمة "أهم فعل الآن"
+            if (ins.weightPrediction && ins.weightPrediction.diffPct != null && ins.weightPrediction.diffPct < -3) {
+                const wtPredRec = getUnderperformanceRecommendations(b, m, 'weightPrediction');
+                const wtPredRecTxt = wtPredRec ? formatUnderperformanceRecommendationText(wtPredRec) : '';
+                if (wtPredRecTxt) {
+                    push('production', '🔮', `الوزن المتوقع عند البيع (يوم ${ins.weightPrediction.targetAge}) أقل من المعياري بـ ${fmt(Math.abs(ins.weightPrediction.diffPct),1)}% — 🩺 ${wtPredRecTxt}`, Math.min(Math.abs(ins.weightPrediction.diffPct) * 0.6, 8), priorityActionFor('weightHealthLog'));
+                }
             }
 
             // --- 💰 مالية: قرار البيع (أولوية عالية لأنه قرار عاجل بطبيعته وله موعد نهائي واضح) ---
             if (saleAdv.osd && saleAdv.nextRow) {
                 if (saleAdv.nextRow.densityUnsafe) {
-                    push('financial', '🎯', `الكثافة المتوقعة غدًا (${fmt(saleAdv.nextRow.projDensity,1)} كجم/م²) هتتخطى الحد الآمن — الأفضل تبيع الآن حتى لو الربح الحدي لسه موجب`, 9);
+                    push('financial', '🎯', `الكثافة المتوقعة غدًا (${fmt(saleAdv.nextRow.projDensity,1)} كجم/م²) هتتخطى الحد الآمن — الأفضل تبيع الآن حتى لو الربح الحدي لسه موجب`, 9, priorityActionFor('sale'));
                 } else if (saleAdv.nextRow.marginalProfit <= 0) {
-                    push('financial', '🎯', `سعر البورصة الحالي (${fmt(saleAdv.priceForCalc,2)} ج/كجم) تحت سعر التعادل المطلوب (${fmt(saleAdv.nextRow.breakEvenPrice,2)} ج/كجم) — الأفضل تبيع الآن`, 9);
+                    push('financial', '🎯', `سعر البورصة الحالي (${fmt(saleAdv.priceForCalc,2)} ج/كجم) تحت سعر التعادل المطلوب (${fmt(saleAdv.nextRow.breakEvenPrice,2)} ج/كجم) — الأفضل تبيع الآن`, 9, priorityActionFor('sale'));
                 }
             }
 
             // --- 💰 مالية + 🌡️ بيئة/طقس + 🛡️ تشغيل: نلتقطها من alerts المحسوبة أصلاً بمطابقة نصية دقيقة (بدون إعادة حساب المنطق) ---
             const domainRules = [
-                { re: /تكلفة كيلو اللحم|مستحق سداد|مستحق تحصيل/, domain: 'financial', icon: '💰' },
-                { re: /الإجهاد البيئي|ثاني أكسيد الكربون|الطقس المتوقع/, domain: 'weather', icon: '🌡️' },
-                { re: /نواقص فى المخزن/, domain: 'ops', icon: '📦' },
+                { re: /تكلفة كيلو اللحم|مستحق سداد|مستحق تحصيل/, domain: 'financial', icon: '💰', kind: 'finance' },
+                { re: /الإجهاد البيئي|ثاني أكسيد الكربون|الطقس المتوقع/, domain: 'weather', icon: '🌡️', kind: 'weather' },
+                { re: /نواقص فى المخزن/, domain: 'ops', icon: '📦', kind: 'stock' },
             ];
             alerts.forEach(a => {
                 if (a.level !== 'danger' && a.level !== 'warn') return;
@@ -13933,10 +14130,10 @@
                 if (!rule) return;
                 let w = a.level === 'danger' ? 8 : 5;
                 // ============ 🔴 إصلاح Red Team (مدموج): حلقة تغذية راجعة لإجهاد التنبيهات (Alert Fatigue) ============
-                // تحذير اتكتم كتير قبل كده ياخد أولوية أقل فى "أهم 3 أفعال" — بدون ما يختفي من قائمة التنبيهات
+                // تحذير اتكتم كتير قبل كده ياخد أولوية أقل فى "أهم فعل الآن" — بدون ما يختفي من قائمة التنبيهات
                 // الكاملة. تنبيهات "الخطر" مستثناة عمدًا وبتفضل بأولويتها الكاملة دايمًا لأنها سلامة/مخاطرة حرجة.
                 if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
-                push(rule.domain, rule.icon, a.text.replace(/^\S+\s*/, ''), w);
+                push(rule.domain, rule.icon, a.text.replace(/^\S+\s*/, ''), w, priorityActionFor(rule.kind));
             });
 
             const seen = new Set();
@@ -13971,11 +14168,19 @@
                 it.streak = streak;
             });
             ranked.sort((a, c) => c.weight - a.weight); // إعادة ترتيب بعد تعديل الأوزان بالتكرار
-            const top3 = ranked.slice(0, 3).map(it => ({ ...it,
+            // ============ 🔴 إصلاح Red Team: العدد اتغيّر من "3 ثابتة دايمًا" لعدد ديناميكي حسب خطورة الوضع فعليًا ============
+            // قبل كده كانت القائمة دايمًا 3 بنود بالظبط — سواء الوضع فيه بند عاجل واحد بس (يبقى فيها حشو غير
+            // ضروري) أو 6 بنود عاجلة فى نفس اليوم (يبقى فيها إخفاء لمشاكل حقيقية). المنطق دلوقتي: نعرض كل
+            // البنود "العاجلة اليوم" (وزن ≥ 8) بالكامل بلا حذف (سقف عملي 8 عشان الداشبورد يفضل قابل للقراءة)،
+            // وبحد أدنى 3 بنود (أو أقل لو مفيش بيانات كفاية أصلاً) لو مفيش عاجل كتير، عشان الداشبورد يفضل مفيد
+            // حتى فى الأيام الهادئة.
+            const urgentTodayCount = ranked.filter(it => it.weight >= 8).length;
+            const showCount = Math.min(Math.max(urgentTodayCount, Math.min(3, ranked.length)), 8);
+            const topPicks = ranked.slice(0, showCount).map(it => ({ ...it,
                 urgency: it.weight >= 8 ? 'اليوم' : (it.weight >= 5 ? 'هذا الأسبوع' : 'مراقبة'),
                 recurringNote: it.streak >= 3 ? `🔁 متكررة ${it.streak} أيام متتالية فى الأولويات — مش تقلب يوم واحد` : null }));
             const domainLabels = { production: 'إنتاج', financial: 'مالية', ops: 'تشغيل', weather: 'بيئة/طقس' };
-            return { top3, ranked, domainLabels, domainsCovered: [...new Set(ranked.map(r => r.domain))] };
+            return { top3: topPicks, ranked, domainLabels, domainsCovered: [...new Set(ranked.map(r => r.domain))] };
         }
 
         function renderDashboard(b, m, fin, alerts) {
@@ -14024,13 +14229,14 @@
                     <div class="foot-note">💡 النسبة بجانب كل مؤشر فوق = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ده ترتيب نسبي مقابل نفسك بس، مش مقياس عالمي مطلق (استخدم المرجع المطلق تحت لده).</div>
                 </div>`;
             })();
-            // ============ مؤشر كثافة التسجيل: تحذير أعلى التحليلات لو التغطية اليومية ضعيفة، عشان يعرف المستخدم أن دقة كل التحليلات التالية محدودة بجودة تسجيله ============
+            // ============ 🔴 إصلاح Red Team: كارت "فاتك تسجيل الوزن" اتشال من الداشبورد نهائيًا (كان بياخد حيز ثابت من غير قيمة تنفيذية) ============
+            // مؤشر كثافة التسجيل العام (تغطية % من أيام الدورة) لسه موجود لأنه رقم تلخيصي مفيد لثقة التحليلات،
+            // لكن سطر "فاتك تسجيل الوزن/العلف" التفصيلي اتشال — نفس المعلومة العملية موجودة أصلاً وبشكل قابل
+            // للتنفيذ الفوري فى كارت "🎯 أهم فعل عليك اتخاذه الآن" (زرار "⚖️ سجّل الوزن/الصحة الآن").
             const recComp = computeRecordingCompleteness(b, m);
-            const dataConf = computeDataConfidence(b, m);
-            const recCompHtml = (recComp.expectedDays >= 5 && recComp.pct < 70) || dataConf ? `
+            const recCompHtml = (recComp.expectedDays >= 5 && recComp.pct < 70) ? `
                 <div class="card data-quality-warning">
-                    ${(recComp.expectedDays >= 5 && recComp.pct < 70) ? `<div class="line">⚠️ تغطية تسجيل منخفضة: ${fmt(recComp.pct,0)}% فقط من أيام الدورة (${recComp.actualDays} من ${recComp.expectedDays} يوم) مُسجَّلة فعليًا</div>` : ''}
-                    ${dataConf ? `<div class="line" style="${(recComp.expectedDays >= 5 && recComp.pct < 70) ? 'margin-top:6px;' : ''}">⚠️ فاتك تسجيل الوزن ${dataConf.missingWeight} من آخر ${dataConf.ofDays} أيام${dataConf.missingFeed?' والعلف '+dataConf.missingFeed+' يوم':''}</div>` : ''}
+                    <div class="line">⚠️ تغطية تسجيل منخفضة: ${fmt(recComp.pct,0)}% فقط من أيام الدورة (${recComp.actualDays} من ${recComp.expectedDays} يوم) مُسجَّلة فعليًا</div>
                     <div class="hint">التحليلات والتنبؤات بالأسفل أقل دقة مع تسجيل متقطع — سجّل يوميًا لأفضل النتائج</div>
                 </div>` : '';
             // ============ (جديد) شفافية مصدر المرجع المعياري المستخدم فى المقارنة — عشان المستخدم يعرف بيتقارن بإيه بالظبط ============
@@ -14061,7 +14267,16 @@
                     <div class="day" style="margin-top:2px;">توقّع تقديري وليس نهائيًا — كل ما اقتربت من يوم البيع الفعلي زادت دقته، فرصتك تتدخل بتعديل التغذية أو البيئة الآن لو الفرق واضح</div>
                 </div></div>`;
             })();
-            // ============ 🎨 كارت قرار البيع البارز (خارج الأكورديون) — نفس بيانات saleHtml تحت لكن بواجهة مميزة لأنه أهم قرار عملي يومي ============
+            // ============ توقع الربح الحي للدورة — لو استمرت على نفس المنوال حتى يوم البيع الموصى به، يتحدّث تلقائيًا مع كل تسجيل جديد أو تغيير سعر البورصة ============
+            // ⚠️ إصلاح (دمج): كان ده كارت منفصل (stat-mini-card) جنب مؤشر الأداء، وقرار البيع كارت hero منفصل تحته —
+            // مع إن توقع الربح أصلاً محسوب من نفس بيانات قرار البيع (osd)، فكان عرضهم منفصلين مربك. دلوقتي
+            // بيتحسب هنا قبل بناء كارت قرار البيع عشان يتدمجوا فى كارت واحد.
+            const liveProfit = computeLiveProfitForecast(b, m, fin, saleAdv);
+            const heroProfitLineHtml = !liveProfit ? '' : `<div class="profit-line">
+                    <span class="profit-label">💹 الربح المتوقع حتى وقت البيع</span>
+                    <span class="profit-value" style="color:${liveProfit.projectedProfit>=0?'var(--green)':'#F09088'};">${money(liveProfit.projectedProfit)}<small> (${money(liveProfit.projectedProfitPerBird)}/طائر)</small></span>
+                </div>`;
+            // ============ 🎨 كارت قرار البيع + توقع الربح الحي البارز (خارج الأكورديون) — كارت واحد مدموج، نفس بيانات saleHtml/liveProfitHtml تحت لكن بواجهة مميزة لأنه أهم قرار عملي يومي ============
             const saleDecisionCardHtml = !saleAdv.osd ? '' : `
             <div class="card sale-decision-card">
                 <div class="eyebrow">🎯 قرار البيع (حسب بورصة الدواجن)</div>
@@ -14070,32 +14285,20 @@
                 </div>
                 ${saleAdv.osd.limitingFactor==='density'?'<div class="warn-line">⚠️ بسبب الكثافة/المساحة، قبل الحد الاقتصادي</div>':''}
                 <div class="advice-line">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
+                ${heroProfitLineHtml}
                 <div class="meta-line">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم${saleAdv.osd.priceSource==='market'?' (مُدخَل يدويًا)':' (من متوسط مبيعات سابقة)'} · ${saleAdv.osd.weightDataPoints} وزنة فعلية ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
             </div>`;
-            // ============ قرار البيع: ملخص "نقطة البيع الاقتصادية المثلى" مبني على بورصة الدواجن + أداء القطيع الفعلي (نسخة الأكورديون التفصيلية) ============
+            // ============ قرار البيع + توقع الربح الحي: نسخة الأكورديون التفصيلية المدموجة (بدل صفّين منفصلين) ============
             const saleHtml = !saleAdv.osd ? `<div class="check-row"><div class="txt">
                     <div>🎯 قرار البيع (حسب بورصة الدواجن)</div>
                     <div class="day">أدخل سعر العلف وسعر البورصة الحالي من تبويب "💰 الإدارة والتخطيط" ← دراسة الجدوى عشان تظهر التوصية هنا</div>
                 </div></div>` : `<div class="check-row"><div class="txt">
                     <div>🎯 قرار البيع: أفضل يوم مُوصى به <b style="color:var(--green);">يوم ${saleAdv.osd.optimalDay}</b>${saleAdv.osd.limitingFactor==='density'?' <span style="color:var(--red);font-weight:700;">(بسبب الكثافة/المساحة، قبل الحد الاقتصادي)</span>':''} ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
                     <div class="day" style="color:${saleAdv.adviceColor};font-weight:700;">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
+                    ${liveProfit ? `<div class="day" style="margin-top:4px;">💹 لو استمرت الدورة على نفس المنوال ${liveProfit.daysRemaining} يوم كمان لحد يوم ${liveProfit.targetDay}: ربح متوقع <b style="font-size:14px;color:${liveProfit.projectedProfit>=0?'var(--green)':'var(--red)'};">${money(liveProfit.projectedProfit)}</b> إجمالي الدورة، أو <b>${money(liveProfit.projectedProfitPerBird)}</b> لكل طائر</div>
+                    <div class="day">الإيراد المتوقع ${money(liveProfit.projectedRevenue)} (${fmt(liveProfit.liveProjAtTarget,0)} طائر × ${fmt(liveProfit.projWeightG/1000,2)} كجم × ${fmt(liveProfit.salePrice,2)} ج) − إجمالي التكلفة المتوقعة ${money(liveProfit.projectedTotalCost)}</div>` : ''}
                     <div class="day" style="margin-top:2px;">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم (${saleAdv.osd.priceSource==='market'?'مُدخَل يدويًا':'من متوسط مبيعات سابقة'}) — حدّثه من تبويب "💰 الإدارة والتخطيط" ← دراسة الجدوى</div>
-                    <div class="day" style="margin-top:2px;color:var(--muted);">مبني على ${saleAdv.osd.weightDataPoints} وزنة فعلية مُقاسة مؤخرًا — كل ما سجّلت أوزان أكتر وأقرب لبعض، زادت دقة اليوم المُوصى به</div>
-                </div></div>`;
-            // ============ توقع الربح الحي للدورة — لو استمرت على نفس المنوال حتى يوم البيع الموصى به، يتحدّث تلقائيًا مع كل تسجيل جديد أو تغيير سعر البورصة ============
-            const liveProfit = computeLiveProfitForecast(b, m, fin, saleAdv);
-            // ============ 🎨 كارت الربح الحي المصغّر (جنب كارت مؤشر الأداء فى dual-card-grid) — نفس بيانات liveProfitHtml تحت لكن ملخّص سريع بارز ============
-            const liveProfitCardHtml = !liveProfit ? '' : `<div class="stat-mini-card">
-                    <div class="title">💹🔮 توقع الربح الحي حتى يوم ${liveProfit.targetDay}</div>
-                    <div class="value" style="color:${liveProfit.projectedProfit>=0?'var(--green)':'var(--red)'};">${money(liveProfit.projectedProfit)}<small> / ${money(liveProfit.projectedProfitPerBird)} للطائر</small></div>
-                    <div class="caption">لو استمرت الدورة على نفس المنوال ${liveProfit.daysRemaining} يوم كمان</div>
-                    <div class="caption">${liveProfit.confidence==='green'?'🟢 مبني على بيانات وزن كافية':(liveProfit.confidence==='mid'?'🟡 دقة متوسطة — سجّل أوزان أكتر':'⚪ بيانات قليلة لسه — تقريبي')}</div>
-                </div>`;
-            const liveProfitHtml = !liveProfit ? '' : `<div class="check-row"><div class="txt">
-                    <div>💹🔮 توقع الربح الحي (لو استمرت الدورة لحد يوم البيع المُوصى به يوم ${liveProfit.targetDay}، بعد ${liveProfit.daysRemaining} يوم)</div>
-                    <div class="day" style="margin-top:4px;"><b style="font-size:14px;color:${liveProfit.projectedProfit>=0?'var(--green)':'var(--red)'};">${money(liveProfit.projectedProfit)}</b> إجمالي الدورة، أو <b>${money(liveProfit.projectedProfitPerBird)}</b> لكل طائر</div>
-                    <div class="day">الإيراد المتوقع ${money(liveProfit.projectedRevenue)} (${fmt(liveProfit.liveProjAtTarget,0)} طائر × ${fmt(liveProfit.projWeightG/1000,2)} كجم × ${fmt(liveProfit.salePrice,2)} ج) − إجمالي التكلفة المتوقعة ${money(liveProfit.projectedTotalCost)}</div>
-                    <div class="day" style="margin-top:2px;color:var(--muted);">${liveProfit.confidence==='green'?'🟢 مبني على بيانات وزن كافية':(liveProfit.confidence==='mid'?'🟡 دقة متوسطة — سجّل أوزان أكتر لتحسين التوقع':'⚪ بيانات وزن قليلة لسه — التوقع تقريبي')} — سعر البورصة ${liveProfit.priceSource==='market'?'مُدخَل يدويًا':'من متوسط مبيعات سابقة'}، حدّثه من تبويب "💰 الإدارة والتخطيط" ← دراسة الجدوى</div>
+                    <div class="day" style="margin-top:2px;color:var(--muted);">مبني على ${saleAdv.osd.weightDataPoints} وزنة فعلية مُقاسة مؤخرًا${liveProfit ? ` — ${liveProfit.confidence==='green'?'🟢 دقة توقع الربح كافية':(liveProfit.confidence==='mid'?'🟡 دقة توقع الربح متوسطة':'⚪ توقع الربح تقريبي لسه')}` : ''} — كل ما سجّلت أوزان أكتر وأقرب لبعض، زادت الدقة</div>
                 </div></div>`;
             const feedForecastHtml = (() => {
                 const targetAge = (ins.weightPrediction && ins.weightPrediction.targetAge) || b.targetAge || null;
@@ -14486,7 +14689,7 @@
             })();
             // ============ تجميع التحليلات فى 4 مجموعات مصنّفة بدل عرضها كلها فى كومة واحدة غير منظمة ============
             const groupAttentionArr = [respRiskHtml, devOnsetHtml, riskIndexHtml, upcomingVaccHtml, weeklyStressHtml, weightZHtml, stressHtml, waterFeedRatioHtml, waterQualityCorrHtml].filter(Boolean);
-            const groupForecastArr = [epefProjHtml, saleHtml, liveProfitHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
+            const groupForecastArr = [epefProjHtml, saleHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
             const groupPerformanceArr = [effScoreHtml, mortCostHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
             const groupBenchmarkArr = [seasonalHtml, globalBenchHtml, blendedCurveHtml, farmBenchHtml, bestCyclesHtml].filter(Boolean);
             // ============ 🔴 إصلاح Red Team (مدموج): إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو ============
@@ -14511,7 +14714,7 @@
             // "تحليلات ذكية" دلوقتي بقت مخصصة بس للتحليل التفسيري/الاستشرافي (مش للتنبيهات العاجلة).
             const totalInsights = ['forecast','performance','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
                 .reduce((s, k) => s + ({forecast: groupForecastArr, performance: groupPerformanceArr, benchmark: groupBenchmarkArr}[k].length), 0);
-            const insightsSection = !totalInsights ? '' : `<div class="section"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
+            const insightsSection = !totalInsights ? '' : `<div class="section" id="smartInsightsSection"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
                 <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فوق فى "⚠️ يحتاج متابعتك الآن".</p>
                 <div class="card" style="padding:0;overflow:hidden;">
                     ${insightGroup('forecast', 'توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, true)}
@@ -14568,23 +14771,35 @@
             // الوزن البصري، أهم فعل (top3[0]) بيبقى بارز فى كارت Hero علوي، والباقي (top3[1..]) قايمة مختصرة تحته.
             const heroPick = unified.top3[0];
             const restPicks = unified.top3.slice(1);
+            // ============ 🔴 إصلاح Red Team: كل بند بقى فعل قابل للتنفيذ فورًا، مش وصف بس ============
+            // كل بند بنسجّله فى مصفوفة عامة (window._katkotPriorityActions) ونديله زرار "نفّذ الآن" بيستدعي
+            // runPriorityAction(index) — اللي بيفتح المودال الصحيح فعليًا أو ينقل المستخدم للتبويب/القسم
+            // المسؤول عن حل المشكلة دي بالظبط، بدل ما يفضل يقرأ الجملة ويدوّر بنفسه على مكان التنفيذ.
+            window._katkotPriorityActions = unified.top3.map(p => p.action || null);
+            const actionBtnHtml = (idx, action) => {
+                if (!action) return '';
+                const lbl = action.label || '⚡ نفّذ الآن';
+                return `<button type="button" class="btn gold xs" style="margin-top:6px;" onclick="event.stopPropagation();runPriorityAction(${idx})">${esc(lbl)}</button>`;
+            };
             const prioritiesSection = !heroPick ? '' : `
             <div class="hero-priority">
-                <div class="eyebrow"><span>🎯 أهم فعل عليك اتخاذه الآن</span></div>
+                <div class="eyebrow"><span>🎯 أهم فعل عليك اتخاذه الآن</span> ${unified.top3.length > 1 ? `<span style="font-size:var(--fs-2xs);font-weight:700;color:var(--muted);">(${unified.top3.length} بند يحتاج تنفيذ الآن)</span>` : ''}</div>
                 <div class="lead-meta">
                     <span class="badge-domain badge-domain-${heroPick.domain}">${heroPick.icon} ${unified.domainLabels[heroPick.domain]}</span>
                     <span class="badge-urgency ${urgencyClass[heroPick.urgency]}">⏱️ ${heroPick.urgency}</span>
                 </div>
                 <div class="lead-text">${esc(heroPick.text)}</div>
                 ${heroPick.recurringNote ? `<div style="font-size:var(--fs-xs);color:#b8860b;font-weight:700;margin-top:4px;">${esc(heroPick.recurringNote)}</div>` : ''}
+                ${actionBtnHtml(0, heroPick.action)}
                 ${restPicks.length ? `<div class="rest-list">
-                    ${restPicks.map((p, i) => `<div class="rest-row">
+                    ${restPicks.map((p, i) => `<div class="rest-row" style="flex-wrap:wrap;">
                         <b>${i+2}.</b>
                         <span class="badge-domain badge-domain-${p.domain}" style="flex-shrink:0;">${p.icon}</span>
                         <span>${esc(p.text)} <span class="badge-urgency ${urgencyClass[p.urgency]}" style="margin-inline-start:4px;">${p.urgency}</span></span>
+                        ${p.action ? `<button type="button" class="btn ghost xs" style="margin-inline-start:auto;" onclick="event.stopPropagation();runPriorityAction(${i+1})">${esc(p.action.label || '⚡ نفّذ')}</button>` : ''}
                     </div>`).join('')}
                 </div>` : ''}
-                <p style="font-size:var(--fs-2xs);color:var(--muted);margin:var(--space-2) 0 0;">💡 مجمّعة من كل بيانات الدفعة (إنتاج/مالية/تشغيل/بيئة) ومرتبة بالأولوية — راجعها أول حاجة كل يوم.</p>
+                <p style="font-size:var(--fs-2xs);color:var(--muted);margin:var(--space-2) 0 0;">💡 مجمّعة من كل بيانات الدفعة (إنتاج/مالية/تشغيل/بيئة) ومرتبة بالأولوية، وعددها يتغيّر حسب خطورة الوضع فعليًا — راجعها أول حاجة كل يوم.</p>
             </div>`;
             // ============ إعادة هيكلة 2026: قسم واحد موحّد بدل 3 أماكن منفصلة كانت بتعرض "حاجة عاجلة" ============
             // (كان فيه: hero-priority + accordion "يحتاج انتباه الآن" جوه تحليلات ذكية + accordion منفصل
@@ -14638,7 +14853,8 @@
             ${recCompHtml}
             ${quickMarketPriceSection}
             ${prioritiesSection}
-            ${liveProfitCardHtml ? `<div class="dual-card-grid">${perfScoreCardHtml}${liveProfitCardHtml}</div>` : perfScoreCardHtml}
+            ${renderInventoryDashboardCard(b, fin, m)}
+            ${perfScoreCardHtml}
             ${saleDecisionCardHtml}
             ${unifiedAttentionSection}
             <div class="health-score-card" style="border-color:${hs.color};">
@@ -15059,7 +15275,7 @@
                     </div>${levelBar}</div>`;
             }).join('');
             const feedStockSection = `<div class="section"><div class="section-head"><h2>📦 مخزون العلف</h2>
-                <button class="btn ghost sm" onclick="setTab('management');setManagementSubTab('inventory')">فتح المخزن الكامل →</button></div>
+                <button class="btn ghost sm" onclick="setTab('dashboard')">فتح المخزن الكامل →</button></div>
                 <div>${feedStockRows || '<div class="card empty">لا يوجد صنف "علف" مسجَّل بالمخزن بعد.</div>'}</div>
             </div>`;
 
@@ -15434,6 +15650,7 @@
                             ${dueToday?'<span class="pill exp" style="font-size:10px;">مستحق اليوم!</span>':overdue&&!v.done?'<span class="pill exp" style="font-size:10px;">متأخر</span>':''}
                         </div>
                         <div class="day">يوم ${v.day} ${v.doneDate?'· تم فى '+v.doneDate:''}</div>
+                        ${v.doseMode === 'perBirds' ? `<div class="day" style="color:var(--muted);">💉 ${fmt(v.ampoulesPerGroup,2)} أمبول لكل ${fmt(v.birdsPerGroup,0)} فرخة${!v.done ? ` — تقديريًا ${fmt(Math.ceil(m.liveCount / v.birdsPerGroup) * v.ampoulesPerGroup,0)} أمبول للقطيع الحالي (${fmt(m.liveCount,0)} طائر)` : ` — نُفِّذ بـ ${fmt(v.qty,1)} أمبول`}</div>` : ''}</div>
                     </div>
                     <button class="btn ghost sm owner-only" onclick="editVaccine('${v.id}')">✏️</button>
                     <button class="btn danger sm owner-only" onclick="deleteVaccine('${v.id}')">🗑️</button>
@@ -15598,14 +15815,16 @@
             fin = fin || computeFinance(b, m);
             const cats = [
                 { id: 'finance', label: '💰 التقرير الشامل' },
-                { id: 'inventory', label: '📦 المخزن والمعاملات' },
                 { id: 'compare', label: '⚖️ مقارنة الدورات' },
                 { id: 'expansion', label: '🚀 خطة التوسع' },
             ];
+            // ============ (جديد) المخزون والمعاملات اتنقلوا بالكامل لكارت مخصص فى الداشبورد ============
+            // (📦 المخزن + 🛒 المشتريات + 💰 المبيعات + مقارنة الموردين/المشترين) — مبقوش جزء من
+            // الإدارة والتخطيط، وبقت renderInventoryDashboardCard() هي المسؤولة عن عرضها فى الداشبورد.
+            if (managementSubTab === 'inventory') managementSubTab = 'finance';
             const navHtml = `<div class="settings-subnav">${cats.map(c => `<button class="ssnav-btn ${managementSubTab===c.id?'active':''}" onclick="setManagementSubTab('${c.id}')">${c.label}</button>`).join('')}</div>`;
             let bodyHtml = '';
             if (managementSubTab === 'finance') bodyHtml = renderFinanceTab(b, m, fin, alerts);
-            else if (managementSubTab === 'inventory') bodyHtml = renderInventoryTab(b, fin, m);
             else if (managementSubTab === 'compare') bodyHtml = renderCompareTab();
             else if (managementSubTab === 'expansion') bodyHtml = renderExpansionTab(b);
             return navHtml + bodyHtml;
@@ -16314,28 +16533,60 @@
         }
 
 
-        function renderInventoryTab(b, fin, m) {
+        // ============ (إعادة هيكلة) كارت المخزون فى الداشبورد ============
+        // بدل ما يكون "المخزون" تبويب فرعي جوه الإدارة والتخطيط، بقى كارت واحد فى الداشبورد نفسه:
+        // دائرة توضح رصيد/استهلاك صنف واحد (افتراضيًا العلف) مع زرار يبدّل الصنف الظاهر، وزرارين
+        // شراء/بيع فوق الكارت، ومستطيل صغير للمستحقات، وقسم مطوي تحت فيه حركة المخزن الكاملة
+        // ومقارنة الموردين والمشترين. الصرف بقى بيتسجل تلقائيًا من السجل اليومي (تنفيذ إضافات/تحصينات/
+        // علاجات) مش من زرار "صرف" يدوي منفصل — فالأزرار هنا اتبسطت لـ"تعديل" (تصحيح/تلف/جرد) و"حذف" بس.
+
+        // دائرة (donut) بصرية: نسبة "الباقي" مقابل "المستهلك" لصنف واحد
+        function stockLevelRingHtml(usedQty, availQty, unit, size) {
+            size = size || 108;
+            const r = (size / 2) - 12;
+            const c = 2 * Math.PI * r;
+            const total = usedQty + availQty;
+            const availPct = total > 0 ? Math.max(0, Math.min(100, (availQty / total) * 100)) : 100;
+            const color = availPct <= 15 ? '#d64545' : (availPct <= 40 ? '#e0921f' : '#27ae60');
+            const cx = size / 2, cy = size / 2;
+            return `
+            <div class="dash-inv-ring" style="position:relative;width:${size}px;height:${size}px;flex-shrink:0;">
+                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--line)" stroke-width="11"/>
+                    ${total > 0 ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="11" stroke-linecap="round"
+                        stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - availPct / 100)}" transform="rotate(-90 ${cx} ${cy})"/>` : ''}
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+                    <b style="font-size:15px;color:${color};line-height:1.1;">${fmt(availQty,1)}</b>
+                    <span style="font-size:10px;color:var(--muted);">${esc(unit)}</span>
+                </div>
+            </div>`;
+        }
+
+        // الصنف المختار حاليًا لعرضه فى دائرة الداشبورد (افتراضيًا العلف) — مجرد اختيار عرض، لا يُخزَّن ولا يمس أي بيانات
+        let dashInvItemId = null;
+        function setDashInvItem(itemId) { dashInvItemId = itemId; render(); }
+
+        // تجميع بيانات المخزون/المشتريات/المبيعات المطلوبة لكارت الداشبورد ولوحة التفاصيل المطوية تحته
+        function computeInventoryDashboardData(b, fin, m) {
             m = m || computeMetrics(b);
             fin = fin || computeFinance(b, m);
-            // ============ توقع علمي لتغطية مخزون العلف (منحنى استهلاك متصاعد + نفوق متوقع) بدل متوسط ثابت — يُستخدم فقط لصنف العلف ============
             const feedForecast = computeFeedForecast(b, m);
             const today0 = todayStr();
-            const payables = { total: 0, overdue: 0 };
-            b.purchases.filter(p => p.paid === false).forEach(p => { payables.total += p.total; if (p.dueDate && p.dueDate < today0) payables.overdue += p.total; });
+            const payables = { total: 0, overdue: 0, feed: 0, other: 0 };
+            b.purchases.filter(p => p.paid === false).forEach(p => {
+                payables.total += p.total;
+                if (p.dueDate && p.dueDate < today0) payables.overdue += p.total;
+                if (p.type === 'علف') payables.feed += p.total; else payables.other += p.total;
+            });
             const receivables = { total: 0, overdue: 0 };
             b.sales.filter(s => s.paid === false).forEach(s => { receivables.total += s.total; if (s.dueDate && s.dueDate < today0) receivables.overdue += s.total; });
             const items = [...b.inventory].sort((a,c)=>a.category.localeCompare(c.category));
-            // آخر سعر وحدة أساسية لكل صنف (من آخر عملية شراء أدخلته للمخزن) لتقدير قيمة الرصيد
             const lastUnitPrice = {};
             [...b.purchases].filter(p => p.stocked && p.stockQty > 0).sort((a,c)=>a.date.localeCompare(c.date))
                 .forEach(p => { lastUnitPrice[p.stockItemName] = p.total / p.stockQty; });
-            // متوسط الصرف اليومي آخر 14 يوم لكل صنف، لتقدير عدد أيام التغطية المتبقية
             const cutoff = new Date(new Date(todayStr()).getTime() - 14 * 86400000).toISOString().slice(0,10);
             const dailyOut = {};
-            // ============ 🔴 إصلاح: كان بيقسّم إجمالي الصرف آخر 14 يوم على 14 دايمًا، حتى لو الصنف اتصرف مرة واحدة بس ============
-            // (زي جرعة علاج/معزز لمرة واحدة) — ده بيدّي معدل يومي وهمي وبيخلي الاقتراح يفضل ظاهر أو "يوم متبقي" غلط
-            // ومش منطقي لأصناف مش بتتصرف يوميًا أصلاً. دلوقتي بنعدّ عدد الأيام المختلفة اللي فيها صرف فعلي لكل صنف،
-            // ولو أقل من 3 أيام مختلفة (يعني استخدام غير منتظم) منحسبش له معدل يومي وهمي خالص.
             const outDaysCount = {};
             b.stockMovements.filter(mv => mv.type === 'out' && mv.date >= cutoff).forEach(mv => {
                 dailyOut[mv.itemName] = (dailyOut[mv.itemName] || 0) + mv.qty;
@@ -16343,16 +16594,12 @@
                 outDaysCount[mv.itemName].add(mv.date);
             });
             let totalInvValue = 0;
-            // إجمالي الصادر (المستهلك) تاريخيًا لكل صنف — يُستخدم مع الرصيد الحالي لرسم شريط المستوى البصري (مستهلك/متاح)
             const totalOutByItem = {};
-            b.stockMovements.filter(mv => mv.type === 'out').forEach(mv => {
-                totalOutByItem[mv.itemName] = (totalOutByItem[mv.itemName] || 0) + mv.qty;
-            });
-            // ============ اقتراح إعادة الطلب: عناصر أوشكت على النفاذ + الكمية المقترحة لتغطية فترة هدف بناءً على معدل الصرف الفعلي ============
+            b.stockMovements.filter(mv => mv.type === 'out').forEach(mv => { totalOutByItem[mv.itemName] = (totalOutByItem[mv.itemName] || 0) + mv.qty; });
             const REORDER_TARGET_DAYS = 10;
-            const MIN_REGULAR_DAYS = 3; // أقل عدد أيام صرف مختلفة عشان نعتبر الاستهلاك "منتظم" ونحسب له معدل يومي
+            const MIN_REGULAR_DAYS = 3;
             const reorderSuggestions = [];
-            const itemRows = items.map(it=>{
+            const itemStats = items.map(it => {
                 const unitPrice = lastUnitPrice[it.name] || 0;
                 const value = it.balance > 0 ? it.balance * unitPrice : 0;
                 totalInvValue += value;
@@ -16360,63 +16607,92 @@
                 const isRegularUse = distinctOutDays >= MIN_REGULAR_DAYS;
                 const avgDaily = isRegularUse ? (dailyOut[it.name] || 0) / 14 : 0;
                 const isFeedItem = it.category === 'علف' && feedForecast.feedItem && feedForecast.feedItem.id === it.id;
-                // ===== صنف العلف تحديدًا: نستخدم التوقع العلمي المتصاعد (منحنى نمو × نسبة أداء × نفوق متوقع) بدل المتوسط الثابت =====
                 let daysLeft = avgDaily > 0 ? it.balance / avgDaily : null;
                 let forecastNote = '';
-                if (isFeedItem && feedForecast.stockOutInDays != null) {
-                    daysLeft = feedForecast.stockOutInDays;
-                    forecastNote = ' (توقع علمي متصاعد، وليس متوسط تاريخي)';
-                }
-                let stockFlag = '';
-                if (it.balance <= 0) stockFlag = '<span class="pill exp" style="margin-inline-start:6px;">نفد</span>';
-                else if (daysLeft != null && daysLeft <= 3) stockFlag = `<span class="pill exp" style="margin-inline-start:6px;">أوشك على النفاذ (~${fmt(daysLeft,0)} يوم${forecastNote})</span>`;
-                else if (daysLeft != null && daysLeft <= 7) stockFlag = `<span class="pill info" style="margin-inline-start:6px;">يكفي ~${fmt(daysLeft,0)} يوم${forecastNote}</span>`;
-                else if (!isFeedItem && !isRegularUse && it.balance <= 0) stockFlag = '<span class="pill exp" style="margin-inline-start:6px;">نفد (استخدام غير منتظم)</span>';
+                if (isFeedItem && feedForecast.stockOutInDays != null) { daysLeft = feedForecast.stockOutInDays; forecastNote = ' (توقع علمي متصاعد)'; }
                 if (isFeedItem) {
-                    // اقتراح شراء العلف: كمية كافية لتغطية REORDER_TARGET_DAYS القادمة فعليًا حسب منحنى الاستهلاك المتصاعد، مش بمعدل ثابت
-                    // الحساب بالكيلوجرام دائمًا (وحدة التوقع)، ثم يُحوَّل لوحدة الصنف الفعلية بالمخزن قبل العرض
                     const targetRow = feedForecast.rows.find(r => r.day === m.todayAge + REORDER_TARGET_DAYS) || feedForecast.rows[feedForecast.rows.length - 1];
                     const neededForTargetKg = targetRow ? targetRow.cumFeedKg : 0;
                     const balanceKg = feedForecast.currentBalanceKg != null ? feedForecast.currentBalanceKg : it.balance;
                     const suggestedQtyKg = Math.max(neededForTargetKg - balanceKg, 0);
                     const suggestedQty = convertUnitQty(suggestedQtyKg, 'كجم', it.unit);
-                    if (suggestedQty != null && suggestedQty > 0 && (daysLeft == null || daysLeft <= 7)) {
-                        reorderSuggestions.push({ name: it.name, unit: it.unit, qty: suggestedQty, cost: unitPrice > 0 ? suggestedQty * unitPrice : null, daysLeft });
-                    }
+                    if (suggestedQty != null && suggestedQty > 0 && (daysLeft == null || daysLeft <= 7)) reorderSuggestions.push({ name: it.name, unit: it.unit, qty: suggestedQty, cost: unitPrice > 0 ? suggestedQty * unitPrice : null, daysLeft });
                 } else if (isRegularUse && avgDaily > 0 && daysLeft <= 7) {
-                    // استهلاك منتظم (3 أيام مختلفة فأكتر خلال آخر 14 يوم) — معدل يومي حقيقي يستاهل نعتمد عليه فى الإسقاط
                     const suggestedQty = Math.max((avgDaily * REORDER_TARGET_DAYS) - it.balance, 0);
-                    if (suggestedQty > 0) {
-                        reorderSuggestions.push({ name: it.name, unit: it.unit, qty: suggestedQty, cost: unitPrice > 0 ? suggestedQty * unitPrice : null, daysLeft });
-                    }
+                    if (suggestedQty > 0) reorderSuggestions.push({ name: it.name, unit: it.unit, qty: suggestedQty, cost: unitPrice > 0 ? suggestedQty * unitPrice : null, daysLeft });
                 } else if (!isRegularUse && it.balance <= 0 && (dailyOut[it.name] || totalOutByItem[it.name])) {
-                    // استخدام غير منتظم (جرعة/معزز لمرة واحدة أو متفرق) ونفد الرصيد فعلاً — منحسبش "أيام متبقية" وهمية،
-                    // بس نقترح تجديد الرصيد بآخر كمية اتصرفت عشان يبقى جاهز لو احتجته تاني بدون توقع تاريخ محدد
                     const lastDoseQty = dailyOut[it.name] || (totalOutByItem[it.name] / Math.max(distinctOutDays, 1));
-                    if (lastDoseQty > 0) {
-                        reorderSuggestions.push({ name: it.name, unit: it.unit, qty: lastDoseQty, cost: unitPrice > 0 ? lastDoseQty * unitPrice : null, daysLeft: null, irregular: true });
-                    }
+                    if (lastDoseQty > 0) reorderSuggestions.push({ name: it.name, unit: it.unit, qty: lastDoseQty, cost: unitPrice > 0 ? lastDoseQty * unitPrice : null, daysLeft: null, irregular: true });
                 }
-                const photoThumb = it.photo ? `<img src="${it.photo}" style="width:24px;height:24px;object-fit:cover;border-radius:5px;vertical-align:middle;margin-inline-end:5px;border:1px solid var(--line);">` : '';
                 const usedQty = totalOutByItem[it.name] || 0;
+                return { it, unitPrice, value, usedQty, daysLeft, forecastNote, isFeedItem };
+            });
+            const supplierMap = {};
+            b.purchases.filter(p => p.supplier).forEach(p => {
+                if (!supplierMap[p.supplier]) supplierMap[p.supplier] = { count: 0, total: 0, lastDate: '', lastItem: '', lastPrice: 0, prices: [] };
+                const s = supplierMap[p.supplier];
+                s.count++; s.total += p.total; s.prices.push(p.price);
+                if (p.date >= s.lastDate) { s.lastDate = p.date; s.lastItem = p.desc || p.type; s.lastPrice = p.price; }
+            });
+            const buyerMap = {};
+            b.sales.filter(s => s.buyer).forEach(s => {
+                if (!buyerMap[s.buyer]) buyerMap[s.buyer] = { count: 0, total: 0, weight: 0, lastDate: '', prices: [] };
+                const bm = buyerMap[s.buyer];
+                bm.count++; bm.total += s.total;
+                if (s.kind !== 'litter') { bm.weight += (s.weight || 0); if (s.price) bm.prices.push(s.price); }
+                if (s.date >= bm.lastDate) bm.lastDate = s.date;
+            });
+            return { items, itemStats, totalInvValue, payables, receivables, reorderSuggestions, REORDER_TARGET_DAYS, supplierMap, buyerMap, feedForecast };
+        }
+
+        // كارت المخزون الرئيسي فى الداشبورد
+        function renderInventoryDashboardCard(b, fin, m) {
+            m = m || computeMetrics(b);
+            fin = fin || computeFinance(b, m);
+            const data = computeInventoryDashboardData(b, fin, m);
+            const { items, itemStats, payables, receivables, reorderSuggestions, REORDER_TARGET_DAYS, supplierMap, buyerMap } = data;
+            if (!items.length) {
+                return `
+                <div class="section" style="margin-top:0;"><div class="section-head"><h2>📦 المخزون</h2></div>
+                    <div class="card empty" style="text-align:center;">
+                        <div class="ico">📦</div>
+                        <p style="margin:6px 0 10px;font-size:13px;">المخزن فارغ حتى الآن — سجّل أول عملية شراء ليبدأ التتبع.</p>
+                        <div class="row-actions"><button class="btn gold" style="flex:1;" onclick="openPurchaseModal()">🛒 شراء</button><button class="btn ghost" style="flex:1;" onclick="openSaleModal()">💰 بيع</button></div>
+                    </div>
+                </div>`;
+            }
+            // اختيار الصنف الظاهر فى الدائرة: افتراضيًا العلف، أو آخر صنف تم اختياره طالما لسه موجود
+            let chosen = itemStats.find(x => x.it.id === dashInvItemId);
+            if (!chosen) chosen = itemStats.find(x => x.isFeedItem) || itemStats.find(x => x.it.category === 'علف') || itemStats[0];
+            const ringHtml = stockLevelRingHtml(chosen.usedQty, Math.max(chosen.it.balance, 0), chosen.it.unit, 108);
+            let stockFlag = '';
+            if (chosen.it.balance <= 0) stockFlag = '<span class="pill exp">نفد</span>';
+            else if (chosen.daysLeft != null && chosen.daysLeft <= 3) stockFlag = `<span class="pill exp">أوشك على النفاذ (~${fmt(chosen.daysLeft,0)} يوم${chosen.forecastNote})</span>`;
+            else if (chosen.daysLeft != null && chosen.daysLeft <= 7) stockFlag = `<span class="pill info">يكفي ~${fmt(chosen.daysLeft,0)} يوم${chosen.forecastNote}</span>`;
+            const itemPickerOptions = itemStats.map(x => `<option value="${x.it.id}" ${x.it.id === chosen.it.id ? 'selected' : ''}>${esc(x.it.name)} (${x.it.category})</option>`).join('');
+
+            const itemRows = itemStats.map(({ it, unitPrice, value, usedQty, daysLeft, forecastNote }) => {
+                let flag = '';
+                if (it.balance <= 0) flag = '<span class="pill exp" style="margin-inline-start:6px;">نفد</span>';
+                else if (daysLeft != null && daysLeft <= 3) flag = `<span class="pill exp" style="margin-inline-start:6px;">أوشك على النفاذ (~${fmt(daysLeft,0)} يوم${forecastNote})</span>`;
+                else if (daysLeft != null && daysLeft <= 7) flag = `<span class="pill info" style="margin-inline-start:6px;">يكفي ~${fmt(daysLeft,0)} يوم${forecastNote}</span>`;
                 const levelBar = it.balance > 0 || usedQty > 0 ? stockLevelBarHtml(usedQty, Math.max(it.balance,0), it.unit) : '';
                 return `
-                <tr><td style="text-align:right;">${photoThumb}${esc(it.name)}${stockFlag}</td><td>${it.category}</td>
+                <tr><td style="text-align:right;">${esc(it.name)}${flag}</td><td>${it.category}</td>
                 <td style="${it.balance<=0?'color:var(--red);font-weight:900;':''}">${fmt(it.balance,1)} ${it.unit}</td>
                 <td style="font-size:11.5px;color:var(--muted);">${value>0?money(value):'—'}</td>
                 <td class="inv-actions">
-                    <button class="btn ghost sm" onclick="quickStock('${it.id}','in')">+ إضافة</button>
-                    <button class="btn ghost sm" onclick="quickStock('${it.id}','out')">- صرف</button>
-                    <button class="btn ghost sm" onclick="quickStock('${it.id}','adjust')" title="تسوية الرصيد أو إتلاف كمية (لا تُحسب كاستهلاك عادي)">⚖️ تسوية/إتلاف</button>
-                    <button class="btn ghost sm" onclick="triggerItemPhotoUpload('${it.id}')" title="${it.photo?'تغيير':'إرفاق'} صورة المنتج">📷</button>${it.photo?` <button class="btn ghost sm" onclick="removeItemPhoto('${it.id}')" title="حذف صورة المنتج فقط (الصنف نفسه هيفضل موجود)">✕📷</button>`:''}
-                    <button class="btn ghost sm owner-only" onclick="deleteInventoryItem('${it.id}')" title="⚠️ حذف الصنف نهائيًا من المخزن مع كل حركاته (إجراء لا رجعة فيه) — غير الأعلى اللي بس بتصفّر الرصيد" style="opacity:.5;color:var(--red);">🗑️</button>
-                </td></tr>${levelBar?`<tr><td colspan="5" style="padding-top:0;">${levelBar}</td></tr>`:''}`;
+                    <button class="btn ghost sm" onclick="quickStock('${it.id}','adjust')" title="تعديل/تصحيح رصيد الصنف (تلف، جرد، خطأ إدخال)">✏️ تعديل</button>
+                    <button class="btn ghost sm owner-only" onclick="deleteInventoryItem('${it.id}')" title="⚠️ حذف الصنف نهائيًا من المخزن مع كل حركاته (إجراء لا رجعة فيه)" style="opacity:.6;color:var(--red);">🗑️ حذف</button>
+                </td></tr>${levelBar?`<tr><td colspan="4" style="padding-top:0;">${levelBar}</td></tr>`:''}`;
             }).join('');
+
             const movRows = [...b.stockMovements].reverse().slice(0,40).map(mv=>`
                 <tr><td>${mv.date}</td><td style="text-align:right;">${esc(mv.itemName)}</td>
-                <td><span class="pill ${mv.type==='in'?'rev':(mv.type==='adjust'?'info':'exp')}">${mv.type==='in'?'وارد +':(mv.type==='adjust'?'تسوية/حذف':'صادر -')}</span></td>
+                <td><span class="pill ${mv.type==='in'?'rev':(mv.type==='adjust'?'info':'exp')}">${mv.type==='in'?'وارد +':(mv.type==='adjust'?'تعديل رصيد':'صادر -')}</span></td>
                 <td>${fmt(mv.qty,1)}</td><td style="font-size:11px;color:var(--muted);">${esc(mv.note||'')}</td>
                 <td><button class="btn ghost sm" onclick="editMovement('${mv.id}')">✏️</button> <button class="btn danger sm" onclick="deleteMovement('${mv.id}')">🗑️</button></td></tr>`).join('');
+
             const purRows = [...b.purchases].reverse().map(p=>{
                 const isUnpaid = p.paid === false;
                 const overdue = isUnpaid && p.dueDate && p.dueDate < todayStr();
@@ -16436,28 +16712,12 @@
                 if(s.kind==='litter')return`<tr><td>${s.date}</td><td><span class="pill info">سبلة</span></td><td>${esc(s.buyer)||'—'}</td><td>${fmt(s.volume,2)} م³</td><td>${money(s.total)}</td><td>${payBadge}</td><td>${payAction}<button class="btn ghost sm" onclick="editSale('${s.id}')">✏️</button> <button class="btn danger sm" onclick="deleteSale('${s.id}')">🗑️</button></td></tr>`;
                 return`<tr><td>${s.date}</td><td><span class="pill rev">لحم</span></td><td>${esc(s.buyer)||'—'}</td><td>${fmt(s.weight,1)} كجم (${s.count||0})</td><td>${money(s.total)}</td><td>${payBadge}</td><td>${payAction}<button class="btn ghost sm" onclick="editSale('${s.id}')">✏️</button> <button class="btn danger sm" onclick="deleteSale('${s.id}')">🗑️</button></td></tr>`;
             }).join('');
-            const supplierMap = {};
-            b.purchases.filter(p => p.supplier).forEach(p => {
-                if (!supplierMap[p.supplier]) supplierMap[p.supplier] = { count: 0, total: 0, lastDate: '', lastItem: '', lastPrice: 0, prices: [] };
-                const s = supplierMap[p.supplier];
-                s.count++; s.total += p.total; s.prices.push(p.price);
-                if (p.date >= s.lastDate) { s.lastDate = p.date; s.lastItem = p.desc || p.type; s.lastPrice = p.price; }
-            });
             const supplierRows = Object.keys(supplierMap).sort().map(name => {
                 const s = supplierMap[name];
                 const avg = s.prices.reduce((a,c)=>a+c,0) / s.prices.length;
                 return `<tr><td style="text-align:right;">${name}</td><td>${s.count}</td><td style="text-align:right;font-size:11px;">${s.lastItem}</td>
                 <td>${fmt(s.lastPrice,2)}</td><td>${fmt(avg,2)}</td><td>${money(s.total)}</td><td>${s.lastDate}</td></tr>`;
             }).join('');
-            // ============ مقارنة المشترين (أداء كل مشترٍ عبر عمليات بيع هذه الدفعة) ============
-            const buyerMap = {};
-            b.sales.filter(s => s.buyer).forEach(s => {
-                if (!buyerMap[s.buyer]) buyerMap[s.buyer] = { count: 0, total: 0, weight: 0, lastDate: '', prices: [] };
-                const bm = buyerMap[s.buyer];
-                bm.count++; bm.total += s.total;
-                if (s.kind !== 'litter') { bm.weight += (s.weight || 0); if (s.price) bm.prices.push(s.price); }
-                if (s.date >= bm.lastDate) bm.lastDate = s.date;
-            });
             const buyerRows = Object.keys(buyerMap).sort((x, y) => buyerMap[y].total - buyerMap[x].total).map(name => {
                 const bm = buyerMap[name];
                 const avgPrice = bm.prices.length ? bm.prices.reduce((a,c)=>a+c,0) / bm.prices.length : 0;
@@ -16470,80 +16730,61 @@
                 <div class="card scroll-x"><table><thead><tr><th>الصنف</th><th>الكمية المقترحة</th><th>التكلفة التقديرية</th><th>المتبقي حاليًا</th><th></th></tr></thead><tbody>
                 ${reorderSuggestions.map((r,i) => `<tr id="reorderRow_${i}"><td style="text-align:right;">${esc(r.name)}</td><td>${fmt(r.qty,1)} ${r.unit}</td><td>${r.cost!=null?money(r.cost):'—'}</td><td>${r.irregular?'<span style="color:var(--muted);">نفد (استخدام غير منتظم)</span>':(r.daysLeft!=null?'~'+fmt(r.daysLeft,0)+' يوم':'نفد')}</td><td><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;"><button class="btn ghost sm owner-only" onclick="quickReorderPurchase('${r.name.replace(/'/g,"\\'")}', ${r.qty}, '${r.unit}')">🛒 تسجيل شراء</button><button class="btn ghost sm" onclick="dismissReorderSuggestion(${i})" title="مش هشتريه دلوقتي">🙈 تجاهل</button></div></td></tr>`).join('')}
                 </tbody></table></div>
-                <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الكمية المقترحة محسوبة لتغطية ${REORDER_TARGET_DAYS} أيام قادمة بناءً على متوسط الصرف الفعلي آخر 14 يوم لأصناف الاستهلاك المنتظم فقط. أصناف الاستخدام غير المنتظم (جرعة/معزز لمرة واحدة) بتظهر بس لما رصيدها ينفد فعلاً، بكمية آخر جرعة اتصرفت — دي تنبيهات تقديرية بتساعدك تاخد القرار، مش أوامر لازم تنفّذها؛ لو مش عايز تشتري الصنف دلوقتي، اضغط "تجاهل".</p>
-
             </div>` : '';
+
             return `
-            ${renderExpirySection(b)}
-            ${reorderHtml}
-            <div class="subtab-bar" id="invSubtabBar">
-                <button class="subtab-btn active" data-subtab="stock" onclick="switchInventorySubTab('stock')">📦 المخزون</button>
-                <button class="subtab-btn" data-subtab="purchases" onclick="switchInventorySubTab('purchases')">🛒 المشتريات<span class="count">${b.purchases.length}</span></button>
-                <button class="subtab-btn" data-subtab="sales" onclick="switchInventorySubTab('sales')">💰 المبيعات<span class="count">${b.sales.length}</span></button>
-            </div>
-            <div class="inv-subtab-panel" data-panel="stock">
-            <div class="section" style="margin-top:0;"><div class="section-head"><h2>📦 أرصدة المخزن</h2>${items.length?`<span class="tag">💰 القيمة التقديرية: ${money(totalInvValue)}</span>`:''}</div>
-                ${items.length>5?`<div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
-                    <input type="text" placeholder="🔍 بحث باسم الصنف أو التصنيف..." oninput="liveFilterTable(this,'inventoryItemsBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
-                    <span id="inventoryItemsBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
-                </div>`:''}
-                ${renderTableOrEmpty(items.length, '<th>العنصر</th><th>التصنيف</th><th>الرصيد</th><th>القيمة التقديرية</th><th></th>', itemRows, '📦', 'المخزن فارغ — أي شراء يُضاف تلقائياً.', 'inventoryItemsBody')}
-                <div class="row-actions"><button class="btn gold" style="flex:1;" onclick="openStockModal('in')">+ إضافة للمخزن</button><button class="btn danger" style="flex:1;" onclick="openStockModal('out')">- تسجيل صرف</button></div>
-                <div class="row-actions" style="margin-top:8px;"><button class="btn ghost" style="flex:1;" onclick="openStockModal('adjust')">🗑️ حذف / تسوية رصيد (بدون احتساب استهلاك)</button></div>
-                ${items.length?`<p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 "تسجيل صرف" يُحتسب كاستهلاك فعلي ضمن تقدير "الأيام المتبقية". أما "حذف/تسوية" (تلف، فقد، جرد، تصحيح خطأ إدخال) فتُخصم من الرصيد فقط ولا تدخل ضمن حساب معدّل الاستهلاك اليومي. "أوشك على النفاذ" و"يكفي ~X يوم" تقدير تقريبي بناءً على متوسط الصرف الفعلي آخر 14 يوم لكل صنف.</p>`:''}
-                <div class="row-actions" style="margin-top:8px;"><button class="btn ghost" style="flex:1;" onclick="mergeDuplicateInvItems()">🔗 دمج الأصناف المكررة (لو نفس الاسم اتسجل أكتر من مرة برصيد منفصل)</button></div>
-                ${items.length?`<div class="row-actions no-print" style="margin-top:8px;"><button class="btn ghost" style="flex:1;" onclick="printInventoryReport()">🖨️ طباعة كشف جرد المخزون</button></div>`:''}
-            </div>
-            <div class="section"><div class="section-head"><h2>📜 سجل حركة المخزن</h2><span class="tag">آخر 40</span></div>
-                ${renderTableOrEmpty(b.stockMovements.length, '<th>التاريخ</th><th>العنصر</th><th>النوع</th><th>الكمية</th><th>ملاحظة</th><th></th>', movRows, '📜', 'لا حركات بعد.')}
-            </div>
-            <div class="section"><div class="card" style="background:linear-gradient(135deg,#2d4a5a,#1e323a);color:#fff;">
-                <div style="font-weight:800;font-size:14px;margin-bottom:8px;">💳 المستحقات (آجل)</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
-                    <div><div style="opacity:.85;font-size:11px;">مستحق للموردين</div><div style="font-weight:900;font-size:17px;color:${payables.total>0?'#ffb4b4':'#fff'};">${money(payables.total)}</div>${payables.overdue>0?`<div style="font-size:10.5px;color:#ffb4b4;">⚠️ منها ${money(payables.overdue)} متأخر السداد</div>`:''}</div>
-                    <div><div style="opacity:.85;font-size:11px;">مستحق من العملاء</div><div style="font-weight:900;font-size:17px;color:${receivables.overdue>0?'#ffe08a':'#fff'};">${money(receivables.total)}</div>${receivables.overdue>0?`<div style="font-size:10.5px;color:#ffe08a;">⚠️ منها ${money(receivables.overdue)} متأخر التحصيل</div>`:''}</div>
+            <div class="section" style="margin-top:0;"><div class="section-head"><h2>📦 المخزون</h2>${items.length?`<span class="tag">💰 القيمة التقديرية: ${money(data.totalInvValue)}</span>`:''}</div>
+                <div class="card dash-inv-card">
+                    <div class="row-actions" style="margin-bottom:10px;">
+                        <button class="btn gold" style="flex:1;" onclick="openPurchaseModal()">🛒 شراء</button>
+                        <button class="btn danger" style="flex:1;" onclick="openSaleModal()">💰 بيع</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                        ${ringHtml}
+                        <div style="flex:1;min-width:130px;">
+                            <select onchange="setDashInvItem(this.value)" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;margin-bottom:6px;">${itemPickerOptions}</select>
+                            <div style="font-size:11.5px;color:var(--muted);">مستهلك: ${fmt(chosen.usedQty,1)} ${chosen.it.unit}</div>
+                            <div style="margin-top:2px;">${stockFlag}</div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;background:linear-gradient(135deg,#2d4a5a,#1e323a);color:#fff;border-radius:10px;padding:10px 12px;">
+                        <div><div style="opacity:.85;font-size:10.5px;">💳 مستحق للموردين</div><div style="font-weight:900;font-size:15px;color:${payables.total>0?'#ffb4b4':'#fff'};">${money(payables.total)}</div></div>
+                        <div><div style="opacity:.85;font-size:10.5px;">💵 مستحق من العملاء</div><div style="font-weight:900;font-size:15px;color:${receivables.total>0?'#ffe08a':'#fff'};">${money(receivables.total)}</div></div>
+                    </div>
+                    <details class="dash-inv-details" style="margin-top:12px;border-top:1px solid var(--line);">
+                        <summary style="padding:10px 2px;cursor:pointer;font-weight:800;font-size:13px;color:var(--barn-dark);">📜 حركة المخزن، الأصناف، المشتريات والمبيعات ومقارنة الموردين/المشترين</summary>
+                        <div style="padding-top:6px;">
+                            ${reorderHtml}
+                            ${items.length>5?`<div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
+                                <input type="text" placeholder="🔍 بحث باسم الصنف أو التصنيف..." oninput="liveFilterTable(this,'dashInvItemsBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
+                                <span id="dashInvItemsBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
+                            </div>`:''}
+                            ${renderTableOrEmpty(items.length, '<th>العنصر</th><th>التصنيف</th><th>الرصيد</th><th>القيمة التقديرية</th><th></th>', itemRows, '📦', 'المخزن فارغ.', 'dashInvItemsBody')}
+                            <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الصرف بيتسجل تلقائيًا من تنفيذ برامج العلف/الماء/التحصينات/العلاجات فى السجل اليومي. "✏️ تعديل" هنا للتصحيح اليدوي فقط (تلف، جرد، خطأ إدخال) ولا يُحسب كاستهلاك عادي.</p>
+                            <div class="row-actions" style="margin-top:8px;"><button class="btn ghost" style="flex:1;" onclick="mergeDuplicateInvItems()">🔗 دمج الأصناف المكررة</button></div>
+                            <div class="row-actions no-print" style="margin-top:8px;"><button class="btn ghost" style="flex:1;" onclick="printInventoryReport()">🖨️ طباعة كشف جرد المخزون</button></div>
+
+                            <div class="section"><div class="section-head"><h2>📜 سجل حركة المخزن</h2><span class="tag">آخر 40</span></div>
+                                ${renderTableOrEmpty(b.stockMovements.length, '<th>التاريخ</th><th>العنصر</th><th>النوع</th><th>الكمية</th><th>ملاحظة</th><th></th>', movRows, '📜', 'لا حركات بعد.')}
+                            </div>
+                            <div class="section"><div class="section-head"><h2>🛒 المشتريات</h2><span class="tag">إجمالي: ${money(fin.totalPurchases)}</span></div>
+                                ${renderTableOrEmpty(b.purchases.length, '<th>التاريخ</th><th>النوع</th><th>الوصف</th><th>الكمية</th><th>الإجمالي</th><th>مخزون</th><th>الدفع</th><th></th>', purRows, '🛒', 'لا مشتريات بعد.')}
+                            </div>
+                            <div class="section"><div class="section-head"><h2>🚚 مقارنة الموردين</h2></div>
+                                ${renderTableOrEmpty(!!supplierRows, '<th>المورد</th><th>عدد التعاملات</th><th>آخر صنف</th><th>آخر سعر</th><th>متوسط السعر</th><th>إجمالي المشتريات</th><th>آخر تعامل</th>', supplierRows, '🚚', 'أضف اسم المورد عند تسجيل الشراء لمتابعة الأسعار ومقارنتها هنا.')}
+                            </div>
+                            <div class="section"><div class="section-head"><h2>💰 المبيعات</h2><span class="tag">إجمالي: ${money(fin.salesRevenue)}</span></div>
+                                ${renderTableOrEmpty(b.sales.length, '<th>التاريخ</th><th>النوع</th><th>المشتري</th><th>الكمية</th><th>الإجمالي</th><th>التحصيل</th><th></th>', saleRows, '💰', 'لا مبيعات بعد.')}
+                            </div>
+                            <div class="section"><div class="section-head"><h2>🤝 مقارنة المشترين</h2></div>
+                                ${renderTableOrEmpty(!!buyerRows, '<th>المشتري</th><th>عدد التعاملات</th><th>إجمالي الوزن</th><th>متوسط السعر</th><th>إجمالي المبيعات</th><th>متوسط قيمة العملية</th><th>آخر تعامل</th>', buyerRows, '🤝', 'أضف اسم المشتري عند تسجيل البيع لمتابعة أداء كل عميل ومقارنتهم هنا.')}
+                            </div>
+                        </div>
+                    </details>
                 </div>
-                ${(payables.total===0 && receivables.total===0)?`<div style="font-size:11px;opacity:.8;margin-top:8px;">لا مستحقات آجلة حاليًا — كل المشتريات والمبيعات مسددة بالكامل.</div>`:''}
-            </div></div>
-            </div>
-            <div class="inv-subtab-panel" data-panel="purchases" style="display:none;">
-            <div class="section" style="margin-top:0;"><div class="section-head"><h2>🛒 المشتريات</h2><span class="tag">إجمالي: ${money(fin.totalPurchases)}</span><button class="btn ghost sm" onclick="openPurchaseModal()">+ تسجيل</button></div>
-                ${b.purchases.length>5?`<div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
-                    <input type="text" placeholder="🔍 بحث بالوصف أو المورد أو النوع..." oninput="liveFilterTable(this,'purchasesBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
-                    <span id="purchasesBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
-                </div>`:''}
-                ${renderTableOrEmpty(b.purchases.length, '<th>التاريخ</th><th>النوع</th><th>الوصف</th><th>الكمية</th><th>الإجمالي</th><th>مخزون</th><th>الدفع</th><th></th>', purRows, '🛒', 'لا مشتريات بعد.', 'purchasesBody')}
-            </div>
-            <div class="section"><div class="section-head"><h2>🚚 مقارنة الموردين</h2></div>
-                ${renderTableOrEmpty(!!supplierRows, '<th>المورد</th><th>عدد التعاملات</th><th>آخر صنف</th><th>آخر سعر</th><th>متوسط السعر</th><th>إجمالي المشتريات</th><th>آخر تعامل</th>', supplierRows, '🚚', 'أضف اسم المورد عند تسجيل الشراء لمتابعة الأسعار ومقارنتها هنا.')}
-            </div>
-            </div>
-            <div class="inv-subtab-panel" data-panel="sales" style="display:none;">
-            <div class="section" style="margin-top:0;"><div class="section-head"><h2>💰 المبيعات</h2><span class="tag">إجمالي: ${money(fin.salesRevenue)}</span><button class="btn ghost sm" onclick="openSaleModal()">+ تسجيل</button></div>
-                ${b.sales.length>5?`<div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
-                    <input type="text" placeholder="🔍 بحث بالمشتري أو النوع..." oninput="liveFilterTable(this,'salesBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
-                    <span id="salesBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
-                </div>`:''}
-                ${renderTableOrEmpty(b.sales.length, '<th>التاريخ</th><th>النوع</th><th>المشتري</th><th>الكمية</th><th>الإجمالي</th><th>التحصيل</th><th></th>', saleRows, '💰', 'لا مبيعات بعد.', 'salesBody')}
-            </div>
-            <div class="section"><div class="section-head"><h2>🤝 مقارنة المشترين</h2></div>
-                ${renderTableOrEmpty(!!buyerRows, '<th>المشتري</th><th>عدد التعاملات</th><th>إجمالي الوزن</th><th>متوسط السعر</th><th>إجمالي المبيعات</th><th>متوسط قيمة العملية</th><th>آخر تعامل</th>', buyerRows, '🤝', 'أضف اسم المشتري عند تسجيل البيع لمتابعة أداء كل عميل ومقارنتهم هنا.')}
-            </div>
             </div>`;
         }
 
-        // تجاهل اقتراح إعادة طلب صنف مُعيّن من العرض الحالي فقط (مش قرار نهائي، مجرد إخفاء بصري) — لو الصنف لسه محتاج إعادة طلب هيظهر تاني فى المرة الجاية
-        function dismissReorderSuggestion(index) {
-            const row = document.getElementById(`reorderRow_${index}`);
-            if (row) row.remove();
-        }
-
-        // تبديل التبويب الفرعي داخل تبويب المخزون (مخزون / مشتريات / مبيعات) — عرض/إخفاء بصري فقط، لا يلمس أي بيانات أو state
-        function switchInventorySubTab(key) {
-            document.querySelectorAll('.inv-subtab-panel').forEach(p => { p.style.display = (p.dataset.panel === key) ? '' : 'none'; });
-            const bar = document.getElementById('invSubtabBar');
-            if (bar) bar.querySelectorAll('.subtab-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.subtab === key); });
-        }
 
         // حذف صنف من المخزن نهائيًا (يختلف عن "حذف/تسوية" التي تُصفّر الرصيد فقط وتُبقي الصنف موجودًا).
         // هذا الإجراء يحذف الصنف وكل حركاته من السجل نهائيًا، ويحذّر لو الصنف مرتبط بإضافة علف/ماء نشطة
