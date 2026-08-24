@@ -240,41 +240,16 @@
         .perf-score-card .abs-title { font-size: var(--fs-2xs); font-weight: 800; }
         .perf-score-card .foot-note { font-size: var(--fs-2xs); color: var(--muted); margin-top: var(--space-2); }
 
-        /* -- كارت تحذير جودة البيانات -- تستخدم tokens الخطر الموجودة أصلاً -- */
-        .data-quality-warning {
+        /* -- كارت تحذير جودة البيانات -- تستخدم tokens الخطر الموجودة أصلاً --
+           ⚠️ إصلاح: نفس فخ .card/.card-XXX (شوف تعليق .card.sale-decision-card تحت) — بزّينا التخصيص
+           لـ.card.data-quality-warning عشان خلفية التحذير الحمراء الخفيفة متتلغيش بصمت بخلفية .card الفاتحة العادية. */
+        .card.data-quality-warning {
             margin-bottom: var(--space-4); padding: var(--space-3);
             border: 1px solid var(--red); background: var(--danger-bg); border-radius: var(--radius-lg);
         }
         .data-quality-warning .line { font-size: var(--fs-sm); font-weight: 800; color: var(--red); }
         .data-quality-warning .hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 2px; }
 
-        /* -- كارت قرار البيع البارز (Hero داكن، أهم قرار يومي) --
-           ⚠️ إصلاح: الكارت ده خلفيته غامقة ثابتة فى كل الأوضاع (فاتح/ليلي) بقصد التصميم، فمينفعش نستخدم
-           var(--cream) للكتابة عليه لأن --cream بتتغيّر معنى فى الوضع الليلي لتبقى لون خلفية الصفحة الغامق
-           (مش أبيض/كريمي زي فى الوضع الفاتح) — ده كان بيخلي الكتابة (خصوصًا .headline) بنفس لون الخلفية
-           تقريبًا فى الوضع الليلي (سوداء على سوداء) فتختفي. استخدمنا --hero-ink بدالها: قيمة كريمي فاتحة
-           ثابتة مش مرتبطة بالثيم، لأن خلفية الكارت نفسها ثابتة الغُمقان دايمًا. */
-        .sale-decision-card {
-            margin-bottom: var(--space-4); padding: var(--space-4);
-            background: linear-gradient(135deg, #1F2F26, #152119);
-            border-radius: var(--radius-lg); position: relative; overflow: hidden; color: var(--hero-ink, #FAF7EE);
-        }
-        .sale-decision-card::before { content:'🌾'; position:absolute; font-size:80px; opacity:.08; left:-10px; top:-18px; transform:rotate(-15deg); }
-        .sale-decision-card .eyebrow { position: relative; font-size: var(--fs-2xs); color: var(--wheat-light); font-weight: 700; }
-        .sale-decision-card .headline { position: relative; font-weight: 900; font-size: var(--fs-xl); color: var(--hero-ink, #FAF7EE); margin-top: var(--space-1); }
-        .sale-decision-card .headline .day-num { color: var(--wheat); }
-        .sale-decision-card .warn-line { position: relative; font-size: var(--fs-xs); color: var(--wheat-light); font-weight: 700; margin-top: 2px; }
-        .sale-decision-card .advice-line { position: relative; font-size: var(--fs-xs); color: rgba(250,247,238,.8); margin-top: var(--space-2); line-height: 1.6; }
-        /* -- سطر توقع الربح الحي المدموج جوّه كارت قرار البيع (بدل ما يبقى كارت منفصل) -- */
-        .sale-decision-card .profit-line {
-            position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
-            margin-top: var(--space-2); padding: var(--space-2) var(--space-3);
-            background: rgba(250,247,238,.08); border-radius: var(--radius-md);
-        }
-        .sale-decision-card .profit-label { font-size: var(--fs-2xs); font-weight: 700; color: rgba(250,247,238,.8); }
-        .sale-decision-card .profit-value { font-size: var(--fs-md); font-weight: 900; }
-        .sale-decision-card .profit-value small { font-size: var(--fs-2xs); font-weight: 700; opacity: .75; }
-        .sale-decision-card .meta-line { position: relative; font-size: var(--fs-2xs); color: rgba(250,247,238,.55); margin-top: var(--space-2); line-height: 1.6; }
         /* ============ الوضع الليلي (Dark Mode) — تفعيل عبر data-theme="dark" على <html> ============ */
         html[data-theme="dark"] {
             --barn: #4A6B54;
@@ -679,6 +654,36 @@
             box-shadow: var(--shadow-low);
             border: 1px solid var(--line);
         }
+        /* -- كارت قرار البيع البارز (Hero داكن، أهم قرار يومي) --
+           ⚠️ إصلاح (تكرار نفس فخ CSS من قبل، بس بسبب مختلف هالمرة): الكارت اتعرّف بـ class="card sale-decision-card"
+           فى الـHTML — يعني بياخد قاعدة .card العامة (خلفية فاتحة var(--paper)) وقاعدة .sale-decision-card
+           (خلفية غامقة متدرّجة) مع بعض. الاتنين نفس مستوى التخصيص (class واحد) فاللي بييجي *متأخر* فى الملف هو
+           اللي بيكسب — و.card كانت متعرّفة بعد .sale-decision-card فى الملف، فكانت بتلغي الخلفية الغامقة
+           بصمت وترجّع خلفية فاتحة، وكل الكتابة (المصمّمة أصلاً تبقى فاتحة على خلفية غامقة) تختفي فعليًا.
+           الحل: نقلنا القاعدة هنا (بعد .card صراحةً) + زودنا التخصيص لـ.card.sale-decision-card (كلاسين
+           بدل واحد) عشان تكسب دايمًا مهما اتغيّر ترتيب الملف تاني فى المستقبل، مش بس بالاعتماد على الترتيب. */
+        .card.sale-decision-card {
+            margin-bottom: var(--space-4); padding: var(--space-4);
+            background: linear-gradient(135deg, #1F2F26, #152119);
+            border-radius: var(--radius-lg); position: relative; overflow: hidden; color: var(--hero-ink, #FAF7EE);
+            border: none;
+        }
+        .sale-decision-card::before { content:'🌾'; position:absolute; font-size:80px; opacity:.08; left:-10px; top:-18px; transform:rotate(-15deg); }
+        .sale-decision-card .eyebrow { position: relative; font-size: var(--fs-2xs); color: var(--wheat-light); font-weight: 700; }
+        .sale-decision-card .headline { position: relative; font-weight: 900; font-size: var(--fs-xl); color: var(--hero-ink, #FAF7EE); margin-top: var(--space-1); }
+        .sale-decision-card .headline .day-num { color: var(--wheat); }
+        .sale-decision-card .warn-line { position: relative; font-size: var(--fs-xs); color: var(--wheat-light); font-weight: 700; margin-top: 2px; }
+        .sale-decision-card .advice-line { position: relative; font-size: var(--fs-xs); color: rgba(250,247,238,.8); margin-top: var(--space-2); line-height: 1.6; }
+        /* -- سطر توقع الربح الحي المدموج جوّه كارت قرار البيع (بدل ما يبقى كارت منفصل) -- */
+        .sale-decision-card .profit-line {
+            position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+            margin-top: var(--space-2); padding: var(--space-2) var(--space-3);
+            background: rgba(250,247,238,.08); border-radius: var(--radius-md);
+        }
+        .sale-decision-card .profit-label { font-size: var(--fs-2xs); font-weight: 700; color: rgba(250,247,238,.8); }
+        .sale-decision-card .profit-value { font-size: var(--fs-md); font-weight: 900; }
+        .sale-decision-card .profit-value small { font-size: var(--fs-2xs); font-weight: 700; opacity: .75; }
+        .sale-decision-card .meta-line { position: relative; font-size: var(--fs-2xs); color: rgba(250,247,238,.55); margin-top: var(--space-2); line-height: 1.6; }
 
         .form-grid {
             display: grid;
@@ -1833,12 +1838,15 @@
     </header>
 
     <main>
-        <div class="tabbar" id="tabbar"></div>
         <div id="mainContent"></div>
         <div id="printableReport"></div>
     </main>
 
     <button class="fab no-print" id="fabAdd" onclick="onFabClick()" title="إضافة">+</button>
+    <!-- ⚠️ إصلاح: شريط التنقل بقى ثابت فى الأسفل (.bottom-tabbar) بدل الشريط العلوي القديم (.tabbar) —
+         الـCSS والـJS (renderTabbar) كانوا اتحدّثوا قبل كده، بس الـ<div> نفسه فى الصفحة فضل شايل class="tabbar"
+         القديمة، فكان لسه بياخد تنسيق الشريط العلوي (ظاهر تحت الهيدر) بدل الشريط السفلي الثابت الجديد. -->
+    <div class="bottom-tabbar no-print" id="tabbar"></div>
 
     <!-- Modal: Info (رسالة معلوماتية بزرار واحد "تمام") -->
     <div class="modal-overlay" id="infoModalOverlay">
@@ -2871,37 +2879,6 @@
             <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">🏆 مختلف عن اللي فوق: ده مش مبني على دورة واحدة "الأفضل" — لكن بيجمع كل بند (إضافة علف/ماء/معاملة فرشة) أثبت إنه دايمًا بيحسّن الأداء عبر دوراتك المؤرشفة، حتى لو كل بند جه من دورة مختلفة، ويجمعهم كلهم فى بروتوكول واحد جديد مش موجود فعليًا فى أي دورة سابقة بالظبط. محتاج دورتين مؤرشفتين على الأقل من نفس النوع.</p>
             <h3 style="margin-top:16px;font-size:14px;">📂 البروتوكولات المحفوظة</h3>
             <div id="protocolListBox" class="card" style="padding:0;"></div>
-            <div class="row-actions" style="margin-top:12px;">
-                <button class="btn block" onclick="openShoppingListModal()">🛒 تجهيز قائمة مشتريات الدفعة الحالية</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Cycle Setup Wizard (يظهر تلقائيًا بعد إنشاء دفعة جديدة) -->
-    <div class="modal-overlay" id="cycleWizardModalOverlay">
-        <div class="modal">
-            <button class="close-x" aria-label="إغلاق" onclick="closeCycleWizard()">✕</button>
-            <h3>🧰 تجهيز الدورة الجديدة</h3>
-            <p style="font-size:11.5px;color:var(--muted);margin-top:0;">طبّق بروتوكول محفوظ، أو ولّد واحدًا جديدًا من دوراتك السابقة، وراجع الذاكرة المرضية لنفس النوع — كل بند بضغطة واحدة يتنفذ على الدفعة الجديدة مباشرة.</p>
-            <div id="cycleWizardBody"></div>
-            <div class="row-actions" style="margin-top:14px;">
-                <button class="btn gold block" onclick="openShoppingListModal()">🛒 تجهيز قائمة المشتريات</button>
-            </div>
-            <div class="row-actions" style="margin-top:8px;">
-                <button class="btn ghost block" onclick="closeCycleWizard()">تخطي / تم</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Cycle Shopping List (قابلة للطباعة) -->
-    <div class="modal-overlay" id="shoppingListModalOverlay">
-        <div class="modal">
-            <button class="close-x" aria-label="إغلاق" onclick="closeModal('shoppingListModalOverlay')">✕</button>
-            <h3>🛒 قائمة مشتريات الدورة</h3>
-            <div id="shoppingListBody"></div>
-            <div class="row-actions" style="margin-top:12px;">
-                <button class="btn block" onclick="printShoppingList()">🖨️ طباعة القائمة</button>
-            </div>
         </div>
     </div>
 
@@ -4092,6 +4069,23 @@
             turkeyWhite: 'turkey', turkeyBlack: 'turkey', muscovy: 'duck', mulard: 'duck'
         };
         function getSpeciesCategory(species) { return SPECIES_CATEGORY[species] || 'chicken'; }
+        // ============ 🥚 مرجع "قطيع الأمهات" — أرقام استرشادية تقريبية شائعة لكل نوع، نقطة انطلاق قابلة للتعديل الكامل ============
+        // نفس فكرة SPECIES_CATALOG بالظبط (مرجع تقريبي مش بديل عن بيانات مورّدك الفعلية) لكن لبيانات الأمهات
+        // تحديدًا (بيض/خصوبة/فقس) اللي معندهاش مرجع قبل كده وكانت بتتطلب من المستخدم يخمّنها من الصفر. تُستخدم
+        // كقيمة ابتدائية بس فى حاسبة قطيع الأمهات (خطة التوسع) — أي تعديل يدوي من المستخدم بيبقى له الأولوية دايمًا.
+        const BREEDER_FLOCK_BENCHMARKS = {
+            broiler: { henEggsPerYear: 170, fertilityPct: 92, hatchPct: 84 }, // أمهات دجاج تسمين أبيض (روص/كوب) — موسم إنتاج ~40 أسبوع
+            sasso: { henEggsPerYear: 150, fertilityPct: 90, hatchPct: 82 },
+            balady: { henEggsPerYear: 130, fertilityPct: 88, hatchPct: 80 }, // بلدي عادة إنتاجية بيض أقل من السلالات المحسّنة
+            quail: { henEggsPerYear: 280, fertilityPct: 90, hatchPct: 75 }, // سمان: إنتاجية بيض عالية جدًا لكن فقس أقل نسبيًا
+            turkeyWhite: { henEggsPerYear: 95, fertilityPct: 88, hatchPct: 80 },
+            turkeyBlack: { henEggsPerYear: 80, fertilityPct: 85, hatchPct: 78 },
+            muscovy: { henEggsPerYear: 140, fertilityPct: 85, hatchPct: 75 },
+            mulard: { henEggsPerYear: 130, fertilityPct: 85, hatchPct: 75 }, // المولار هجين، عادة بيستخدم أمهات مسكوفي/بط بلدي
+        };
+        function getBreederFlockDefaults(species) {
+            return BREEDER_FLOCK_BENCHMARKS[species] || BREEDER_FLOCK_BENCHMARKS.broiler;
+        }
         const EQUIPMENT_STANDARDS = {
             chicken: { label: 'دجاج (تسمين/بلدي/ساسو)', broodingDays: 10, broodingDensity: 38,
                 areaRamp: [{ d: 3, pct: 33 }, { d: 7, pct: 66 }, { d: 10, pct: 100 }],
@@ -8501,9 +8495,7 @@
             if (applyProtocolId) { applyProtocol(applyProtocolId); protocolMsg = ' + تم تحميل البروتوكول المختار'; }
             render();
             showToast('تم إنشاء الدفعة بنجاح 🐣 — تم تجهيز برنامج التحصينات القياسي لهذا النوع تلقائيًا' + protocolMsg);
-            // ============ 🧰 معالج تجهيز الدورة: بعد صفحة الإنشاء مباشرة، بيعرض البروتوكولات المحفوظة/المولَّدة
-            // والذاكرة المرضية لتنفيذها بضغطة، وينتهي بقائمة مشتريات الدورة الجاهزة للطباعة ============
-            setTimeout(() => openCycleSetupWizard(batch.id), 500);
+            setTimeout(() => offerInventoryCarryOver(batch), 500);
         }
 
         // ============ ✨ عرض ترحيل مخزون متبقي من دورة سابقة (نفس النوع) عند إنشاء دفعة جديدة ============
@@ -10583,7 +10575,7 @@
                     name: a.name, from: a.from, to: a.to, days: (a.days && a.days.length) ? [...a.days] : null,
                     dose: a.dose, unit: a.unit, per: a.per, notes: a.notes || '' })),
                 treatments: (b.treatmentLog || []).map(t => ({
-                    name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: t.notes || '', sourceBatchCount: b.startCount })),
+                    name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: t.notes || '' })),
             };
             state.protocols.push(proto);
             nameInput.value = '';
@@ -10641,11 +10633,11 @@
             // معاملات الفرشة: نأخذ فقط ما نُفِّذ فعليًا فى أفضل دورة (مش المُخطَّط وما اتنفذش)
             (best.treatmentLog || []).filter(t => t.done).forEach(t => {
                 const match = treatEff.find(r => normalizeArabicName(r.name) === normalizeArabicName(t.name));
-                if (!match) { kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: t.notes || '', sourceBatchCount: best.startCount, _note: 'من أفضل دورة — لسه معندوش تاريخ كافٍ للتأكد من فائدته' }); return; }
+                if (!match) { kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: t.notes || '', _note: 'من أفضل دورة — لسه معندوش تاريخ كافٍ للتأكد من فائدته' }); return; }
                 if (match.verdict === 'worsen') { dropped.push({ name: t.name, kind: 'فرشة', reason: `أثبتت أثرًا سلبيًا واضحًا عبر ${match.cycles} دورة مؤرشفة` }); return; }
                 if (match.verdict === 'none') { dropped.push({ name: t.name, kind: 'فرشة', reason: `بدون أثر واضح عبر ${match.cycles} دورة — لا داعي للاستمرار فيها` }); return; }
                 const note = match.verdict === 'mixed' ? `نتائج متفاوتة عبر ${match.cycles} دورة — يُنصح بمراقبتها` : `أثبتت فائدتها عبر ${match.cycles} دورة`;
-                kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: t.notes || '', sourceBatchCount: best.startCount, _note: note });
+                kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: t.notes || '', _note: note });
             });
 
             if (!kept.feed.length && !kept.water.length && !kept.treatments.length) {
@@ -10724,7 +10716,7 @@
 
             // بيدوّر على أفضل دورة (EPEF) من بين الدورات اللى استخدمت البند ده بالتحديد، عشان ناخد منها قيمه الفعلية (جرعة/توقيت)
             function bestSourceFor(itemName, kind) {
-                let best = null, bestScore = -Infinity, bestBatchName = null, bestBatchCount = null;
+                let best = null, bestScore = -Infinity, bestBatchName = null;
                 archived.forEach(x => {
                     let arr;
                     if (kind === 'treatment') {
@@ -10741,9 +10733,9 @@
                     if (!arr.length) return;
                     const xm = computeMetrics(x);
                     const score = xm.epef != null ? xm.epef : (xm.fcr != null ? (10 - xm.fcr) * 100 : 0);
-                    if (score > bestScore) { bestScore = score; best = arr[0]; bestBatchName = x.name; bestBatchCount = x.startCount; }
+                    if (score > bestScore) { bestScore = score; best = arr[0]; bestBatchName = x.name; }
                 });
-                return best ? { item: best, sourceBatch: bestBatchName, sourceBatchCount: bestBatchCount } : null;
+                return best ? { item: best, sourceBatch: bestBatchName } : null;
             }
 
             const kept = { feed: [], water: [], treatments: [] };
@@ -10767,7 +10759,7 @@
                 if (!src) return;
                 const t = src.item;
                 if (kept.treatments.some(x => x.name === t.name)) return;
-                kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: (t.notes || '') + timingNoteFor(t.name), sourceBatchCount: src.sourceBatchCount });
+                kept.treatments.push({ name: t.name, day: t.day, qty: t.qty || 0, unit: t.unit || '', notes: (t.notes || '') + timingNoteFor(t.name) });
                 sources.push({ name: t.name, kind: 'فرشة', cycles: r.cycles, sourceBatch: src.sourceBatch });
             });
 
@@ -10815,22 +10807,7 @@
                     if (!b.treatmentLog) b.treatmentLog = [];
                     p.feedAdditives.forEach(a => b.feedAdditives.push({ id: uid(), ...a, active: true }));
                     p.waterAdditives.forEach(a => b.waterAdditives.push({ id: uid(), ...a, active: true }));
-                    // ============ ✨ تحجيم كمية المعاملة بنسبة عدد الطيور (النسبة والعدد) ============
-                    // كمية المعاملة (t.qty) بتُدخَل يدويًا كرقم مطلق وقت إنشاء الدفعة المصدر، فمرتبطة
-                    // ضمنيًا بعدد طيورها وقتها (sourceBatchCount). لو الدفعة الجديدة بعدد مختلف، بنحجّم
-                    // الكمية بنفس نسبة العدد (عدد الجديدة / عدد المصدر) بدل ما نطبّق نفس الرقم المطلق
-                    // القديم على قطيع بحجم مختلف تمامًا.
-                    p.treatments.forEach(t => {
-                        let qty = t.qty || 0;
-                        let notes = t.notes || '';
-                        if (t.sourceBatchCount > 0 && b.startCount > 0 && t.sourceBatchCount !== b.startCount && qty > 0) {
-                            const ratio = b.startCount / t.sourceBatchCount;
-                            const scaledQty = Math.round(qty * ratio * 100) / 100;
-                            notes += ` (🔢 كمية مُحجَّمة تلقائيًا بنسبة ${fmt(ratio,2)}× من ${fmt(qty,2)} — بناءً على عدد الطيور ${fmt(b.startCount,0)} مقابل ${fmt(t.sourceBatchCount,0)} فى مصدر البروتوكول، راجعها قبل الشراء)`;
-                            qty = scaledQty;
-                        }
-                        b.treatmentLog.push({ id: uid(), ...t, qty, notes, done: false, doneDate: null });
-                    });
+                    p.treatments.forEach(t => b.treatmentLog.push({ id: uid(), ...t, done: false, doneDate: null }));
                     b.treatmentLog.sort((a, c) => a.day - c.day);
                     // ===== تتبّع البروتوكولات المُطبَّقة على الدفعة — يُستخدم لاحقًا لمقارنة الكفاءة الاقتصادية عبر الدورات =====
                     if (!Array.isArray(b.appliedProtocolNames)) b.appliedProtocolNames = [];
@@ -15675,23 +15652,55 @@
                 <span class="streak-pill">🔥 ${streak > 0 ? `${streak} يوم متتالي بتسجل بيانات دفعتك` : 'ابدأ سلسلة التسجيل اليومي'}</span>
                 ${(!hasTodayRecord && nowHour >= 19) ? `<span style="font-size:11.5px;font-weight:700;color:var(--red);">⏰ لسه ما سجّلتش سجل اليوم</span>` : ''}
             </div>` : '';
-            return `
-            ${streakHtml}
-            ${renderDashboardWeatherCard(b, m)}
-            ${multiHouseSection}
-            ${housesSection}
-            ${recCompHtml}
-            ${quickMarketPriceSection}
-            ${prioritiesSection}
-            ${renderInventoryDashboardCard(b, fin, m)}
-            ${perfScoreCardHtml}
-            ${saleDecisionCardHtml}
-            ${unifiedAttentionSection}
+            const healthScoreCardHtml = `
             <div class="health-score-card" style="border-color:${hs.color};">
-                <div class="caption">🩺 درجة صحة الدفعة (آنية + استباقية)${glossHtml('healthScore')}</div>
+                <div class="caption">🩺 حالة الدفعة الشاملة (آنية + مقارنة + استباقية)${glossHtml('healthScore')}</div>
                 <div class="score" style="color:${hs.color};">${hs.score}<small>/100</small></div>
                 <div class="label" style="color:${hs.color};">${hs.label}</div>
                 ${hs.factors.length ? `<div class="factors">${hs.factors.map(f => `• ${f.label}`).join('<br>')}</div>` : ''}
+                ${(() => {
+                    // ============ نظام هجين موحّد: الترتيب مقابل تاريخك (كان كارت "🏅 مؤشر أداء الدورة" منفصل) بقى
+                    // شريط مضمّن هنا — نفس الإشارات (نفوق/FCR/وزن) اللي درجة الصحة فوق مبنية عليها، بس بمنظور
+                    // مختلف مكمّل مش مكرر: الدرجة فوق بتقول "الوضع كويس/سيء إد إيه دلوقتي"، والشريط ده بيقول
+                    // "إزاي ده بالنسبة لتاريخك انت نفسك ولمعيار السلالة المطلق" — بدل رقمين منفصلين فى مكانين.
+                    if (!perfRank) return '';
+                    const scoreColor = perfRank.score >= 70 ? 'var(--green)' : (perfRank.score >= 40 ? 'var(--warning-text)' : 'var(--red)');
+                    const rankWord = perfRank.rank.position === 1 ? `🥇 أفضل دورة سجّلتها على الإطلاق (#1 من ${perfRank.rank.total})` : `#${perfRank.rank.position} من ${perfRank.rank.total} دورة`;
+                    const rowsHtml = perfRank.breakdown.map(x => {
+                        const c = x.pct >= 70 ? 'var(--green)' : (x.pct >= 40 ? 'var(--warning-text)' : 'var(--red)');
+                        return statLine(`${x.label}`, `${x.pct}%`, {vStyle:`color:${c};font-weight:700;`});
+                    }).join('');
+                    return `<details style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;">
+                        <summary style="cursor:pointer;font-size:var(--fs-xs);font-weight:800;color:${scoreColor};">📊 مقارنة بتاريخك: <b>${perfRank.score}/100</b> — ${rankWord} ${confBadgeHtml(perfRank.sampleSize)}</summary>
+                        <div style="margin-top:6px;">${rowsHtml}</div>
+                        ${perfRank.absolute ? `<div style="margin-top:6px;font-size:var(--fs-2xs);">
+                            <div style="font-weight:800;color:var(--muted);">📏 مرجع مطلق مستقل (معيار السلالة القياسي يوم ${perfRank.absolute.atAge}، مش تاريخك انت)</div>
+                            ${statLine(`معدل التحويل مقابل المعيار القياسي`, `${perfRank.absolute.fcrDiffPct==null?'—':(perfRank.absolute.fcrDiffPct>=0?'+':'')+fmt(perfRank.absolute.fcrDiffPct,1)+'%'}`, {vStyle:`font-weight:700;color:${perfRank.absolute.fcrDiffPct==null?'var(--muted)':(perfRank.absolute.fcrDiffPct<=0?'var(--green)':'var(--red)')};`})}
+                        </div>` : ''}
+                        <div style="margin-top:4px;font-size:9.5px;color:var(--muted);">النسبة = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ترتيب نسبي مقابل نفسك، مش مقياس عالمي.</div>
+                    </details>`;
+                })()}
+                ${(() => {
+                    // ============ نظام هجين موحّد: توقعات نهاية الدورة (FCR/الوزن) بقت هنا كملخص سريع، مش مدفونة
+                    // جوه "تحليلات ذكية" لوحدها — عشان تقرأها فى نفس اللحظة اللي بتشوف فيها الدرجة والترتيب، لأنها
+                    // كلها بتحكي نفس القصة (الأداء) من 3 زوايا زمنية مختلفة: دلوقتي (الدرجة) / تاريخيًا (الترتيب) / قدام (التوقع). ============
+                    if (!ins.fcrPrediction && !ins.weightPrediction) return '';
+                    const rows = [];
+                    if (ins.weightPrediction && ins.weightPrediction.diffPct != null) {
+                        const wp = ins.weightPrediction;
+                        const c = wp.diffPct >= 0 ? 'var(--green)' : 'var(--red)';
+                        rows.push(`<div>⚖️ الوزن المتوقع يوم ${wp.targetAge}: <b>${fmt(wp.predictedG,0)} جم</b> <span style="color:${c};font-weight:700;">(${wp.diffPct>=0?'+':''}${fmt(wp.diffPct,1)}% عن المعيار)</span></div>`);
+                    }
+                    if (ins.fcrPrediction && ins.fcrPrediction.diffPct != null) {
+                        const fp = ins.fcrPrediction;
+                        const c = fp.diffPct <= 0 ? 'var(--green)' : 'var(--red)';
+                        rows.push(`<div>🌾 الـFCR المتوقع يوم ${fp.targetAge}: <b>${fmt(fp.predictedFcr,2)}</b> <span style="color:${c};font-weight:700;">(${fp.diffPct>=0?'+':''}${fmt(fp.diffPct,1)}% عن المعيار)</span></div>`);
+                    }
+                    return `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;">
+                        <div style="font-size:var(--fs-xs);font-weight:800;color:var(--barn-dark);">🔮 توقعات نهاية الدورة (لو استمر الأداء الحالي)</div>
+                        <div style="margin-top:4px;font-size:var(--fs-2xs);line-height:1.9;">${rows.join('')}</div>
+                    </div>`;
+                })()}
                 ${(() => {
                     // ============ 🔴 إصلاح Red Team: "احتمالية مشكلة قادمة" اتدمجت هنا — نظام هجين واحد بدل رقمين منفصلين ============
                     // بدل رقم "٪x/100" مجرد بلا سياق، بنوضّح حجم المشكلة بكلام عملي (كام إشارة نشطة، وأي فعل
@@ -15710,7 +15719,22 @@
                         <div style="margin-top:4px;font-size:var(--fs-2xs);">${reasonsHtml}</div>
                     </div>`;
                 })()}
-            </div>
+                <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;font-size:9.5px;color:var(--muted);line-height:1.7;">
+                    💡 الكارت ده بيجمع 4 زوايا لنفس القصة: <b>الدرجة</b> (الوضع دلوقتي) + <b>الترتيب</b> (مقابل تاريخك) + <b>التوقع</b> (لو استمر كده لآخر الدورة) + <b>احتمالية مشكلة قادمة</b> (إشارات مبكرة). "🎯 أهم فعل عليك اتخاذه الآن" فوق مبني على نفس المصادر دي بالظبط، و"⚠️ يحتاج متابعتك الآن" تحت بيوريك التفاصيل الكاملة وراها.
+                </div>
+            </div>`;
+            return `
+            ${streakHtml}
+            ${renderDashboardWeatherCard(b, m)}
+            ${multiHouseSection}
+            ${housesSection}
+            ${recCompHtml}
+            ${quickMarketPriceSection}
+            ${prioritiesSection}
+            ${healthScoreCardHtml}
+            ${renderInventoryDashboardCard(b, fin, m)}
+            ${saleDecisionCardHtml}
+            ${unifiedAttentionSection}
             <div class="kpi-grid">
                 <div class="kpi"><div class="lbl">📅 عمر القطيع</div><div class="val">${m.todayAge} <small>يوم</small></div></div>
                 <div class="kpi ${m.liveCountPct < 95 ? 'warn' : 'good'}"><div class="lbl">🐔 الأعداد الحية</div><div class="val">${fmt(m.liveCount, 0)} <small>(${fmt(m.liveCountPct, 1)}%)</small></div></div>
@@ -16752,15 +16776,18 @@
         const DEFAULT_EXPANSION_INPUTS = {
             minHouseCapacity: 10000, targetHouseCount: 10, stockingIntervalDays: 3, capacityMultiplier: 2,
             costPerBirdOpenHouse: null, feedCreditMarkupPerBird: null, safetyFundMin: null,
-            // الأهداف الكبرى (تكامل رأسي) الخاصة بهذا النوع تحديدًا
-            capexHatchery: null, capexFeedMill: null, capexBreeders: null, capexSlaughterhouse: null,
+            // الأهداف الكبرى (تكامل رأسي) الخاصة بهذا النوع تحديدًا — رأس المال بيتحسب تلقائيًا من احتياجك الفعلي
+            // (شوف computeAutoMilestoneCapex)، إنت بس بتدخل تكلفة الوحدة (أرخص تتأكد منها من عروض أسعار حقيقية)
+            capexHatcheryPerThousandChicks: null, capexFeedMillPerTonDay: null, capexSlaughterhousePerTonDay: null,
             // حاسبة قطيع الأمهات الخاصة بهذا النوع — عدد الأمهات المطلوب + نقطة التعادل مع شراء الصغار
             cyclesPerYearPerHouse: 6, henEggsPerYear: 160, fertilityPct: 90, hatchPct: 85,
             currentChickPrice: null, henAnnualFeedCost: null, henCost: null,
             // الطاقة المخططة للمجزر ومصنع العلف الخاصين بهذا النوع
             plannedSlaughterKgPerDay: null, plannedFeedMillTonsPerDay: null, capacitySafetyMarginPct: 20,
-            // اختبار ضغط تقلب سعر العلف
-            feedPriceStressPct: 15,
+            // اختبار ضغط تقلب سعر العلف والبيع (سيناريوهات متفائل/متشائم)
+            feedPriceStressPct: 15, salePriceStressPct: 10,
+            // مقارنة مسار الأجل بمسار الكاش (بديل بدون تمويل خارجي) + رفع القيمة من بيع مجزّر بدل حي
+            cashOnlyStartHouseCount: 1, houseCountCap: null, liveToProcessedUpliftPerBird: null,
             // مرحلة العلف الافتراضية لهذا النوع (بادئ/نامي) — مرجع تخطيط لهذا النوع، "ناهي" = باقي الدورة تلقائيًا
             feedStageStarterKg: null, feedStageGrowerKg: null,
             // بيانات أداء احتياطية يدوية — تُستخدم بس لو لسه معندكش دورة مؤرشفة واحدة من هذا النوع، عشان تقدر تخطط له من الأول
@@ -16813,7 +16840,7 @@
                 const feedPerBird = bt.startCount > 0 ? ft.feedCost / bt.startCount : null;
                 const feedKgPerBird = bt.startCount > 0 ? (mt.cumFeed || 0) / bt.startCount : null;
                 const finalWeightKg = mt.avgWeightKg || null;
-                return { profit: ft.profitPerBird, fcr: mt.fcr, mortality: mt.mortalityPct, days, feedPerBird, feedKgPerBird, finalWeightKg };
+                return { profit: ft.profitPerBird, fcr: mt.fcr, mortality: mt.mortalityPct, days, feedPerBird, feedKgPerBird, finalWeightKg, totalCostPerBird: ft.costPerBird };
             });
             const meanOf = arr => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : null;
             const profits = rows.map(r => r.profit);
@@ -16830,14 +16857,15 @@
             const avgFeedPerBird = meanOf(rows.filter(r => r.feedPerBird != null).map(r => r.feedPerBird));
             const avgFeedKgPerBird = meanOf(rows.filter(r => r.feedKgPerBird != null).map(r => r.feedKgPerBird));
             const avgFinalWeightKg = meanOf(rows.filter(r => r.finalWeightKg != null).map(r => r.finalWeightKg));
-            return { n: rows.length, avgProfitPerBird, sdProfitPerBird, successRate, avgFcr, avgMortality, avgCycleDays, fcrCorr, mortCorr, avgFeedPerBird, avgFeedKgPerBird, avgFinalWeightKg };
+            const avgTotalCostPerBird = meanOf(rows.filter(r => r.totalCostPerBird != null).map(r => r.totalCostPerBird));
+            return { n: rows.length, avgProfitPerBird, sdProfitPerBird, successRate, avgFcr, avgMortality, avgCycleDays, fcrCorr, mortCorr, avgFeedPerBird, avgFeedKgPerBird, avgFinalWeightKg, avgTotalCostPerBird };
         }
 
         // ============ يدمج الأداء الفعلي المؤرشف (لو موجود) مع بيانات احتياطية يدوية لنفس النوع — عشان تقدر تخطط لنوع لسه معندكش دورة مؤرشفة منه ============
         function getExpansionStatsWithFallback(species, inputs) {
             const hist = computeExpansionHistoricalStats(species);
             const usedFallback = {};
-            const out = hist ? { ...hist } : { n: 0, avgProfitPerBird: null, sdProfitPerBird: null, successRate: null, avgFcr: null, avgMortality: null, avgCycleDays: null, fcrCorr: null, mortCorr: null, avgFeedPerBird: null, avgFeedKgPerBird: null, avgFinalWeightKg: null };
+            const out = hist ? { ...hist } : { n: 0, avgProfitPerBird: null, sdProfitPerBird: null, successRate: null, avgFcr: null, avgMortality: null, avgCycleDays: null, fcrCorr: null, mortCorr: null, avgFeedPerBird: null, avgFeedKgPerBird: null, avgFinalWeightKg: null, avgTotalCostPerBird: null };
             if (out.avgProfitPerBird == null && inputs.manualAvgProfitPerBird != null) { out.avgProfitPerBird = inputs.manualAvgProfitPerBird; usedFallback.profit = true; }
             if (out.sdProfitPerBird == null && inputs.manualSdProfitPerBird != null) { out.sdProfitPerBird = inputs.manualSdProfitPerBird; usedFallback.sd = true; }
             if (out.avgCycleDays == null && inputs.manualAvgCycleDays != null) { out.avgCycleDays = inputs.manualAvgCycleDays; usedFallback.cycle = true; }
@@ -16851,13 +16879,41 @@
             return out;
         }
 
+        // ============ 🎯 حساب رأس مال الأهداف الكبرى تلقائيًا — مش رقم تقديري مكتوب يدوي ============
+        // كل هدف بيتحسب من: (1) السعة/الاحتياج المستهدف فعليًا (من عدد عنابرك المستهدف targetHouseCount +
+        // أداؤك التاريخي الحقيقي فى نفس النوع — feed/weight/cycle days)، × (2) تكلفة الوحدة الفعلية للسوق
+        // (رقم معروف عندك من عروض أسعار حقيقية، مش تخمين إجمالي المشروع). قطيع الأمهات حالة خاصة: بيستخدم
+        // حاسبة الأمهات الموجودة أصلاً (عدد الأمهات المطلوب لتغطية احتياجك × سعر شراء الأم) من غير أي مُدخل إضافي.
+        // ⚠️ إصلاح: قبل كده كان المستخدم بيكتب رقم رأس مال إجمالي تقديري بحدسه لكل هدف (زي "3 مليون معمل تفريخ") —
+        // رقم صعب تتأكد منه وسهل يبقى غلط بمراحل. دلوقتي بتدخل تكلفة الوحدة بس (سعر الطن/يوم، سعر الألف كتكوت،
+        // سعر الأم) وهي أرقام أسهل تتأكد منها من عروض أسعار حقيقية، والإجمالي بيتحسب تلقائيًا من احتياجك الفعلي.
+        function computeAutoMilestoneCapex(inputs, hist) {
+            const bp = computeBreederFlockPlan(inputs); // مبنية أصلاً على targetHouseCount (المستهدف) — "الحالي والمستهدف" بالظبط
+            const targetTotalCapacity = (inputs.targetHouseCount || 10) * (inputs.minHouseCapacity || 10000);
+            const margin = 1 + ((inputs.capacitySafetyMarginPct != null ? inputs.capacitySafetyMarginPct : 20) / 100);
+            const targetBirdsPerDay = (hist && hist.avgCycleDays > 0) ? targetTotalCapacity / hist.avgCycleDays : null;
+            const targetSlaughterKgPerDay = (targetBirdsPerDay != null && hist && hist.avgFinalWeightKg) ? targetBirdsPerDay * hist.avgFinalWeightKg * margin : null;
+            const targetFeedMillTonsPerDay = (targetBirdsPerDay != null && hist && hist.avgFeedKgPerBird) ? (targetBirdsPerDay * hist.avgFeedKgPerBird / 1000) * margin : null;
+
+            const capexHatchery = (inputs.capexHatcheryPerThousandChicks != null && bp.annualChicksNeeded)
+                ? (bp.annualChicksNeeded / 1000) * inputs.capexHatcheryPerThousandChicks : null;
+            const capexFeedMill = (inputs.capexFeedMillPerTonDay != null && targetFeedMillTonsPerDay != null)
+                ? targetFeedMillTonsPerDay * inputs.capexFeedMillPerTonDay : null;
+            const capexSlaughterhouse = (inputs.capexSlaughterhousePerTonDay != null && targetSlaughterKgPerDay != null)
+                ? (targetSlaughterKgPerDay / 1000) * inputs.capexSlaughterhousePerTonDay : null;
+            const capexBreeders = (bp.hensNeeded && inputs.henCost != null) ? bp.hensNeeded * inputs.henCost : null;
+
+            return { capexHatchery, capexFeedMill, capexBreeders, capexSlaughterhouse,
+                targetSlaughterKgPerDay, targetFeedMillTonsPerDay, targetBirdsPerDay, annualChicksNeeded: bp.annualChicksNeeded, hensNeeded: bp.hensNeeded };
+        }
+
         // قائمة الأهداف الكبرى (تكامل رأسي) الخاصة بالنوع المختار — بيتم تنفيذها بالترتيب من الأرخص للأغلى كل ما الصندوق يكفي
-        function getExpansionMilestones(inputs) {
+        function getExpansionMilestones(inputs, autoCapex) {
             const list = [
-                { id: 'hatchery', label: '🐣 معمل تفريخ', capex: inputs.capexHatchery },
-                { id: 'feedmill', label: '🏭 مصنع علف', capex: inputs.capexFeedMill },
-                { id: 'breeders', label: '🥚 قطيع أمهات', capex: inputs.capexBreeders },
-                { id: 'slaughterhouse', label: '🔪 مجزر خاص', capex: inputs.capexSlaughterhouse },
+                { id: 'hatchery', label: '🐣 معمل تفريخ', capex: autoCapex.capexHatchery },
+                { id: 'feedmill', label: '🏭 مصنع علف', capex: autoCapex.capexFeedMill },
+                { id: 'breeders', label: '🥚 قطيع أمهات', capex: autoCapex.capexBreeders },
+                { id: 'slaughterhouse', label: '🔪 مجزر خاص', capex: autoCapex.capexSlaughterhouse },
             ];
             return list.filter(x => x.capex != null && x.capex > 0).sort((a, b) => a.capex - b.capex);
         }
@@ -16898,7 +16954,8 @@
             const multiplier = inputs.capacityMultiplier || 2;
             const costPerBird = inputs.costPerBirdOpenHouse || 0;
             const safetyMin = inputs.safetyFundMin || 0;
-            const milestones = getExpansionMilestones(inputs);
+            const autoCapex = computeAutoMilestoneCapex(inputs, hist);
+            const milestones = getExpansionMilestones(inputs, autoCapex);
             let milestoneIdx = 0;
             const achievedMilestones = [];
 
@@ -16966,7 +17023,7 @@
             const nextMilestone = milestones[milestoneIdx] || null;
             const roundsToNextMilestone = nextMilestone ? (timeline.findIndex(t => t.round > 0 && t.fundBalance >= (nextMilestone.capex - safetyMin)) + 1 || null) : null;
 
-            return { hist, insufficientData: false, timeline, p, profitPerBird, milestones, achievedMilestones, nextMilestone, safetyMin, roundsToNextMilestone, species };
+            return { hist, insufficientData: false, timeline, p, profitPerBird, milestones, achievedMilestones, nextMilestone, safetyMin, roundsToNextMilestone, species, autoCapex };
         }
 
         // ============ محاكاة مبسّطة لتطور الصندوق تحت أي سيناريو ربح — تُستخدم فى حساب المخاطر لاختبار سيناريوهات متشائمة/كارثية ============
@@ -17007,6 +17064,129 @@
             const stressedProfit = plan.profitPerBird - extraCostPerBird;
             const stressCase = simulateExpansionFund(inputs, plan.milestones, stressedProfit, plan.safetyMin);
             return { feedStressPct, avgFeedCostPerBird, extraCostPerBird, stressedProfit, stressCase };
+        }
+
+        // ============ 🎯 سيناريوهات حساسية — بدل اختبار ضغط واحد بس (سعر علف)، متفائل ومتشائم مع بعض
+        // (تقلب سعر العلف + تقلب سعر البيع مع بعض فى نفس السيناريو، مش كل واحد لوحده) — عشان تشوف
+        // المدى الواقعي لخطتك (أحسن حالة معقولة / أسوأ حالة معقولة)، مش بس متغير واحد منعزل. ============
+        function computeExpansionSensitivityScenarios(plan, inputs) {
+            const hist = plan.hist;
+            const feedStressPct = inputs.feedPriceStressPct != null ? inputs.feedPriceStressPct : 15;
+            const saleStressPct = inputs.salePriceStressPct != null ? inputs.salePriceStressPct : 10;
+            const avgFeedCostPerBird = hist.avgFeedPerBird || 0;
+            // إيراد الطائر التقريبي = التكلفة الفعلية الكاملة + الربح الفعلي (نفس الفكرة اللي دراسة الجدوى بتحسبها من fin.totalRevenue)
+            const avgRevenuePerBird = (hist.avgTotalCostPerBird != null && hist.avgProfitPerBird != null) ? hist.avgTotalCostPerBird + hist.avgProfitPerBird : null;
+
+            function scenario(feedMult, revMult) {
+                const feedDelta = avgFeedCostPerBird * (feedMult - 1);
+                const revDelta = (avgRevenuePerBird != null) ? avgRevenuePerBird * (revMult - 1) : 0;
+                const profitPerBird = plan.profitPerBird - feedDelta + revDelta;
+                const fundSim = simulateExpansionFund(inputs, plan.milestones, profitPerBird, plan.safetyMin);
+                return { profitPerBird, fundSim };
+            }
+
+            const currentScenario = scenario(1, 1);
+            const optimisticScenario = scenario(1 - feedStressPct / 100, 1 + saleStressPct / 100);
+            const pessimisticScenario = scenario(1 + feedStressPct / 100, 1 - saleStressPct / 100);
+            const feedOnlyScenario = scenario(1 + feedStressPct / 100, 1); // 🔙 محفوظ للتوافق مع اختبار الضغط الأصلي (سعر علف بس)
+
+            return {
+                feedStressPct, saleStressPct, avgFeedCostPerBird, avgRevenuePerBird,
+                extraCostPerBird: avgFeedCostPerBird * (feedStressPct / 100),
+                stressedProfit: feedOnlyScenario.profitPerBird, stressCase: feedOnlyScenario.fundSim,
+                scenarios: [
+                    { label: 'الوضع الحالي (بدون ضغط)', ...currentScenario },
+                    { label: `متفائل (علف -${fmt(feedStressPct,0)}% / بيع +${fmt(saleStressPct,0)}%)`, ...optimisticScenario },
+                    { label: `متشائم (علف +${fmt(feedStressPct,0)}% / بيع -${fmt(saleStressPct,0)}%)`, ...pessimisticScenario },
+                ],
+            };
+        }
+
+        // ============ 💳 امتى نعتمد على الأجل، وامتى بقى الأجل ضرر — نقطة التعادل مع التكامل الرأسي ============
+        // السؤال اللي الميزة دي بتجاوبه بالظبط: "امتى نعتمد على الأجل وامتى نقدر ندير المنظومة بنفس القدرة
+        // (نفس سرعة التوسع) من غيره؟". الإجابة مبنية على منطق "فترة استرداد رأس المال" (payback period) بسيط:
+        // فرق سعر الأجل فى العلف (feedCreditMarkupPerBird) بتدفعه كل دورة طول ما بتشتري من السوق — ده تكلفة
+        // متكررة للأبد طول ما مستمر تعتمد على السوق. المعمل/المجزر الخاص بيه رأس مال مرة واحدة (capex) بيلغي
+        // (أو يقلّب) التكلفة المتكررة دي. لو "سنين استرداد رأس المال" (capex ÷ التكلفة السنوية اللي هتوفرها)
+        // قليلة (≤3 سنين مثلًا)، معناه إنك بالفعل كبرت بما يكفي إن الاستمرار فى الأجل بقى أضرّ من بناء استقلالك
+        // — دي "نقطة التعادل اللي بعدها الأجل ضرر". لو لسه كتير (>5 سنين)، لسه بدري والاعتماد على الأجل حاليًا
+        // مقبول ومنطقي (بيدّيك سرعة توسع أعلى بتكلفة أقل من فايدة بناء المصنع/المجزر دلوقتي).
+        function computeCreditDependencyAnalysis(plan, inputs) {
+            if (!plan || plan.insufficientData) return null;
+            const hist = plan.hist;
+            const cyclesPerYear = (hist.avgCycleDays > 0) ? 365 / hist.avgCycleDays : null;
+            const currentTotalCapacity = plan.timeline[0].totalCapacity; // "الحالي" = القاعدة الأفقية القائمة فعليًا الآن، مش المستهدف النهائي
+            const feedMillAchieved = plan.achievedMilestones.some(m => m.id === 'feedmill');
+            const slaughterhouseAchieved = plan.achievedMilestones.some(m => m.id === 'slaughterhouse');
+
+            // 🌾 اعتماد الأجل فى شراء العلف من السوق
+            const feedCreditMarkup = inputs.feedCreditMarkupPerBird || 0;
+            const feedCreditAnnualCost = (cyclesPerYear != null) ? feedCreditMarkup * currentTotalCapacity * cyclesPerYear : null;
+            const feedMillCapex = plan.autoCapex.capexFeedMill;
+            const feedMillPaybackYears = (feedMillCapex != null && feedCreditAnnualCost > 0) ? feedMillCapex / feedCreditAnnualCost : null;
+
+            // 🔪 بيع حي للتجار (أقل هامش) بدل بيع مجزّر (هامش أعلى عادة)
+            const liveToProcessedUplift = inputs.liveToProcessedUpliftPerBird || 0;
+            const slaughterhouseAnnualUplift = (cyclesPerYear != null) ? liveToProcessedUplift * currentTotalCapacity * cyclesPerYear : null;
+            const slaughterhouseCapex = plan.autoCapex.capexSlaughterhouse;
+            const slaughterhousePaybackYears = (slaughterhouseCapex != null && slaughterhouseAnnualUplift > 0) ? slaughterhouseCapex / slaughterhouseAnnualUplift : null;
+
+            // ⚖️ مقارنة مباشرة بين مسار الأجل الحالي ومسار كاش بس (بديل بدون أي تمويل خارجي)
+            const cashVsCredit = computeCreditVsCashExpansionComparison(inputs, hist);
+
+            return { cyclesPerYear, currentTotalCapacity, feedMillAchieved, slaughterhouseAchieved,
+                feedCreditMarkup, feedCreditAnnualCost, feedMillCapex, feedMillPaybackYears,
+                liveToProcessedUplift, slaughterhouseAnnualUplift, slaughterhouseCapex, slaughterhousePaybackYears, cashVsCredit };
+        }
+
+        // ============ ⚖️ مقارنة مباشرة: مسار "بالأجل" (زي خطتك الحالية) مقابل مسار "بالكاش بس" من غير أي أجل ============
+        // السؤال اللي الميزة دي بتجاوبه بالظبط: "لو قطعنا الاعتماد على الأجل النهارده، هل نقدر ندير المنظومة
+        // بنفس القدرة (نفس عدد العنابر ونفس السرعة)، ولا هنبطّئ؟". الفرق بين المسارين اتنين:
+        //   1) نقطة البداية: مسار الأجل بيبدأ بالقاعدة الأفقية كاملة (baseHouseCount عنبر) فورًا (ممولة بالأجل).
+        //      مسار الكاش بيبدأ بعدد عنابر أقل (اللي تقدر تفتحه فعليًا من مالك الخاص من غير أي تمويل خارجي).
+        //   2) ربح الطائر: مسار الأجل مخصوم منه فرق سعر الأجل فى العلف كل دورة؛ مسار الكاش ربحه كامل بدون خصم.
+        // المقارنة بتوريك بعد كام دورة مسار الكاش "يلحق" نفس سعة القاعدة الأفقية اللي مسار الأجل بيبدأ بيها فورًا —
+        // ده "تكلفة السرعة" الحقيقية للاستقلال عن الأجل، مقابل "تكلفة الفلوس" (فرق الأجل) اللي مسار الأجل بيدفعها.
+        function computeCreditVsCashExpansionComparison(inputs, hist) {
+            if (!hist || hist.avgProfitPerBird == null) return null;
+            const minCap = inputs.minHouseCapacity || 10000;
+            const baseHouseCount = inputs.targetHouseCount || 10;
+            const multiplier = inputs.capacityMultiplier || 2;
+            const houseCountCap = inputs.houseCountCap || (baseHouseCount * 3);
+            const creditMarkup = inputs.feedCreditMarkupPerBird || 0;
+            const cashStartHouses = inputs.cashOnlyStartHouseCount || 1;
+            const maxRounds = 20; // مدى أطول من خطة التوسع العادية (8 دورات) عشان نضمن مسار الكاش هيلحق لو أصلًا هيلحق
+
+            function simulatePath(startHouseCount, profitPerBird) {
+                let houses = Array.from({ length: startHouseCount }, () => ({ capacity: minCap, cyclesCompleted: 0 }));
+                const capacityByRound = [houses.reduce((s, h) => s + h.capacity, 0)];
+                const houseCountByRound = [houses.length];
+                for (let round = 1; round <= maxRounds; round++) {
+                    const newHouses = [];
+                    houses.forEach(h => {
+                        h.cyclesCompleted++;
+                        if (h.cyclesCompleted === 1) {
+                            if (houses.length + newHouses.length < houseCountCap) newHouses.push({ capacity: h.capacity * multiplier, cyclesCompleted: 0 });
+                            else h.capacity = h.capacity * multiplier;
+                        }
+                    });
+                    houses = houses.concat(newHouses);
+                    capacityByRound.push(houses.reduce((s, h) => s + h.capacity, 0));
+                    houseCountByRound.push(houses.length);
+                }
+                return { capacityByRound, houseCountByRound };
+            }
+
+            // مسار الأجل: القاعدة الأفقية كاملة فورًا، ربح مخصوم منه فرق الأجل
+            const creditPath = simulatePath(baseHouseCount, hist.avgProfitPerBird - creditMarkup);
+            // مسار الكاش: عدد عنابر بداية أقل (واقعي بدون تمويل)، ربح كامل بدون خصم فرق الأجل
+            const cashPath = simulatePath(cashStartHouses, hist.avgProfitPerBird);
+
+            const creditBaseCapacity = creditPath.capacityByRound[0];
+            const catchUpRoundIdx = cashPath.capacityByRound.findIndex(c => c >= creditBaseCapacity);
+            const roundsBehind = catchUpRoundIdx; // -1 لو محدّش لسه لحد آخر دورة فى المدى المحسوب
+
+            return { creditPath, cashPath, creditBaseCapacity, roundsBehind, cashStartHouses, maxRounds, creditMarkup, baseHouseCount };
         }
 
         // ============ مخاطر الأمراض الموسمية — تنبيه ديناميكي حسب الشهر الحالي (مناخ مصر) ============
@@ -17073,7 +17253,7 @@
             const allSpeciesInputs = state.expansionInputsBySpecies || {};
             const speciesWithActivePlan = Object.keys(allSpeciesInputs).filter(sp => {
                 const i = { ...DEFAULT_EXPANSION_INPUTS, ...allSpeciesInputs[sp] };
-                return (i.capexHatchery > 0 || i.capexFeedMill > 0 || i.capexBreeders > 0 || i.capexSlaughterhouse > 0);
+                return (i.capexHatcheryPerThousandChicks > 0 || i.capexFeedMillPerTonDay > 0 || i.henCost > 0 || i.capexSlaughterhousePerTonDay > 0);
             });
             const otherSpeciesPlanned = speciesWithActivePlan.filter(sp => sp !== plan.species).length;
             const verticalPlanned = milestones.length;
@@ -17085,11 +17265,15 @@
                 feedMillUncovered: !!(inputs.plannedFeedMillTonsPerDay && lastRound.feedMillTonsPerDayRec != null && lastRound.feedMillTonsPerDayRec > inputs.plannedFeedMillTonsPerDay),
             };
 
-            // ----- 6) مخاطر تقلب سعر العلف -----
-            const priceRisk = computeFeedPriceStressRisk(plan, inputs);
+            // ----- 6) مخاطر تقلب سعر العلف/سعر البيع (مُعمَّق ومدموج مع تحليل الحساسية بدراسة الجدوى) -----
+            const priceRisk = computeExpansionSensitivityScenarios(plan, inputs);
+            const combinedPessimistic = priceRisk.scenarios[2]; // "متشائم" (علف+ / بيع-) — أشد سيناريو واقعي مزدوج
 
             // ----- 7) مخاطر الأمراض الموسمية -----
             const seasonalRisk = getSeasonalDiseaseRisk();
+
+            // ----- 8) 💳 الاعتماد على الأجل ونقطة التعادل (امتى الاستمرار فيه بقى أضرّ من الاستقلال عنه) -----
+            const creditDependency = computeCreditDependencyAnalysis(plan, inputs);
 
             // ----- تقييم عام: نحسب عدد عوامل الخطر "المرتفعة" -----
             let riskFlags = 0;
@@ -17099,8 +17283,9 @@
             if (overduePayable > 0 || overdueReceivable > 0) riskFlags++;
             if (verticalPlanned > 0 && otherSpeciesPlanned === 0) riskFlags++; // كل خطتك حاليًا فى نوع واحد بس، من غير تنويع لنوع تاني
             if (capacityRisk.slaughterUncovered || capacityRisk.feedMillUncovered) riskFlags++;
-            if (priceRisk.stressCase.breachedSafety) riskFlags++;
+            if (priceRisk.stressCase.breachedSafety || combinedPessimistic.fundSim.breachedSafety) riskFlags++;
             if (seasonalRisk.level.includes('مرتفعة')) riskFlags++;
+            if (!creditDependency.feedMillAchieved && creditDependency.feedMillPaybackYears != null && creditDependency.feedMillPaybackYears <= 3) riskFlags++; // وصلت لنقطة التعادل ولسه معتمد على الأجل
             const overallLevel = riskFlags >= 5 ? 'مرتفعة' : riskFlags >= 3 ? 'متوسطة' : 'منخفضة';
 
             return {
@@ -17108,7 +17293,7 @@
                 baseCase, pessimisticCase, severeCase,
                 overduePayable, overdueReceivable, totalPayable, totalReceivable,
                 otherSpeciesPlanned, verticalPlanned,
-                capacityRisk, priceRisk, seasonalRisk, riskFlags, overallLevel,
+                capacityRisk, priceRisk, seasonalRisk, creditDependency, riskFlags, overallLevel,
             };
         }
 
@@ -17148,13 +17333,23 @@
             </div>
             <div class="section">
                 <div class="section-head"><h2>🎯 الأهداف الكبرى (تكامل رأسي) — ${expansionSpeciesLabel(species)}</h2></div>
-                <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                    <div class="field"><label>🐣 معمل تفريخ — رأس مال تقديري</label><input type="number" id="exp_capexHatchery" value="${inputs.capexHatchery ?? ''}"></div>
-                    <div class="field"><label>🏭 مصنع علف — رأس مال تقديري</label><input type="number" id="exp_capexFeedMill" value="${inputs.capexFeedMill ?? ''}"></div>
-                    <div class="field"><label>🥚 قطيع أمهات — رأس مال تقديري</label><input type="number" id="exp_capexBreeders" value="${inputs.capexBreeders ?? ''}"></div>
-                    <div class="field"><label>🔪 مجزر خاص — رأس مال تقديري</label><input type="number" id="exp_capexSlaughterhouse" value="${inputs.capexSlaughterhouse ?? ''}"></div>
-                    <div class="field full" style="grid-column:1/-1;"><button class="btn gold block" onclick="saveExpansionInputs()">💾 احفظ واحسب الخطة</button></div>
+                <div class="card" style="display:grid;gap:10px;">
+                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">💡 مش رأس مال تقديري بعد كده — دخّل "تكلفة الوحدة" (سعر سوق حقيقي معروف عندك للوحدة) والتطبيق بيضربها تلقائيًا فى السعة/الاحتياج المستهدف الفعلي (محسوب من عدد عنابرك المستهدف × أداؤك التاريخي الحقيقي فى هذا النوع). قطيع الأمهات بيتحسب من حاسبة الأمهات تحت من غير أي مُدخل إضافي هنا.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div class="field"><label>🐣 تكلفة معمل تفريخ / 1000 كتكوت سعة سنوية</label><input type="number" id="exp_capexHatcheryPerThousandChicks" value="${inputs.capexHatcheryPerThousandChicks ?? ''}"></div>
+                        <div class="field"><label>🏭 تكلفة مصنع علف / طن سعة يومية</label><input type="number" id="exp_capexFeedMillPerTonDay" value="${inputs.capexFeedMillPerTonDay ?? ''}"></div>
+                        <div class="field"><label>🔪 تكلفة مجزر / طن سعة يومية</label><input type="number" id="exp_capexSlaughterhousePerTonDay" value="${inputs.capexSlaughterhousePerTonDay ?? ''}"></div>
+                        <div class="field"><label>🥚 قطيع أمهات — بيتحسب تلقائيًا من "سعر شراء الأم" فى حاسبة الأمهات تحت</label><input type="text" value="${plan.autoCapex && plan.autoCapex.capexBreeders != null ? money(plan.autoCapex.capexBreeders) : '—'}" disabled style="background:var(--cream);color:var(--muted);"></div>
+                    </div>
+                    ${plan.autoCapex ? `<div style="display:grid;gap:4px;border-top:1px solid var(--line);padding-top:8px;">
+                        ${statLine('🐣 معمل تفريخ — رأس المال المطلوب (محسوب)', plan.autoCapex.capexHatchery != null ? money(plan.autoCapex.capexHatchery) : '—')}
+                        ${statLine('🏭 مصنع علف — رأس المال المطلوب (محسوب)', plan.autoCapex.capexFeedMill != null ? money(plan.autoCapex.capexFeedMill) : '—')}
+                        ${statLine('🔪 مجزر خاص — رأس المال المطلوب (محسوب)', plan.autoCapex.capexSlaughterhouse != null ? money(plan.autoCapex.capexSlaughterhouse) : '—')}
+                        ${statLine('🥚 قطيع أمهات — رأس المال المطلوب (محسوب)', plan.autoCapex.capexBreeders != null ? money(plan.autoCapex.capexBreeders) : '—')}
+                    </div>` : ''}
+                    <button class="btn gold block" onclick="saveExpansionInputs()">💾 احفظ واحسب الخطة</button>
                 </div>
+            </div>
             </div>
             <div class="section">
                 <div class="section-head"><h2>📊 حاسبات ${expansionSpeciesLabel(species)}: مرحلة العلف + الأمهات + المصنع + المجزر</h2></div>
@@ -17194,12 +17389,12 @@
 
                     <div style="border-top:1px solid var(--line);padding-top:12px;">
                         <label style="font-weight:800;display:block;margin-bottom:8px;">🥚 حاسبة قطيع الأمهات</label>
-                        <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">احسب عدد الأمهات اللى يقدر يغطي احتياجك السنوي من الصغار، وقارن تكلفة إنتاج الكتكوت/الصغير داخليًا بسعر شرائه دلوقتي.</p>
+                        <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">احسب عدد الأمهات اللى يقدر يغطي احتياجك السنوي من الصغار، وقارن تكلفة إنتاج الكتكوت/الصغير داخليًا بسعر شرائه دلوقتي. 💡 بيض/خصوبة/فقس اتملوا برقم مرجعي تقريبي شائع لـ${expansionSpeciesLabel(species)} (${getBreederFlockDefaults(species).henEggsPerYear} بيضة، خصوبة ${getBreederFlockDefaults(species).fertilityPct}%، فقس ${getBreederFlockDefaults(species).hatchPct}%) — عدّلها برقم مورّدك الفعلي وقت ما يتوفر.</p>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                             <div class="field"><label>عدد الدورات سنويًا لكل عنبر</label><input type="number" step="0.1" id="exp_cyclesPerYearPerHouse" value="${inputs.cyclesPerYearPerHouse ?? 6}"></div>
-                            <div class="field"><label>بيض الأم الواحدة سنويًا</label><input type="number" id="exp_henEggsPerYear" value="${inputs.henEggsPerYear ?? 160}"></div>
-                            <div class="field"><label>نسبة الخصوبة %</label><input type="number" step="0.1" id="exp_fertilityPct" value="${inputs.fertilityPct ?? 90}"></div>
-                            <div class="field"><label>نسبة الفقس من المخصب %</label><input type="number" step="0.1" id="exp_hatchPct" value="${inputs.hatchPct ?? 85}"></div>
+                            <div class="field"><label>بيض الأم الواحدة سنويًا</label><input type="number" id="exp_henEggsPerYear" value="${inputs.henEggsPerYear ?? getBreederFlockDefaults(species).henEggsPerYear}"></div>
+                            <div class="field"><label>نسبة الخصوبة %</label><input type="number" step="0.1" id="exp_fertilityPct" value="${inputs.fertilityPct ?? getBreederFlockDefaults(species).fertilityPct}"></div>
+                            <div class="field"><label>نسبة الفقس من المخصب %</label><input type="number" step="0.1" id="exp_hatchPct" value="${inputs.hatchPct ?? getBreederFlockDefaults(species).hatchPct}"></div>
                             <div class="field"><label>سعر الكتكوت/الصغير الحالي (شراء) جنيه</label><input type="number" step="0.01" id="exp_currentChickPrice" value="${inputs.currentChickPrice ?? ''}"></div>
                             <div class="field"><label>تكلفة تربية الأم سنويًا (علف+رعاية) جنيه</label><input type="number" step="0.01" id="exp_henAnnualFeedCost" value="${inputs.henAnnualFeedCost ?? ''}"></div>
                             <div class="field"><label>سعر شراء الأم (بيولة) جنيه</label><input type="number" step="0.01" id="exp_henCost" value="${inputs.henCost ?? ''}"></div>
@@ -17376,9 +17571,48 @@
                     </div>
                     ${statLine(`تكلفة العلف الحالية للطائر`, `${money(risk.priceRisk.avgFeedCostPerBird)}`)}
                     ${statLine(`تكلفة إضافية للطائر لو العلف زاد ${fmt(risk.priceRisk.feedStressPct,0)}%`, `+${money(risk.priceRisk.extraCostPerBird)}`, {vStyle:`font-weight:900;color:var(--red);`})}
-                    ${statLine(`ربح الطائر بعد الزيادة`, `${money(risk.priceRisk.stressedProfit)}`, {vStyle:`font-weight:900;color:${risk.priceRisk.stressedProfit >= 0 ? 'var(--green)' : 'var(--red)'};`})}
-                    ${statLine(`أدنى رصيد للصندوق تحت ضغط سعر العلف`, `${money(risk.priceRisk.stressCase.minFundBalance)}`, {vStyle:`font-weight:900;color:${risk.priceRisk.stressCase.breachedSafety ? 'var(--red)' : 'inherit'};`})}
-                    <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.priceRisk.stressCase.breachedSafety ? '⚠️ لو سعر العلف ارتفع ' + fmt(risk.priceRisk.feedStressPct,0) + '% بس، الصندوق بيكسر الحد الأدنى الآمن — العلف هو أكبر بند تكلفة عندك، وأي تقلب فيه بيهدد استمرار خطة التوسع كلها.' : '✅ الخطة قادرة تمتص زيادة ' + fmt(risk.priceRisk.feedStressPct,0) + '% فى سعر العلف من غير ما الصندوق يكسر الحد الأدنى الآمن.'}</p>
+                    ${statLine(`ربح الطائر بعد الزيادة (علف بس)`, `${money(risk.priceRisk.stressedProfit)}`, {vStyle:`font-weight:900;color:${risk.priceRisk.stressedProfit >= 0 ? 'var(--green)' : 'var(--red)'};`})}
+                    ${statLine(`أدنى رصيد للصندوق تحت ضغط سعر العلف بس`, `${money(risk.priceRisk.stressCase.minFundBalance)}`, {vStyle:`font-weight:900;color:${risk.priceRisk.stressCase.breachedSafety ? 'var(--red)' : 'inherit'};`})}
+                    <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.priceRisk.stressCase.breachedSafety ? '⚠️ لو سعر العلف ارتفع ' + fmt(risk.priceRisk.feedStressPct,0) + '% بس، الصندوق بيكسر الحد الأدنى الآمن.' : '✅ الخطة قادرة تمتص زيادة ' + fmt(risk.priceRisk.feedStressPct,0) + '% فى سعر العلف لوحده من غير ما الصندوق يكسر الحد الأدنى الآمن.'}</p>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-head"><h2>📊 تحليل الحساسية المُعمَّق (مدموج مع دراسة الجدوى) — سيناريوهات علف + بيع معًا</h2></div>
+                <div class="card" style="display:grid;gap:8px;">
+                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">نفس منطق وتسمية سيناريوهات "الوضع الحالي / متفائل / متشائم" الموجودة فى دراسة الجدوى لدفعتك الحالية، لكن مطبّقة هنا على مسار الصندوق وتوقيت الأهداف الكبرى بالكامل عبر خطة التوسع — مش بس ربح دورة واحدة.</p>
+                    <div class="field"><label>نسبة اختبار ضغط سعر البيع %</label><input type="number" id="exp_salePriceStressPct" value="${inputs.salePriceStressPct ?? 10}" onchange="saveExpansionInputs()"></div>
+                    <div class="scroll-x">
+                        <table><thead><tr><th>السيناريو</th><th>ربح الطائر</th><th>أدنى رصيد صندوق</th><th>الحالة</th></tr></thead>
+                        <tbody>${risk.priceRisk.scenarios.map(s => `
+                            <tr><td>${s.label}</td>
+                            <td style="color:${s.profitPerBird>=0?'var(--green)':'var(--red)'};font-weight:800;">${money(s.profitPerBird)}</td>
+                            <td>${money(s.fundSim.minFundBalance)}</td>
+                            <td>${s.fundSim.breachedSafety ? '⚠️ يكسر الحد الآمن' : '✅ آمن'}</td></tr>`).join('')}
+                        </tbody></table>
+                    </div>
+                    <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.priceRisk.scenarios[2].fundSim.breachedSafety ? '⚠️ فى السيناريو المتشائم المزدوج (علف أعلى + بيع أقل معًا)، صندوق التوسع بيكسر الحد الأدنى الآمن فعليًا — ده أشد اختبار واقعي من اختبار العلف لوحده فوق، لازم تاخده فى الاعتبار قبل أي التزام برأس مال هدف كبير قريب.' : '✅ حتى فى السيناريو المتشائم المزدوج، الصندوق بيفضل فوق الحد الأدنى الآمن.'}</p>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-head"><h2>💳 الاعتماد على الأجل — امتى بيبقى ضرر بدل ميزة؟</h2></div>
+                <div class="card" style="display:grid;gap:8px;">
+                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">فرق سعر الأجل فى العلف بتدفعه كل دورة للأبد طول ما مستمر تشتري من السوق. مصنع العلف/المجزر الخاص بيه رأس مال مرة واحدة بيلغي التكلفة المتكررة دي — "سنين الاسترداد" تحت بتقولك امتى الاستثمار ده يستاهل قبل ما تفضل تدفع فرق الأجل للأبد.</p>
+                    <div class="field"><label>فرق سعر الأجل للفرخة الواحدة (جنيه)</label><input type="number" step="0.01" id="exp_feedCreditMarkupPerBird" value="${inputs.feedCreditMarkupPerBird ?? ''}" placeholder="فرق سعر العلف بالأجل عن الكاش" onchange="saveExpansionInputs()"></div>
+                    <div class="field"><label>فرق سعر البيع مجزّر مقابل حي للفرخة (جنيه)</label><input type="number" step="0.01" id="exp_liveToProcessedUpliftPerBird" value="${inputs.liveToProcessedUpliftPerBird ?? ''}" placeholder="الهامش الإضافي لو بعت مجزّر بدل حي" onchange="saveExpansionInputs()"></div>
+                    ${risk.creditDependency.feedCreditAnnualCost != null ? `
+                    ${statLine(`تكلفة الأجل السنوية الحالية (على سعتك الحالية)`, `${money(risk.creditDependency.feedCreditAnnualCost)}`, {vStyle:`font-weight:900;color:var(--red);`})}
+                    ${risk.creditDependency.feedMillCapex != null ? statLine(`رأس مال مصنع العلف المطلوب`, `${money(risk.creditDependency.feedMillCapex)}`) : ''}
+                    ${risk.creditDependency.feedMillPaybackYears != null ? statLine(`سنين استرداد رأس المال (مصنع العلف)`, `${fmt(risk.creditDependency.feedMillPaybackYears,1)} سنة`, {vStyle:`font-weight:900;color:${risk.creditDependency.feedMillPaybackYears<=3?'var(--red)':'var(--green)'};`}) : ''}
+                    <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.creditDependency.feedMillAchieved ? '✅ عندك مصنع علف خاص بالفعل — الاعتماد على الأجل فى شراء العلف من السوق مش مطروح.' : (risk.creditDependency.feedMillPaybackYears != null && risk.creditDependency.feedMillPaybackYears <= 3 ? '⚠️ وصلت لنقطة التعادل — الاستمرار فى الأجل بقى أضرّ من بناء مصنع علف خاص (استرداد سريع نسبيًا).' : '✅ لسه بدري — الاعتماد على الأجل حاليًا أوفر من بناء مصنع علف خاص.')}</p>` : ''}
+                    ${risk.creditDependency.slaughterhousePaybackYears != null ? `
+                    ${statLine(`سنين استرداد رأس المال (مجزر خاص)`, `${fmt(risk.creditDependency.slaughterhousePaybackYears,1)} سنة`, {vStyle:`font-weight:900;color:${risk.creditDependency.slaughterhousePaybackYears<=3?'var(--red)':'var(--green)'};`})}` : ''}
+                    ${risk.creditDependency.cashVsCredit ? `
+                    <div style="margin-top:6px;padding-top:8px;border-top:1px dashed var(--line);">
+                        <div style="font-weight:800;font-size:12px;margin-bottom:4px;">⚖️ مسار الكاش بس مقابل مسار الأجل الحالي</div>
+                        ${risk.creditDependency.cashVsCredit.roundsBehind >= 0
+                            ? statLine(`مسار الكاش بيلحق نفس سعتك الأفقية الحالية بعد`, `${risk.creditDependency.cashVsCredit.roundsBehind} دورة`, {vStyle:`font-weight:900;`})
+                            : `<p style="font-size:11px;color:var(--muted);margin:4px 0;">مسار الكاش (بدون أي أجل) محتاج أكتر من ${risk.creditDependency.cashVsCredit.maxRounds} دورة عشان يلحق نفس سعتك الحالية — الاعتماد على الأجل حاليًا بيوفّر سرعة توسع مش هتلحقها بالكاش وحده فى مدى معقول.</p>`}
+                    </div>` : ''}
                 </div>
             </div>
             <div class="section">
@@ -23214,340 +23448,6 @@
         }
         setTimeout(autoRefreshWeatherIfStale, 3000); // فحص أول مرة بعد فتح التطبيق بلحظات
         setInterval(autoRefreshWeatherIfStale, 3600000); // ثم كل ساعة تلقائيًا طول ما التطبيق مفتوح
-            // ============ 🧰 معالج تجهيز الدورة الجديدة ============
-        // بيتفتح تلقائيًا بعد إنشاء دفعة جديدة (بعد صفحة الإنشاء مباشرة)، ويجمع فى مكان واحد كل حاجة
-        // محتاجة تتجهز على الدفعة الجديدة قبل ما تبدأ فعليًا: تطبيق بروتوكول محفوظ، توليد بروتوكول
-        // محسّن/الأفضل من كل دورة وتطبيقه، عرض "الذاكرة المرضية" (أنماط الحوادث المتكررة لنفس النوع)
-        // مع إمكانية جدولتها وقائيًا مباشرة، وأخيرًا تجهيز قائمة مشتريات الدورة كاملة جاهزة للطباعة.
-        let cycleWizardBatchId = null;
-        let _wizardKbHints = [];
-        let _wizardShoppingRows = [];
-
-        function openCycleSetupWizard(batchId) {
-            const b = state.batches.find(x => x.id === batchId);
-            if (!b) return;
-            cycleWizardBatchId = batchId;
-            renderCycleWizardBody();
-            document.getElementById('cycleWizardModalOverlay').classList.add('show');
-        }
-
-        // الإغلاق (سواء بالتخطي أو بعد التنفيذ) بيكمّل بعده عرض ترحيل المخزون المتبقي من دورة سابقة،
-        // بنفس السلسلة اللي كانت شغالة أصلًا بعد إنشاء الدفعة مباشرة.
-        function closeCycleWizard() {
-            const bid = cycleWizardBatchId;
-            closeModal('cycleWizardModalOverlay');
-            cycleWizardBatchId = null;
-            if (bid) {
-                const b = state.batches.find(x => x.id === bid);
-                if (b) setTimeout(() => offerInventoryCarryOver(b), 400);
-            }
-        }
-
-        function renderCycleWizardBody() {
-            const box = document.getElementById('cycleWizardBody');
-            if (!box) return;
-            const b = state.batches.find(x => x.id === cycleWizardBatchId);
-            if (!b) { box.innerHTML = ''; return; }
-
-            // 1) البروتوكولات المحفوظة — نفس النوع أولًا
-            const allProtocols = state.protocols || [];
-            const sameSpecies = allProtocols.filter(p => p.species === b.species);
-            const otherCount = allProtocols.length - sameSpecies.length;
-            let protoHtml;
-            if (!sameSpecies.length) {
-                protoHtml = `<div class="empty" style="padding:12px;">لا يوجد بروتوكول محفوظ لهذا النوع بعد.</div>`;
-            } else {
-                protoHtml = [...sameSpecies].reverse().map(p => `
-                    <div class="check-row">
-                        <div class="txt">
-                            <div style="font-weight:800;">${esc(p.name)} ${p.autoGenerated ? '<span class="pill info" style="font-size:10px;">🧠 مُولَّد آليًا</span>' : ''}</div>
-                            <div class="day">🌾 ${p.feedAdditives.length} علف · 💧 ${p.waterAdditives.length} ماء · 🪣 ${p.treatments.length} فرشة</div>
-                        </div>
-                        <button class="btn gold sm" onclick="applyProtocol('${p.id}')">📥 تطبيق</button>
-                    </div>`).join('');
-            }
-            if (otherCount > 0) protoHtml += `<div style="font-size:10.5px;color:var(--muted);padding:6px;">+ ${otherCount} بروتوكول محفوظ لأنواع أخرى (غير معروض هنا)</div>`;
-
-            // 2) الذاكرة المرضية — أنماط الحوادث المتكررة لنفس النوع عبر الدورات المؤرشفة
-            const kb = (typeof computeIncidentKnowledgeBase === 'function') ? computeIncidentKnowledgeBase(b.species) : null;
-            const kbSorted = kb ? [...kb].sort((x, y) => x.ageCenter - y.ageCenter) : [];
-            _wizardKbHints = kbSorted;
-            let kbHtml;
-            if (!kbSorted.length) {
-                kbHtml = `<div class="empty" style="padding:12px;">لا توجد أنماط متكررة كافية بعد فى الذاكرة المرضية لهذا النوع (تحتاج دورتين مؤرشفتين على الأقل بحوادث متشابهة قريبة من نفس العمر).</div>`;
-            } else {
-                kbHtml = kbSorted.map((k, idx) => {
-                    const already = k.bestSolution && (b.treatmentLog || []).some(t => t.day === k.ageCenter && normalizeArabicName(t.name) === normalizeArabicName(k.bestSolution.name));
-                    const solText = k.bestSolution
-                        ? `الحل الأنجح: <b>${esc(k.bestSolution.name)}</b> (نجح فى ${fmt(k.bestSolution.successRate * 100, 0)}% من ${k.bestSolution.timesUsed} محاولة)`
-                        : 'لا يوجد حل مُجرَّب مسجَّل بعد لهذا النمط';
-                    return `<div class="check-row">
-                        <div class="txt">
-                            <div style="font-weight:800;">🧠 حوالى يوم ${k.ageCenter} — ${esc(k.likelyDisease || k.category)}${k.seasonalHint ? ` (غالبًا فى ${esc(k.seasonalHint)})` : ''}</div>
-                            <div class="day">تكرر فى ${k.cyclesAffected} دورة سابقة · ${solText}</div>
-                        </div>
-                        ${k.bestSolution ? (already
-                            ? `<span class="pill" style="font-size:10px;">✅ مُجدوَل بالفعل</span>`
-                            : `<button class="btn gold sm" onclick="wizardAddHealthMemoryTreatment(${idx})">➕ جدولة وقائيًا</button>`)
-                            : ''}
-                    </div>`;
-                }).join('');
-            }
-
-            box.innerHTML = `
-                <h3 style="margin-top:14px;font-size:14px;">📂 بروتوكولات محفوظة لهذا النوع</h3>
-                <div class="card" style="padding:0;">${protoHtml}</div>
-                <div class="row-actions" style="margin-top:8px;">
-                    <button class="btn gold block owner-only" onclick="wizardGenerateRefinedProtocol()">🧠 توليد بروتوكول محسّن من أفضل دورة</button>
-                </div>
-                <div class="row-actions" style="margin-top:6px;">
-                    <button class="btn gold block owner-only" onclick="wizardGenerateBestProtocol()">🏆 توليد بروتوكول "الأفضل من كل دورة"</button>
-                </div>
-                <h3 style="margin-top:18px;font-size:14px;">🧠 الذاكرة المرضية لهذا النوع</h3>
-                <div class="card" style="padding:0;">${kbHtml}</div>
-            `;
-        }
-
-        // بعد التوليد، البروتوكول الجديد بيظهر تلقائيًا فى أعلى قائمة "بروتوكولات محفوظة" بالأعلى
-        // جاهز لتطبيقه بضغطة "📥 تطبيق" — بنفس منطق الأمان الموجود أصلًا (تأكيد قبل الدمج).
-        function wizardGenerateRefinedProtocol() {
-            const b = state.batches.find(x => x.id === cycleWizardBatchId);
-            if (!b) { showToast('تعذر تحديد الدفعة'); return; }
-            setState('activeId', b.id);
-            buildRefinedProtocol();
-            setTimeout(renderCycleWizardBody, 200);
-        }
-
-        function wizardGenerateBestProtocol() {
-            const b = state.batches.find(x => x.id === cycleWizardBatchId);
-            if (!b) { showToast('تعذر تحديد الدفعة'); return; }
-            setState('activeId', b.id);
-            buildBestOfBreedProtocol();
-            setTimeout(renderCycleWizardBody, 200);
-        }
-
-        function wizardAddHealthMemoryTreatment(idx) {
-            if (!requirePermission('owner')) return; // 🔒 نفس صلاحية إضافة معاملة يدوية عادية
-            const b = state.batches.find(x => x.id === cycleWizardBatchId);
-            if (!b) return;
-            const k = _wizardKbHints[idx];
-            if (!k || !k.bestSolution) return;
-            if (!b.treatmentLog) b.treatmentLog = [];
-            b.treatmentLog.push({
-                id: uid(), day: Math.max(k.ageCenter, 1), name: k.bestSolution.name, done: false, doneDate: null,
-                qty: 0, unit: '',
-                notes: `🧠 مُضافة من الذاكرة المرضية — نمط تكرر فى ${k.cyclesAffected} دورة سابقة قريبة من نفس العمر، نجح فى ${fmt(k.bestSolution.successRate * 100, 0)}% من المحاولات. حدّد الكمية المطلوبة يدويًا من برنامج المعاملات.`
-            });
-            b.treatmentLog.sort((x, y) => x.day - y.day);
-            persist();
-            renderCycleWizardBody();
-            render();
-            showToast(`✅ تم جدولة "${k.bestSolution.name}" فى يوم ${k.ageCenter} تقريبًا — حدّد الكمية لاحقًا من برنامج المعاملات`);
-        }
-
-        // ============ 🛒 قائمة مشتريات الدورة ============
-        // بتحسب لكل بند مُجدوَل على الدفعة (إضافة علف/ماء، تحصين، معاملة فرشة) الكمية اللازمة لتغطية
-        // الدورة كاملة، بناءً على: (1) نسبة/جرعة البند نفسه، (2) عدد الطيور الفعلي بالدفعة، (3) متوسط
-        // الاستهلاك الفعلي المسجَّل لنفس البند فى دورات سابقة من نفس النوع لو متاح (أدق من التقدير النظري
-        // القياسي)، (4) آخر سعر شراء مسجَّل لنفس الصنف عبر كل الدفعات — عشان تطلع جاهزة للطباعة والشراء بيها.
-        function estimateCycleLengthDays(b) {
-            return (b && b.targetAge) ? b.targetAge : 35;
-        }
-
-        // متوسط الاستهلاك الفعلي "لكل طائر" لبند إضافة مُعيّن، مبني على additiveExecLog الفعلي
-        // (مش المُخطَّط) عبر كل الدفعات المؤرشفة من نفس النوع اللي فعلًا استخدمت نفس البند.
-        function estimateHistoricalPerBirdRate(species, name, type) {
-            const target = normalizeArabicName(name);
-            const rates = [];
-            (state.batches || []).filter(x => x.species === species && x.status === 'مؤرشفة' && x.startCount > 0).forEach(x => {
-                const matching = (x.additiveExecLog || []).filter(e => e.type === type && normalizeArabicName(e.name) === target);
-                if (!matching.length) return;
-                const total = matching.reduce((s, e) => s + (e.qty || 0), 0);
-                if (total > 0) rates.push({ perBird: total / x.startCount, unit: matching[0].unit });
-            });
-            if (!rates.length) return null;
-            const avgPerBird = rates.reduce((s, r) => s + r.perBird, 0) / rates.length;
-            return { perBird: avgPerBird, unit: rates[0].unit, sampleCount: rates.length };
-        }
-
-        // تقدير نظري (لو مفيش تاريخ استهلاك فعلي كافٍ بعد) — بيمشي يوم بيوم على مدى الدورة المتوقعة
-        // باستخدام منحنى العلف/الماء المرجعي القياسي (نفس مرجع calcAdditiveQtyToday) مضروبًا فى عدد الطيور.
-        function estimateAdditiveCycleQty(b, a, type) {
-            const cycleLen = estimateCycleLengthDays(b);
-            const period = a.period || 'both';
-            const periodFactor = (period === 'both') ? 1 : 0.5; // نهار أو ليل بس ≈ نص الاستهلاك اليومي تقريبًا
-            let total = 0;
-            for (let day = 0; day <= cycleLen; day++) {
-                if (!additiveActiveOnDay(a, day)) continue;
-                const refs = getRefsForDay(b, day);
-                let qty = 0;
-                if (type === 'feed') {
-                    const feedKg = (refs.feed * (b.startCount || 0) / 1000) * periodFactor;
-                    if (a.per === 'طن علف') qty = a.dose * (feedKg / 1000);
-                    else if (a.per === 'كجم علف يومياً') qty = a.dose;
-                    else qty = a.dose * feedKg;
-                } else {
-                    const waterL = (refs.water * (b.startCount || 0) / 1000) * periodFactor;
-                    if (a.per === '1000 لتر ماء') qty = a.dose * (waterL / 1000);
-                    else if (a.per === 'يومياً للقطيع') qty = a.dose;
-                    else qty = a.dose * waterL;
-                }
-                total += qty;
-            }
-            return Math.round(total * 100) / 100;
-        }
-
-        // آخر سعر شراء مسجَّل لنفس الصنف (بالاسم) عبر كل دفعات المزرعة — الأحدث تاريخًا يفوز
-        function findLastPurchasePrice(itemName) {
-            const target = normalizeArabicName(itemName);
-            let matches = [];
-            (state.batches || []).forEach(bt => {
-                (bt.purchases || []).forEach(p => {
-                    if (!(p.price > 0)) return;
-                    const pname = normalizeArabicName(p.desc || p.type || '');
-                    if (pname && (pname === target || pname.includes(target) || target.includes(pname))) matches.push(p);
-                });
-            });
-            if (!matches.length) return null;
-            matches.sort((a, c) => (c.date || '').localeCompare(a.date || ''));
-            return { price: matches[0].price, unit: matches[0].unit, date: matches[0].date };
-        }
-
-        function computeCycleShoppingList(b) {
-            const rows = [];
-            // 1) إضافات العلف/الماء النشطة
-            [
-                ...(b.feedAdditives || []).map(a => ({ a, type: 'feed' })),
-                ...(b.waterAdditives || []).map(a => ({ a, type: 'water' })),
-            ].forEach(({ a, type }) => {
-                if (a.active === false) return;
-                const hist = estimateHistoricalPerBirdRate(b.species, a.name, type);
-                let qty, source;
-                if (hist) {
-                    qty = Math.round(hist.perBird * (b.startCount || 0) * 100) / 100;
-                    source = `متوسط استهلاك فعلي من ${hist.sampleCount} دورة سابقة لنفس النوع`;
-                } else {
-                    qty = estimateAdditiveCycleQty(b, a, type);
-                    source = 'تقدير نظري حسب الجرعة ومنحنى العلف/الماء القياسي';
-                }
-                if (!(qty > 0)) return;
-                const priceInfo = findLastPurchasePrice(a.name);
-                rows.push({ name: a.name, unit: a.unit, qty, source, unitPrice: priceInfo ? priceInfo.price : null, priceDate: priceInfo ? priceInfo.date : null });
-            });
-            // 2) التحصينات
-            (b.vaccineLog || []).forEach(v => {
-                let qty;
-                if (v.doseMode === 'perBirds' && v.birdsPerGroup > 0 && v.ampoulesPerGroup > 0) {
-                    qty = Math.ceil((b.startCount || 0) / v.birdsPerGroup) * v.ampoulesPerGroup;
-                } else {
-                    qty = v.qty || 0;
-                }
-                if (!(qty > 0)) return;
-                const priceInfo = findLastPurchasePrice(v.name);
-                rows.push({
-                    name: v.name, unit: v.unit || 'جرعة', qty,
-                    source: v.doseMode === 'perBirds' ? 'نسبة الجرعة (أمبولات/عدد طيور) × عدد الطيور بالدفعة' : 'كمية مُدخلة يدويًا فى برنامج التحصين',
-                    unitPrice: priceInfo ? priceInfo.price : null, priceDate: priceInfo ? priceInfo.date : null
-                });
-            });
-            // 3) معاملات الفرشة/العلاجات
-            (b.treatmentLog || []).forEach(t => {
-                if (!(t.qty > 0)) return;
-                const priceInfo = findLastPurchasePrice(t.name);
-                rows.push({
-                    name: t.name, unit: t.unit || '', qty: t.qty,
-                    source: 'كمية مُدخلة (أو مُحجَّمة تلقائيًا بنسبة عدد الطيور) فى برنامج المعاملات',
-                    unitPrice: priceInfo ? priceInfo.price : null, priceDate: priceInfo ? priceInfo.date : null
-                });
-            });
-            // دمج البنود المتطابقة اسمًا ووحدة (لو نفس الصنف ظهر من أكتر من مصدر)
-            const merged = {};
-            rows.forEach(r => {
-                const key = normalizeArabicName(r.name) + '|' + (r.unit || '');
-                if (!merged[key]) { merged[key] = { ...r }; }
-                else {
-                    merged[key].qty = Math.round((merged[key].qty + r.qty) * 100) / 100;
-                    if (!merged[key].source.includes(r.source)) merged[key].source += ' + ' + r.source;
-                    if (merged[key].unitPrice == null && r.unitPrice != null) { merged[key].unitPrice = r.unitPrice; merged[key].priceDate = r.priceDate; }
-                }
-            });
-            return Object.values(merged)
-                .map(r => ({ ...r, totalPrice: r.unitPrice != null ? Math.round(r.unitPrice * r.qty * 100) / 100 : null }))
-                .sort((a, c) => a.name.localeCompare(c.name, 'ar'));
-        }
-
-        function openShoppingListModal() {
-            const b = state.batches.find(x => x.id === cycleWizardBatchId) || getActiveBatch();
-            if (!b) { showToast('اختر دفعة أولاً'); return; }
-            cycleWizardBatchId = b.id;
-            const rows = computeCycleShoppingList(b);
-            renderShoppingListBody(b, rows);
-            document.getElementById('shoppingListModalOverlay').classList.add('show');
-        }
-
-        function renderShoppingListBody(b, rows) {
-            const box = document.getElementById('shoppingListBody');
-            if (!box) return;
-            _wizardShoppingRows = rows;
-            if (!rows.length) {
-                box.innerHTML = `<div class="empty" style="padding:14px;">لا توجد بنود مُجدولة بعد (إضافات علف/ماء، تحصينات، معاملات) لحساب قائمة مشتريات منها — جهّز برنامج الدفعة أولًا.</div>`;
-                return;
-            }
-            const knownTotal = rows.reduce((s, r) => s + (r.totalPrice || 0), 0);
-            const unknownCount = rows.filter(r => r.unitPrice == null).length;
-            box.innerHTML = `
-                <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;">بناءً على ${fmt(b.startCount, 0)} طائر وبرنامج الإضافات/التحصينات/المعاملات المُجدوَل حاليًا على دفعة "${esc(b.name)}"، وآخر سعر شراء مسجَّل لكل صنف.</div>
-                <div class="card" style="padding:0;">
-                ${rows.map(r => `
-                    <div class="check-row">
-                        <div class="txt">
-                            <div style="font-weight:800;">${esc(r.name)}</div>
-                            <div class="day">الكمية المقدرة: <b>${fmt(r.qty, 2)} ${esc(r.unit || '')}</b> — ${esc(r.source)}</div>
-                            <div class="day">${r.unitPrice != null ? `آخر سعر شراء: ${money(r.unitPrice)}/${esc(r.unit || '')} (${r.priceDate}) → الإجمالي التقديري: <b>${money(r.totalPrice)}</b>` : '⚠️ لا يوجد سعر شراء سابق مسجَّل لهذا الصنف'}</div>
-                        </div>
-                    </div>`).join('')}
-                </div>
-                <div style="margin-top:10px;font-weight:800;">💰 الإجمالي التقديري (البنود المُسعَّرة فقط): ${money(knownTotal)}${unknownCount ? ` — بالإضافة لـ ${unknownCount} صنف بدون سعر مسجَّل` : ''}</div>
-            `;
-        }
-
-        function printShoppingList() {
-            const b = state.batches.find(x => x.id === cycleWizardBatchId) || getActiveBatch();
-            const rows = _wizardShoppingRows || [];
-            if (!rows.length) { showToast('لا توجد بنود لطباعتها'); return; }
-            const knownTotal = rows.reduce((s, r) => s + (r.totalPrice || 0), 0);
-            const win = window.open('', '_blank');
-            if (!win) { showToast('⚠️ فعّل النوافذ المنبثقة للطباعة'); return; }
-            win.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>قائمة مشتريات الدورة</title>
-                <style>
-                    body{direction:rtl;font-family:Tahoma,sans-serif;padding:18px;color:#222;}
-                    h2{margin:0 0 2px;} .sub{font-size:12.5px;color:#555;margin-bottom:14px;}
-                    table{width:100%;border-collapse:collapse;font-size:13px;}
-                    th,td{border:1px solid #999;padding:6px 8px;text-align:right;}
-                    th{background:#f0f0f0;}
-                    tfoot td{font-weight:800;background:#f7f7f7;}
-                    .box{display:inline-block;width:14px;height:14px;border:2px solid #333;margin-left:6px;vertical-align:middle;}
-                </style></head>
-                <body onload="window.print()">
-                    <h2>🛒 قائمة مشتريات الدورة — ${b ? esc(b.name) : ''}</h2>
-                    <div class="sub">${b ? `عدد الطيور: ${fmt(b.startCount, 0)} · تاريخ البدء: ${b.startDate || ''} · ` : ''}تاريخ الطباعة: ${todayStr()}</div>
-                    <table>
-                        <thead><tr><th></th><th>الصنف</th><th>الكمية المقدرة</th><th>مصدر التقدير</th><th>آخر سعر</th><th>الإجمالي</th></tr></thead>
-                        <tbody>
-                            ${rows.map(r => `<tr>
-                                <td><span class="box"></span></td>
-                                <td>${esc(r.name)}</td>
-                                <td>${fmt(r.qty, 2)} ${esc(r.unit || '')}</td>
-                                <td style="font-size:11px;">${esc(r.source)}</td>
-                                <td>${r.unitPrice != null ? money(r.unitPrice) : '—'}</td>
-                                <td>${r.totalPrice != null ? money(r.totalPrice) : '—'}</td>
-                            </tr>`).join('')}
-                        </tbody>
-                        <tfoot><tr><td colspan="5">الإجمالي التقديري (البنود المُسعَّرة فقط)</td><td>${money(knownTotal)}</td></tr></tfoot>
-                    </table>
-                </body></html>`);
-            win.document.close();
-        }
-</script>
+    </script>
 </body>
 </html>
