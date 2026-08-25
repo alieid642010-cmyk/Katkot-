@@ -148,6 +148,18 @@
         .subtab-btn .count { opacity: .75; font-weight: 700; margin-inline-start: 3px; }
 
         /* -- كارت درجة الصحة (اللون بس بيفضل ديناميكي inline لأنه مبني على قيمة محسوبة، الباقي كله كلاس) -- */
+        /* -- 🆕 إصلاح: الكلاس ده كان مستخدم فى JS (runKatkotAction نوع scroll + editBatch focusField) لتمييز
+           العنصر اللي التنقل وصلّك له، بس مكانش معرّف فى الـCSS خالص فعليًا — يعني التنقل كان بيحصل من غير أي
+           تأثير بصري ملحوظ. دلوقتي وميض واضح مؤقت (لون ذهبي) يفضل ~2 ثانية ثم يختفي تدريجيًا. -- */
+        @keyframes priorityActionFlash {
+            0% { box-shadow: 0 0 0 3px rgba(217,165,68,.85); background-color: rgba(217,165,68,.18); }
+            100% { box-shadow: 0 0 0 3px rgba(217,165,68,0); background-color: transparent; }
+        }
+        .priority-action-highlight {
+            animation: priorityActionFlash 2.2s ease-out;
+            border-radius: var(--radius-sm, 8px);
+        }
+
         .health-score-card {
             margin-bottom: var(--space-4);
             padding: var(--space-4);
@@ -193,8 +205,8 @@
         }
         .insight-group .igrp-desc { font-size: var(--fs-2xs); color: var(--muted); font-weight: 400; margin-top: 2px; margin-inline-start: 34px; }
         .insight-group[data-gkey="attention"] { --group-color: var(--red); --group-bg: var(--danger-bg); }
-        .insight-group[data-gkey="forecast"] { --group-color: var(--blue); --group-bg: var(--info-bg); }
-        .insight-group[data-gkey="performance"] { --group-color: var(--green); --group-bg: var(--success-bg); }
+        .insight-group[data-gkey="perfForecast"] { --group-color: var(--green); --group-bg: var(--success-bg); }
+        .insight-group[data-gkey="perfForecast"] summary { background: linear-gradient(90deg, var(--info-bg), var(--success-bg)); } /* 🆕 تدرج أزرق↔أخضر يعكس دمج زاويتي التوقع والأداء فى قسم واحد */
         .insight-group[data-gkey="benchmark"] { --group-color: var(--wheat); --group-bg: var(--warning-bg); }
         .insight-group > div.igrp-body { padding: 0 var(--space-3); }
 
@@ -1251,7 +1263,17 @@
         }
         .bt-tab .bt-ic { font-size: 19px; line-height: 1; }
         .bt-tab .bt-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .bt-tab.active { color: var(--barn); }
+        .bt-tab.active {
+            color: var(--barn);
+            background: rgba(47, 69, 56, .1);
+            background: color-mix(in srgb, var(--barn) 14%, transparent);
+        }
+        .bt-tab.active .bt-ic { transform: scale(1.08); }
+        .bt-tab.active::after {
+            content: '';
+            position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
+            width: 16px; height: 3px; border-radius: 999px; background: var(--barn);
+        }
         .bt-tab .badge {
             position: absolute; top: 0; left: 50%; transform: translateX(6px);
             background: var(--red); color: #fff; font-size: var(--fs-2xs);
@@ -1762,6 +1784,24 @@
         </div>
     </div>
 
+    <!-- ===== شاشة قفل التطبيق (بصمة/وجه — تظهر عند فتح التطبيق أو الرجوع له لو القفل التلقائي مفعّل) ===== -->
+    <div class="auth-overlay" id="appLockOverlay" style="display:none;">
+        <div class="auth-card" style="text-align:center;">
+            <div style="font-size:44px;margin-bottom:6px;">🔒</div>
+            <h2 style="text-align:center;">التطبيق مقفول</h2>
+            <div class="sub" style="text-align:center;" id="appLockSub">افتحه ببصمتك أو وجهك للمتابعة</div>
+            <button class="btn gold" onclick="unlockAppWithBiometric()">👆 افتح بالبصمة/الوجه</button>
+            <div style="text-align:center;margin-top:10px;">
+                <a href="javascript:void(0)" style="font-size:11.5px;color:var(--muted);text-decoration:underline;" onclick="toggleAppLockPasswordFallback()">🔑 افتح بكلمة المرور بدل البصمة</a>
+            </div>
+            <div id="appLockPassBox" style="display:none;margin-top:10px;">
+                <input type="password" id="appLockPassInput" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')unlockAppWithPassword()">
+                <button class="btn ghost" onclick="unlockAppWithPassword()">فتح</button>
+            </div>
+            <div class="auth-err" id="appLockErr" style="margin-top:8px;"></div>
+        </div>
+    </div>
+
     <!-- ===== نافذة إدارة الحسابات (مالك فقط) ===== -->
     <div class="modal-overlay" id="accountsModalOverlay">
         <div class="modal" style="max-width:440px;">
@@ -1834,7 +1874,6 @@
             <button class="btn gold block-owner-btn" id="newBatchBtn" style="padding:13px 22px;font-size:15px;font-weight:800;width:100%;margin-top:12px;box-shadow:0 6px 16px rgba(0,0,0,.18);display:none;" onclick="openBatchModal()">+ دفعة تسمين جديدة</button>
         </div>
         <div class="batch-switch" id="batchSwitch"></div>
-        <div class="alert-banner" id="alertBanner"></div>
     </header>
 
     <main>
@@ -4661,7 +4700,7 @@
                     const dutyPct = (target.totalM3h / totalFanCapacity) * 100;
                     if (dutyPct > 100) {
                         const deficit = target.totalM3h - totalFanCapacity;
-                        items.push({ level: 'danger', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) أقل من الحد الأدنى المطلوب الآن (${fmt(m.liveCount,0)} طائر، عمر ${age} يوم): <b>~${fmt(target.totalM3h,0)} م³/ساعة</b> — نقص حوالي ${fmt(deficit,0)} م³/ساعة. فكّر فى إضافة شفاط إضافي بقدرة مماثلة أو تشغيل الموجود بأقصى سرعة باستمرار.` });
+                        items.push({ level: 'danger', actionLabel: '🌀 حدّث بيانات الشفاطات', actionOnclick: 'editActiveBatchFans()', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) أقل من الحد الأدنى المطلوب الآن (${fmt(m.liveCount,0)} طائر، عمر ${age} يوم): <b>~${fmt(target.totalM3h,0)} م³/ساعة</b> — نقص حوالي ${fmt(deficit,0)} م³/ساعة. فكّر فى إضافة شفاط إضافي بقدرة مماثلة أو تشغيل الموجود بأقصى سرعة باستمرار.` });
                     } else {
                         const runMinutesPer5 = (dutyPct / 100) * 5;
                         items.push({ level: 'info', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) تكفي الحد الأدنى المطلوب الآن (~${fmt(target.totalM3h,0)} م³/ساعة لـ ${fmt(m.liveCount,0)} طائر، عمر ${age} يوم) — شغّلها بدورة تشغيل حوالي <b>${fmt(dutyPct,0)}%</b> من الوقت (مثلاً ${fmt(runMinutesPer5,1)} دقيقة تشغيل من كل 5 دقائق) بدل التشغيل المستمر.` });
@@ -4681,7 +4720,7 @@
                 const hotHigh = b.area * HOT_VENT_M3MIN_PER_M2_HIGH * 60;
                 if (totalFanCapacity > 0) {
                     if (totalFanCapacity < hotLow) {
-                        items.push({ level: season === 'صيف' ? 'danger' : 'warn', text: `☀️ لتهوية كافية وقت الحر لمساحة عنبرك (${fmt(b.area,0)} م²): المطلوب بين <b>${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة</b>، وقدرتك الحالية ${fmt(totalFanCapacity,0)} م³/ساعة أقل من ذلك بوضوح — فكّر جديًا فى زيادة عدد/سعة الشفاطات قبل ذروة الصيف.` });
+                        items.push({ level: season === 'صيف' ? 'danger' : 'warn', actionLabel: '🌀 حدّث بيانات الشفاطات', actionOnclick: 'editActiveBatchFans()', text: `☀️ لتهوية كافية وقت الحر لمساحة عنبرك (${fmt(b.area,0)} م²): المطلوب بين <b>${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة</b>، وقدرتك الحالية ${fmt(totalFanCapacity,0)} م³/ساعة أقل من ذلك بوضوح — فكّر جديًا فى زيادة عدد/سعة الشفاطات قبل ذروة الصيف.` });
                     } else {
                         items.push({ level: 'info', text: `☀️ قدرة شفاطاتك الحالية (${fmt(totalFanCapacity,0)} م³/ساعة) تغطي المعدل الانتقالي الموصى به وقت الحر لمساحة عنبرك (${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة) — حافظ على صيانتها الدورية (نظافة الشفرات والستائر) لضمان الأداء الفعلي.` });
                     }
@@ -4699,7 +4738,7 @@
                 if (ventType === 'tunnel') {
                     items.push({ level: 'info', text: `🌀 المرحلة الثالثة (٢٢+ يوم) — نظام نفقي: فعّل التشغيل التدريجي للمراوح (Staged Fans) وارفع عدد المراوح العاملة كلما زادت الكتلة الحيوية، مع تشغيل البادات وقت الذروة الحرارية.` });
                 } else if (season === 'صيف') {
-                    items.push({ level: 'warn', text: `☀️ المرحلة الثالثة صيفًا بنظام ${ventLabel}: خطر إجهاد حراري مرتفع فى هذا العمر — فكّر فى تركيب مراوح مساعدة أو التحويل لتهوية نفقية جزئية، وافتح الفتحات الجانبية بالكامل مع تظليل السقف لو ممكن.` });
+                    items.push({ level: 'warn', actionLabel: '🌀 حدّث بيانات الشفاطات', actionOnclick: 'editActiveBatchFans()', text: `☀️ المرحلة الثالثة صيفًا بنظام ${ventLabel}: خطر إجهاد حراري مرتفع فى هذا العمر — فكّر فى تركيب مراوح مساعدة أو التحويل لتهوية نفقية جزئية، وافتح الفتحات الجانبية بالكامل مع تظليل السقف لو ممكن.` });
                 } else if (season === 'شتاء') {
                     items.push({ level: 'info', text: `❄️ المرحلة الثالثة شتاءً بنظام ${ventLabel}: حافظ على تهوية انتقالية متوازنة — لا تُغلق الفتحات كليًا رغم البرودة لتفادي تراكم الرطوبة والأمونيا، وزد الفتح تدريجيًا صباحًا.` });
                 } else {
@@ -4761,21 +4800,21 @@
             const actualAirspeed = avgOf(lastEnv.airspeedDay, lastEnv.airspeedNight) ?? lastEnv.airspeed;
             if (actualAirspeed != null && refs.airspeed) {
                 if (actualAirspeed < refs.airspeed * 0.7) {
-                    items.push({ level: 'warn', text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أقل من المعيار لعمر ${age} يوم (${fmt(refs.airspeed,1)} م/ث) — زد عدد/سرعة المراوح أو اتساع الفتحات.` });
+                    items.push({ level: 'warn', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أقل من المعيار لعمر ${age} يوم (${fmt(refs.airspeed,1)} م/ث) — زد عدد/سرعة المراوح أو اتساع الفتحات.` });
                 } else if (age <= 14 && actualAirspeed > refs.airspeed * 1.6) {
-                    items.push({ level: 'warn', text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أعلى من اللازم فى هذا العمر الصغير — قد تسبب تيارات باردة مباشرة على الكتاكيت، قلّل معدل التهوية أو غيّر اتجاه الفتحات بعيدًا عن مستوى الفرشة.` });
+                    items.push({ level: 'warn', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أعلى من اللازم فى هذا العمر الصغير — قد تسبب تيارات باردة مباشرة على الكتاكيت، قلّل معدل التهوية أو غيّر اتجاه الفتحات بعيدًا عن مستوى الفرشة.` });
                 }
             }
             const actualCo2 = avgOf(lastEnv.co2Day, lastEnv.co2Night) ?? lastEnv.co2;
             if (actualCo2 != null && actualCo2 >= 3000) {
-                items.push({ level: 'danger', text: `🌫️ ثاني أكسيد الكربون مرتفع جدًا (${fmt(actualCo2,0)} ppm) — زد التهوية فورًا، المعدل الآمن أقل من 3000 ppm.` });
+                items.push({ level: 'danger', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `🌫️ ثاني أكسيد الكربون مرتفع جدًا (${fmt(actualCo2,0)} ppm) — زد التهوية فورًا، المعدل الآمن أقل من 3000 ppm.` });
             }
             const actualNh3 = avgOf(lastEnv.nh3Day, lastEnv.nh3Night) ?? lastEnv.nh3;
             if (actualNh3 != null && actualNh3 >= 20) {
                 const nh3Advice = floorType === 'cage' ? 'راجع انتظام إزالة الزرق وتهوية أسفل الأقفاص'
                     : floorType === 'slat' ? 'راجع تجمّع الزرق أسفل الأرضية الشبكية وتهوية الحيز السفلي'
                     : 'راجع رطوبة الفرشة';
-                items.push({ level: actualNh3 >= 25 ? 'danger' : 'warn', text: `🌫️ الأمونيا مرتفعة (${fmt(actualNh3,0)} ppm) — زد معدل التهوية و${nh3Advice}، المعدل المثالي أقل من 20 ppm.` });
+                items.push({ level: actualNh3 >= 25 ? 'danger' : 'warn', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `🌫️ الأمونيا مرتفعة (${fmt(actualNh3,0)} ppm) — زد معدل التهوية و${nh3Advice}، المعدل المثالي أقل من 20 ppm.` });
             }
 
             // ===== 4) الطقس المتوقع (لو مفعّل تحديد الموقع) — تنبيه استباقي =====
@@ -5927,6 +5966,112 @@
             refreshBiometricLoginButton();
         }
 
+        // ============ 🔒 قفل التطبيق التلقائي بالبصمة/الوجه — منفصل عن "الدخول بالبصمة" اللي فوق ============
+        // الفرق: اللي فوق ده بيستخدم بدل كلمة المرور فى أول دخول. اللي هنا قفل إضافي بيتفعّله المستخدم
+        // اختياريًا من الإعدادات، وبيظهر تلقائيًا (فوق الشاشة كلها) عند أول فتح للتطبيق وكل مرة يرجع
+        // للمقدمة من الخلفية — حتى لو الجلسة (session) لسه شغالة أصلًا. تخزين الإعداد محلي بالجهاز
+        // (زي تسجيل البصمة نفسه) مش على السحابة، لأن قفل الجهاز ده قرار خاص بكل جهاز لوحده.
+        const APP_LOCK_KEY = 'poultry_applock_v1';
+        function isAppLockEnabled() {
+            try { return localStorage.getItem(APP_LOCK_KEY) === '1'; } catch (e) { return false; }
+        }
+        function currentAuthRoleWorkerId() {
+            return { role: currentRole, workerId: currentRole === 'worker' && currentWorker ? currentWorker.id : null };
+        }
+        function canUseAppLock() {
+            if (!isWebAuthnSupported()) return false;
+            const { role, workerId } = currentAuthRoleWorkerId();
+            if (!role) return false;
+            return hasBiometricEnrolled(role, workerId);
+        }
+        async function setAppLockEnabled(checked) {
+            if (checked && !canUseAppLock()) {
+                // لسه مفيش بصمة مسجّلة لهذا الحساب على الجهاز ده — سجّلها الأول قبل ما نفعّل القفل
+                const { role } = currentAuthRoleWorkerId();
+                const ok = await enrollBiometricLogin(role, currentWorker);
+                if (!ok) { render(); return; }
+            }
+            try { localStorage.setItem(APP_LOCK_KEY, checked ? '1' : '0'); } catch (e) {}
+            showToast(checked ? '🔒 اتفعّل قفل التطبيق التلقائي على الجهاز ده' : '🔓 اتلغى قفل التطبيق التلقائي على الجهاز ده');
+            render();
+        }
+        function toggleAppLockPasswordFallback() {
+            const box = document.getElementById('appLockPassBox');
+            if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        }
+        function showAppLockOverlay() {
+            const ov = document.getElementById('appLockOverlay');
+            if (!ov) return;
+            const errEl = document.getElementById('appLockErr');
+            if (errEl) errEl.textContent = '';
+            const passBox = document.getElementById('appLockPassBox');
+            if (passBox) passBox.style.display = 'none';
+            ov.style.display = 'flex';
+            window._appLocked = true;
+        }
+        function hideAppLockOverlay() {
+            const ov = document.getElementById('appLockOverlay');
+            if (ov) ov.style.display = 'none';
+            window._appLocked = false;
+        }
+        async function unlockAppWithBiometric() {
+            const err = document.getElementById('appLockErr');
+            if (err) err.textContent = '';
+            const { role, workerId } = currentAuthRoleWorkerId();
+            const auth = getAuth();
+            if (!auth) return;
+            const entries = (auth.biometric || []).filter(b => b.role === role && (role === 'owner' || b.workerId === workerId));
+            if (!entries.length) { if (err) err.textContent = '⚠️ مفيش بصمة مسجّلة لهذا الحساب — افتح بكلمة المرور.'; return; }
+            try {
+                const assertion = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: crypto.getRandomValues(new Uint8Array(32)),
+                        allowCredentials: entries.map(e => ({ type: 'public-key', id: b64urlToBuf(e.credentialId) })),
+                        userVerification: 'required', timeout: 60000,
+                    }
+                });
+                if (!assertion) { if (err) err.textContent = '❌ فشل التحقق بالبصمة'; return; }
+                hideAppLockOverlay();
+            } catch (e) {
+                console.error('فشل فتح القفل بالبصمة', e);
+                if (err) err.textContent = '❌ اتلغى الفتح بالبصمة أو فشل التطابق — جرّب تاني أو افتح بكلمة المرور';
+            }
+        }
+        async function unlockAppWithPassword() {
+            const err = document.getElementById('appLockErr');
+            const pass = document.getElementById('appLockPassInput').value;
+            if (err) err.textContent = '';
+            if (!pass) { if (err) err.textContent = 'اكتب كلمة المرور'; return; }
+            const auth = getAuth();
+            if (!auth) return;
+            const { role, workerId } = currentAuthRoleWorkerId();
+            let ok = false;
+            if (role === 'owner') {
+                ok = await verifyPassword(pass, auth.ownerSalt, auth.ownerHash);
+            } else {
+                const w = (auth.workers || []).find(x => x.id === workerId);
+                ok = w && await verifyPassword(pass, w.passSalt, w.passHash);
+            }
+            if (!ok) { if (err) err.textContent = '❌ كلمة المرور غلط'; return; }
+            hideAppLockOverlay();
+        }
+        // بيتنادى مرة واحدة بس عند بدء الجلسة — بيراقب رجوع التطبيق من الخلفية للمقدمة عشان يقفله تاني
+        function initAppLockWatcher() {
+            if (window._appLockWatcherSet) return;
+            window._appLockWatcherSet = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (isAppLockEnabled() && canUseAppLock()) window._appLockPending = true;
+                } else if (window._appLockPending) {
+                    window._appLockPending = false;
+                    showAppLockOverlay();
+                }
+            });
+        }
+        function maybeShowAppLockOnStart() {
+            if (isAppLockEnabled() && canUseAppLock()) showAppLockOverlay();
+        }
+
         let _setupInFlight = false; // 🔒 تحصين: يمنع نداء متزامن مزدوج أثناء انتظار secureHash غير المتزامنة
         async function doSetup() {
             if (_setupInFlight) return;
@@ -6049,6 +6194,8 @@
                 document.getElementById('workerRoleBadge').textContent = `👷 ${currentWorker.name} — ${batchName}`;
             }
             render();
+            initAppLockWatcher();
+            if (!isFreshLogin) maybeShowAppLockOnStart(); // قفل تلقائي بس لو ده استرجاع جلسة قديمة (فتح تطبيق مقفول أصلًا)، مش أول دخول لسه
             setTimeout(() => checkAndNotifyToday(false), 2000);
             setTimeout(() => maybeShowOnboarding(), 300);
             setTimeout(() => maybeShowDailyBrief(), 600); // بعد الترحيب (لو ظاهر) عشان مايتزاحموش فوق بعض
@@ -6227,7 +6374,13 @@
             let points = attendanceDays * 2 + onTimeDays * 2 + Math.floor(longestStreak / 7) * 5;
             if (batch) points += Math.round((recordCompletionRate || 0) * attendanceDays * 3);
 
-            const tier = points >= 80 ? '🏆 ممتاز' : points >= 50 ? '👍 جيد' : points >= 25 ? '⚠️ متوسط' : (attendanceDays > 0 ? '🔴 يحتاج متابعة' : '➖ لا يوجد نشاط');
+            // 🔧 Fix: التصنيف كان بعتبات ثابتة (80/50/25) اتحسبت قبل إضافة بونص انتظام السجل (لحد 90 نقطة إضافية)،
+            // فبقى الحد الأقصى الفعلي ~230 نقطة بدل ~140 — أي عامل منتظم عادي كان بيوصل "ممتاز" بسهولة، والتصنيف
+            // فقد قدرته على التمييز فى القمة. دلوقتي العتبات نسبة مئوية من أقصى نقاط ممكنة فعليًا لنفس الفترة،
+            // فتفضل عادلة سواء العامل مرتبط بدفعة (بونص السجل متاح) أو لأ.
+            const maxPossiblePoints = days * 2 + days * 2 + Math.floor(days / 7) * 5 + (batch ? days * 3 : 0);
+            const tierPct = maxPossiblePoints > 0 ? points / maxPossiblePoints : 0;
+            const tier = tierPct >= 0.75 ? '🏆 ممتاز' : tierPct >= 0.5 ? '👍 جيد' : tierPct >= 0.25 ? '⚠️ متوسط' : (attendanceDays > 0 ? '🔴 يحتاج متابعة' : '➖ لا يوجد نشاط');
             const pointValue = (state.appSettings && state.appSettings.workerPointValueEGP != null) ? state.appSettings.workerPointValueEGP : null;
             const suggestedReward = pointValue != null ? points * pointValue : null;
 
@@ -6465,6 +6618,10 @@
             if (editingWorkerId) {
                 const w = auth.workers.find(x => x.id === editingWorkerId);
                 if (w) {
+                    // 🔧 Fix: لو الدفعة المرتبطة اتغيّرت (تعيين/نقل)، سجّل تاريخ الانضمام الفعلي للدفعة الجديدة —
+                    // ده أساسي لعدالة حساب نقاط "انتظام السجل" و"الحضور" فى computeCyclePointsBreakdown، اللي
+                    // كانت بتفترض دايمًا إن العامل موجود من أول يوم فى الدورة (b.startDate) حتى لو انضم متأخر.
+                    if (w.batchId !== batchId) w.assignedAt = batchId ? new Date().toISOString() : null;
                     w.name = name; w.username = username; w.batchId = batchId; w.permissions = permissions;
                     if (pass) { const h = await secureHash(pass); w.passHash = h.hash; w.passSalt = h.salt; } // 🔒 SHA-256+Salt
                 }
@@ -6472,7 +6629,8 @@
                 if (currentWorker && currentWorker.id === editingWorkerId) currentWorker.permissions = permissions;
             } else {
                 const h = await secureHash(pass); // 🔒 SHA-256+Salt بدل التجزئة البسيطة القديمة
-                auth.workers.push({ id: uid(), name, username, passHash: h.hash, passSalt: h.salt, batchId, permissions });
+                // 🔧 Fix: نسجّل assignedAt من أول لحظة لو العامل اتربط بدفعة من البداية
+                auth.workers.push({ id: uid(), name, username, passHash: h.hash, passSalt: h.salt, batchId, permissions, assignedAt: batchId ? new Date().toISOString() : null });
                 showToast('✅ تم إضافة العامل');
             }
             saveAuth(auth);
@@ -6874,6 +7032,18 @@
             if (!state.diseaseKB) setState('diseaseKB', getDefaultDiseaseKB()); // ⚠️ ترحيل: دليل الأمراض بقى قابل للتعديل الكامل من المستخدم
             if (!state.contactRoles) setState('contactRoles', getDefaultContactRoles()); // ⚠️ ترحيل: أدوار جهات الاتصال بقت قابلة للتعديل
             if (!state.pendingCarryOver) setState('pendingCarryOver', []); // ⚠️ ترحيل: قائمة انتظار مخزون الدورات المؤرشفة حديثًا
+            // ⚠️ ترحيل: قسما "توقعات" و"أداء وكفاءة" اندمجوا فى قسم هجين واحد "perfForecast" — لو المستخدم كان
+            // مخفّي أي واحد منهم قبل كده، نخفي القسم المدمج بدل ما يفتح فجأة من غير قصد بعد التحديث.
+            if (state.appSettings && Array.isArray(state.appSettings.insightGroupsHidden)) {
+                const oldHidden = state.appSettings.insightGroupsHidden;
+                if ((oldHidden.includes('forecast') || oldHidden.includes('performance')) && !oldHidden.includes('perfForecast')) {
+                    state.appSettings.insightGroupsHidden = [...new Set([...oldHidden.filter(k => k !== 'forecast' && k !== 'performance'), 'perfForecast'])];
+                    persist();
+                } else if (oldHidden.includes('forecast') || oldHidden.includes('performance')) {
+                    state.appSettings.insightGroupsHidden = oldHidden.filter(k => k !== 'forecast' && k !== 'performance');
+                    persist();
+                }
+            }
             state.batches.forEach(migrateBatch);
             if (!state.activeId && activeBatches().length) setState('activeId', activeBatches()[0].id);
             maybeAutoSnapshot();
@@ -7101,7 +7271,7 @@
             document.getElementById('batchModalOverlay').classList.add('show');
         }
 
-        function editBatch(id) {
+        function editBatch(id, focusField) {
             if (currentRole === 'worker' && !workerHasPermission('createBatch')) { showToast('🚫 مالك المزرعة لم يمنحك صلاحية تعديل بيانات الدفعة'); return; }
             const b = state.batches.find(x => x.id === id);
             if (!b) return;
@@ -7142,6 +7312,24 @@
             document.getElementById('batchModalTitle').textContent = `✏️ تعديل بيانات دفعة: ${b.name}`;
             document.getElementById('batchModalBtn').textContent = 'حفظ التعديلات';
             document.getElementById('batchModalOverlay').classList.add('show');
+            // ============ 🆕 التهوية بقت تفاعلية: زرار "حدّث بيانات الشفاطات" من التنبيه بيفتح المودال ده ويوديك مباشرة لحقل الشفاطات ============
+            if (focusField) {
+                setTimeout(() => {
+                    const el = document.getElementById(focusField);
+                    if (!el) return;
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.focus();
+                    el.classList.add('priority-action-highlight');
+                    setTimeout(() => el.classList.remove('priority-action-highlight'), 2200);
+                }, 150);
+            }
+        }
+        // ============ 🆕 التهوية بقت تفاعلية: بدل ما تنبيهات الشفاطات (نقص القدرة/الحر) تكون نص بس، دلوقتي بتفتح
+        // مودال تعديل بيانات الدفعة وتوديك لحقل "عدد الشفاطات العاملة" على طول عشان تحدّثه فورًا ============
+        function editActiveBatchFans() {
+            const b = getActiveBatch();
+            if (!b) { showToast('لا توجد دفعة نشطة'); return; }
+            editBatch(b.id, 'b_fancount');
         }
 
         function onSpeciesChange() {
@@ -8479,10 +8667,11 @@
             if (currentRole === 'worker' && currentWorker) {
                 // اربط العامل تلقائيًا بالدفعة اللي أنشأها بنفسه عشان يقدر يشتغل عليها فورًا
                 currentWorker.batchId = batch.id;
+                currentWorker.assignedAt = new Date().toISOString(); // 🔧 Fix: نفس منطق assignedAt عشان الحساب يكون متسق
                 const auth = getAuth();
                 if (auth) {
                     const w = (auth.workers || []).find(x => x.id === currentWorker.id);
-                    if (w) { w.batchId = batch.id; saveAuth(auth); }
+                    if (w) { w.batchId = batch.id; w.assignedAt = currentWorker.assignedAt; saveAuth(auth); }
                 }
                 const badge = document.getElementById('workerRoleBadge');
                 if (badge) badge.textContent = `👷 ${currentWorker.name} — ${batch.name}`;
@@ -13971,8 +14160,9 @@
                 }
             }
             // ===== بروتوكول توصيات التهوية — تُدرج التنبيهات العاجلة منه ضمن التنبيهات العامة، والبروتوكول الكامل معروض فى تبويب العمليات =====
+            // 🆕 التهوية بقت تفاعلية: بنقل actionLabel/actionOnclick (لو موجودين) للتنبيه العام، بدل ما يبقى نص بس بلا فعل
             computeVentilationPlan(b, m).filter(v => v.level === 'danger' || v.level === 'warn')
-                .forEach(v => alerts.push({ level: v.level, text: v.text }));
+                .forEach(v => alerts.push({ level: v.level, text: v.text, actionLabel: v.actionLabel, actionOnclick: v.actionOnclick }));
 
             // ===== فترة الراحة بين الدورات — مقارنة فعلية بتاريخ أرشفة آخر دورة من نفس النوع =====
             if (m.todayAge <= 10) {
@@ -14499,7 +14689,6 @@
             const b = getActiveBatch();
             const main = document.getElementById('mainContent');
             document.getElementById('fabAdd').style.display = (b && state.activeTab === 'daily') ? 'block' : 'none';
-            document.getElementById('alertBanner').innerHTML = '';
             refreshInvDatalist();
 
             if (state.activeTab === 'settings') {
@@ -14534,12 +14723,8 @@
             notifyNewDangerAlerts(alerts, b.id); // ============ اهتزاز مرة واحدة فقط عند ظهور تنبيه خطر جديد (بغض النظر عن التبويب الحالي) ============
 
             renderTabbar(alerts.filter(a => !a.dismissed).length);
-            // الشريط العلوي مفيد كتذكير أثناء العمل فى تبويبات تانية، لكن فى الداشبورد (فيه "🎯 أهم 3 أفعال" والقائمة الكاملة) بيبقى تكرار حرفي — نخفيه هناك فقط.
-            if (state.activeTab === 'dashboard') {
-                document.getElementById('alertBanner').innerHTML = '';
-            } else {
-                renderAlertBanner(alerts);
-            }
+            // 🗑️ Removed by request: الشريط العلوي "alertBanner" اللي كان بيتكرر فى كل التبويبات (غير الداشبورد) اتشال
+            // نهائيًا — كان بيتكرر مع "⚠️ يحتاج متابعتك الآن" فى الداشبورد من غير فايدة عملية إضافية.
 
             if (state.activeTab === 'dashboard') main.innerHTML = renderDashboard(b, m, fin, alerts);
             else if (state.activeTab === 'daily') main.innerHTML = renderDailyTab(b, m);
@@ -14584,24 +14769,6 @@
             const mid = Math.ceil(tabs.length / 2);
             const fabSlot = `<div class="bt-fab-slot"><div class="bt-fab" onclick="openQuickAccessMenu()" title="الوصول السريع">⚡</div></div>`;
             document.getElementById('tabbar').innerHTML = [...tabs.slice(0, mid), fabSlot, ...tabs.slice(mid)].join('');
-        }
-
-        function renderAlertBanner(alerts) {
-            // ============ 🔴 إصلاح Red Team (مدموج): نفس معادلة الوزن المستخدمة فى "أهم 3 أفعال" — عشان تنبيه اتكتم ============
-            // كتير قبل كده منيفضلش يظهر بنفس الوضوح فى الشريط العلوي (تناقض بين البانر والقائمة الذكية).
-            const scored = alerts.filter(a => (a.level === 'danger' || a.level === 'warn') && !a.dismissed)
-                .map(a => {
-                    let w = a.level === 'danger' ? 8 : 5;
-                    if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
-                    return { ...a, _w: w };
-                })
-                .sort((x, y) => y._w - x._w);
-            const top = scored.slice(0, 3);
-            if (top.length === 0) return;
-            const extra = scored.length - top.length;
-            document.getElementById('alertBanner').innerHTML = top.map(a =>
-                `<div class="alert-item ${a.level}">${esc(a.text)}</div>`).join('')
-                + (extra > 0 ? `<div style="font-size:10.5px;color:var(--muted);padding:3px 8px;">+${extra} تنبيه آخر — التفاصيل فى الداشبورد أو تبويب الإنتاج</div>` : '');
         }
 
         // ============ Dashboard ============
@@ -15049,15 +15216,8 @@
                     <div class="foot-note">💡 النسبة بجانب كل مؤشر فوق = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ده ترتيب نسبي مقابل نفسك بس، مش مقياس عالمي مطلق (استخدم المرجع المطلق تحت لده).</div>
                 </div>`;
             })();
-            // ============ مؤشر كثافة التسجيل: تحذير أعلى التحليلات لو التغطية اليومية ضعيفة، عشان يعرف المستخدم أن دقة كل التحليلات التالية محدودة بجودة تسجيله ============
-            const recComp = computeRecordingCompleteness(b, m);
-            const dataConf = computeDataConfidence(b, m);
-            const recCompHtml = (recComp.expectedDays >= 5 && recComp.pct < 70) || dataConf ? `
-                <div class="card data-quality-warning">
-                    ${(recComp.expectedDays >= 5 && recComp.pct < 70) ? `<div class="line">⚠️ تغطية تسجيل منخفضة: ${fmt(recComp.pct,0)}% فقط من أيام الدورة (${recComp.actualDays} من ${recComp.expectedDays} يوم) مُسجَّلة فعليًا</div>` : ''}
-                    ${dataConf ? `<div class="line" style="${(recComp.expectedDays >= 5 && recComp.pct < 70) ? 'margin-top:6px;' : ''}">⚠️ فاتك تسجيل الوزن ${dataConf.missingWeight} من آخر ${dataConf.ofDays} أيام${dataConf.missingFeed?' والعلف '+dataConf.missingFeed+' يوم':''}</div>` : ''}
-                    <div class="hint">التحليلات والتنبؤات بالأسفل أقل دقة مع تسجيل متقطع — سجّل يوميًا لأفضل النتائج</div>
-                </div>` : '';
+            // 🗑️ Removed by request: كارت "فاتك تسجيل الوزن/تغطية تسجيل منخفضة" اتشال من الداشبورد
+            const recCompHtml = '';
             // ============ (جديد) شفافية مصدر المرجع المعياري المستخدم فى المقارنة — عشان المستخدم يعرف بيتقارن بإيه بالظبط ============
             const refBreedKey = detectBreedKey(b.breed);
             const refSourceNote = refBreedKey ? `🧬 المرجع المستخدم: منحنى ${GLOBAL_BREED_BENCHMARKS[refBreedKey].label} (تلقائي حسب اسم السلالة "${esc(b.breed)}")` : '';
@@ -15496,8 +15656,19 @@
             })();
             // ============ تجميع التحليلات فى 4 مجموعات مصنّفة بدل عرضها كلها فى كومة واحدة غير منظمة ============
             const groupAttentionArr = [respRiskHtml, devOnsetHtml, riskIndexHtml, upcomingVaccHtml, weeklyStressHtml, weightZHtml, stressHtml, waterFeedRatioHtml, waterQualityCorrHtml].filter(Boolean);
-            const groupForecastArr = [epefProjHtml, saleHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
-            const groupPerformanceArr = [effScoreHtml, mortCostHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
+            // ============ 🆕 نظام هجين: "توقعات" و"أداء وكفاءة" كانوا قسمين منفصلين رغم إنهم بيحكوا نفس القصة من
+            // زاويتين (الحالة دلوقتي + التوقع المبني عليها) — بقوا هنا قسم واحد مرتّب بالموضوع (وزن/FCR سوا، نفوق
+            // وسببه سوا، تدخلات سوا، جودة مدخلات سوا) بدل ترتيب عشوائي فى قسمين منفصلين. المرجع/المقارنات فضلت
+            // لوحدها لأنها زاوية مختلفة فعلاً (مقارنة بتاريخك وبمعيار عالمي، مش وصف حالي ولا توقع).
+            const groupPerfForecastArr = [
+                effScoreHtml, epefProjHtml,           // 📊 نظرة عامة: كفاءة الدورة الحالية + إسقاط EPEF المتوقع
+                devHtml, narrativeHtml, predHtml,      // ⚖️ الوزن: الانحراف الحالي + قصته + توقع وزن البيع
+                fcrPredHtml, feedCorrHtml, feedForecastHtml, lotHtml, // 🌾 العلف/FCR: توقع + ارتباط بالنفوق + توقع استهلاك + تحليل الشحنة
+                mortCostHtml, causeHtml,               // 🐣 النفوق: التكلفة + السبب السائد
+                additiveHtml, treatmentHtml, vaccineImpactHtml, // 💊 أثر التدخلات (إضافات/علاج/تحصين)
+                uniformityHtml, waterQualityHtml,      // 🩺 جودة القطيع والمياه
+                weekOverWeekHtml, saleHtml,            // 📈 الاتجاه مقابل تاريخك + قرار البيع الأمثل (خلاصة عملية فى الآخر)
+            ].filter(Boolean);
             const groupBenchmarkArr = [seasonalHtml, globalBenchHtml, blendedCurveHtml, farmBenchHtml, bestCyclesHtml].filter(Boolean);
             // ============ 🔴 إصلاح Red Team (مدموج): إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو ============
             // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
@@ -15519,17 +15690,21 @@
             // السبب: كانت نفس الفكرة ("حاجة عاجلة محتاجة تتصرف فيها") معروضة فى 3 أماكن مختلفة بالداشبورد
             // (hero-priority + هنا + allAlertsSection) بميكانيكية وتسميات مختلفة — ده كان اللي بيلخبط.
             // "تحليلات ذكية" دلوقتي بقت مخصصة بس للتحليل التفسيري/الاستشرافي (مش للتنبيهات العاجلة).
-            const totalInsights = ['forecast','performance','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
-                .reduce((s, k) => s + ({forecast: groupForecastArr, performance: groupPerformanceArr, benchmark: groupBenchmarkArr}[k].length), 0);
-            const insightsSection = !totalInsights ? '' : `<div class="section" id="smartInsightsSection"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
-                <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فوق فى "⚠️ يحتاج متابعتك الآن".</p>
-                <div class="card" style="padding:0;overflow:hidden;">
-                    ${insightGroup('forecast', 'توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, true)}
-                    ${insightGroup('performance', 'أداء وكفاءة', '📊', 'تحليل وصفي لأداء الدورة الحالية (تكلفة، تجانس، أثر الإضافات)', groupPerformanceArr, false)}
-                    ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
-                </div>
-                <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
-            </div>`;
+            const totalInsights = ['perfForecast','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
+                .reduce((s, k) => s + ({perfForecast: groupPerfForecastArr, benchmark: groupBenchmarkArr}[k].length), 0);
+            // ============ 🆕 نظام هجين متطور واحد فعلي: دمج "🩺 حالة الدفعة الشاملة" و"🔬 تحليلات ذكية" فى كارت واحد بصريًا
+            // (مش بس مرتبطين بشرح نصي وجنب بعض). كانوا قبل كده كارتين منفصلين حتى لو متجاورين — دلوقتي التفاصيل الكاملة
+            // (أداء وتوقعات + مقارنات ومعايير) بقت أكورديونات جوه نفس الكارت اللي فيه الدرجة، مش section مستقلة بـ h2 لوحدها. ============
+            const hybridDetailsHtml = !totalInsights ? '' : `
+                <div id="smartInsightsSection" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e5ddc8;">
+                    <div style="font-size:var(--fs-xs);font-weight:800;color:var(--barn-dark);margin-bottom:2px;">🔬 التفاصيل الكاملة — تحليلات ذكية</div>
+                    <p style="font-size:10.5px;color:var(--muted);margin:0 0 8px;">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فى "⚠️ يحتاج متابعتك الآن" تحت.</p>
+                    <div class="card" style="padding:0;overflow:hidden;">
+                        ${insightGroup('perfForecast', 'أداء وتوقعات', '📊🔮', 'الحالة الحالية والتوقع المبني عليها لكل محور (وزن، FCR، نفوق، تدخلات، جودة) مجمّعين مع بعض بدل التكرار', groupPerfForecastArr, true)}
+                        ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
+                    </div>
+                    <p style="font-size:10px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
+                </div>`;
             const others = activeBatches();
             const multiHouseSection = others.length > 1 ? `
             <div class="section" style="margin-top:0;"><div class="section-head"><h2>🏘️ نظرة عامة على كل الدفعات/العنابر النشطة</h2></div>
@@ -15625,7 +15800,7 @@
                 <div class="section-head"><h2>⚠️ يحتاج متابعتك الآن</h2></div>
                 <p style="font-size:10.5px;color:var(--muted);margin:-4px 2px 8px;">
                     🔕 <b>تأجيل</b> = بيخفي البطاقة لحد بكرة بس، مش معناها إنك حليت المشكلة. الزرار الدهبي = فعل حقيقي بيتسجّل فعليًا.
-                    لو محتاج تفهم الاتجاه العام/التوقعات المبنية على اللي هنا، هتلاقيها فى "🔬 تحليلات ذكية" تحت.
+                    لو محتاج تفهم الاتجاه العام/التوقعات المبنية على اللي هنا، هتلاقيها فى "🩺 حالة الدفعة الشاملة" فوق (قسم "🔬 التفاصيل الكاملة" جواها).
                 </p>
                 <div class="card" style="padding:10px 12px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -15643,15 +15818,8 @@
                     value="${getLatestMarketPrice(b) != null ? getLatestMarketPrice(b) : ''}" style="flex:1;min-width:90px;">
                 <button class="btn gold sm owner-only" onclick="updateMarketPriceFromDashboard('${b.id}')">💾 حفظ</button>
             </div>`;
-            // ============ سلسلة أيام التسجيل المتتالية + تذكير ذكي لو فات وقت التسجيل المعتاد ولسه محدش سجّل اليوم ============
-            const streak = computeLoggingStreak(b);
-            const hasTodayRecord = b.records.some(r => r.date === todayStr());
-            const nowHour = new Date().getHours();
-            const streakHtml = !b.archivedDate ? `
-            <div class="card" style="margin-bottom:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-                <span class="streak-pill">🔥 ${streak > 0 ? `${streak} يوم متتالي بتسجل بيانات دفعتك` : 'ابدأ سلسلة التسجيل اليومي'}</span>
-                ${(!hasTodayRecord && nowHour >= 19) ? `<span style="font-size:11.5px;font-weight:700;color:var(--red);">⏰ لسه ما سجّلتش سجل اليوم</span>` : ''}
-            </div>` : '';
+            // 🗑️ Removed by request: بنر "ابدأ سلسلة التسجيل اليومي" اتشال من الداشبورد (كان هنا سلسلة أيام التسجيل + تذكير آخر السجل)
+            const streakHtml = '';
             const healthScoreCardHtml = `
             <div class="health-score-card" style="border-color:${hs.color};">
                 <div class="caption">🩺 حالة الدفعة الشاملة (آنية + مقارنة + استباقية)${glossHtml('healthScore')}</div>
@@ -15681,24 +15849,17 @@
                     </details>`;
                 })()}
                 ${(() => {
-                    // ============ نظام هجين موحّد: توقعات نهاية الدورة (FCR/الوزن) بقت هنا كملخص سريع، مش مدفونة
-                    // جوه "تحليلات ذكية" لوحدها — عشان تقرأها فى نفس اللحظة اللي بتشوف فيها الدرجة والترتيب، لأنها
-                    // كلها بتحكي نفس القصة (الأداء) من 3 زوايا زمنية مختلفة: دلوقتي (الدرجة) / تاريخيًا (الترتيب) / قدام (التوقع). ============
+                    // 🆕 نظام هجين متطور: التوقعات التفصيلية (وزن البيع + FCR + كل باقي محاور الأداء) بقت قسم
+                    // "📊🔮 أداء وتوقعات" منقول تحت الكارت ده على طول (مش بعيد فى آخر الصفحة زي الأول) — فمفيش
+                    // داعي نكرر نفس الأرقام هنا مرتين. هنا بس ملخص سطر واحد يربط الدرجة/الترتيب فوق بالتفاصيل تحت.
                     if (!ins.fcrPrediction && !ins.weightPrediction) return '';
-                    const rows = [];
-                    if (ins.weightPrediction && ins.weightPrediction.diffPct != null) {
-                        const wp = ins.weightPrediction;
-                        const c = wp.diffPct >= 0 ? 'var(--green)' : 'var(--red)';
-                        rows.push(`<div>⚖️ الوزن المتوقع يوم ${wp.targetAge}: <b>${fmt(wp.predictedG,0)} جم</b> <span style="color:${c};font-weight:700;">(${wp.diffPct>=0?'+':''}${fmt(wp.diffPct,1)}% عن المعيار)</span></div>`);
-                    }
-                    if (ins.fcrPrediction && ins.fcrPrediction.diffPct != null) {
-                        const fp = ins.fcrPrediction;
-                        const c = fp.diffPct <= 0 ? 'var(--green)' : 'var(--red)';
-                        rows.push(`<div>🌾 الـFCR المتوقع يوم ${fp.targetAge}: <b>${fmt(fp.predictedFcr,2)}</b> <span style="color:${c};font-weight:700;">(${fp.diffPct>=0?'+':''}${fmt(fp.diffPct,1)}% عن المعيار)</span></div>`);
-                    }
-                    return `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;">
-                        <div style="font-size:var(--fs-xs);font-weight:800;color:var(--barn-dark);">🔮 توقعات نهاية الدورة (لو استمر الأداء الحالي)</div>
-                        <div style="margin-top:4px;font-size:var(--fs-2xs);line-height:1.9;">${rows.join('')}</div>
+                    const wp = ins.weightPrediction, fp = ins.fcrPrediction;
+                    const parts = [];
+                    if (wp && wp.diffPct != null) parts.push(`⚖️ الوزن يوم ${wp.targetAge}: ${wp.diffPct>=0?'+':''}${fmt(wp.diffPct,1)}%`);
+                    if (fp && fp.diffPct != null) parts.push(`🌾 FCR يوم ${fp.targetAge}: ${fp.diffPct>=0?'+':''}${fmt(fp.diffPct,1)}%`);
+                    return `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;font-size:var(--fs-xs);">
+                        <span style="font-weight:800;color:var(--barn-dark);">🔮 توقع نهاية الدورة:</span> ${parts.join(' · ')}
+                        <span style="color:var(--muted);"> — التفاصيل الكاملة 👇 فى "أداء وتوقعات" تحت على طول</span>
                     </div>`;
                 })()}
                 ${(() => {
@@ -15719,8 +15880,9 @@
                         <div style="margin-top:4px;font-size:var(--fs-2xs);">${reasonsHtml}</div>
                     </div>`;
                 })()}
+                ${hybridDetailsHtml}
                 <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;font-size:9.5px;color:var(--muted);line-height:1.7;">
-                    💡 الكارت ده بيجمع 4 زوايا لنفس القصة: <b>الدرجة</b> (الوضع دلوقتي) + <b>الترتيب</b> (مقابل تاريخك) + <b>التوقع</b> (لو استمر كده لآخر الدورة) + <b>احتمالية مشكلة قادمة</b> (إشارات مبكرة). "🎯 أهم فعل عليك اتخاذه الآن" فوق مبني على نفس المصادر دي بالظبط، و"⚠️ يحتاج متابعتك الآن" تحت بيوريك التفاصيل الكاملة وراها.
+                    💡 الكارت ده بقى نظام هجين واحد فعلي (مش قسمين متجاورين) — كل حاجة عن أداء دفعتك دلوقتي فى مكان واحد: <b>الدرجة</b> (الوضع الآن) + <b>الترتيب</b> (مقابل تاريخك) + <b>التوقع الملخّص</b> + <b>احتمالية مشكلة قادمة</b> (إشارات مبكرة) + <b>التفاصيل الكاملة</b> فوق مباشرة (لكل محور: وزن/FCR/نفوق/تدخلات/جودة + مقارنات ومعايير). "🎯 أهم فعل عليك اتخاذه الآن" فوق الكارت ده مبني على نفس المصادر دي بالظبط، و"⚠️ يحتاج متابعتك الآن" تحت بيوريك تفاصيل أي فعل عاجل مطلوب.
                 </div>
             </div>`;
             return `
@@ -15758,7 +15920,6 @@
                 <div class="kpi"><div class="lbl">🥩 تكلفة كيلو اللحم</div><div class="val">${fmt(fin.costPerKg, 2)} <small>ج/كجم</small></div></div>
                 <div class="kpi"><div class="lbl">🌡️ آخر قراءة بيئية</div><div class="val" style="font-size:13px;">${m.lastEnv.humidity != null ? 'رطوبة ' + fmt(m.lastEnv.humidity, 0) + '%' : '—'} ${m.lastEnv.health != null ? '· صحة ' + m.lastEnv.health + '/10' : ''}</div></div>
             </div>
-            ${insightsSection}
             <div class="section"><div class="section-head"><h2>📈 الرسوم البيانية</h2></div>
                 <details class="card" style="padding:0;overflow:hidden;" ontoggle="if(this.open) redrawDashboardChartsIfNeeded()">
                     <summary style="padding:10px 12px;cursor:pointer;background:#faf8f2;font-weight:800;font-size:13px;">📊 اضغط لعرض منحنيات النمو والنفوق والتجانس والأسعار والعلف</summary>
@@ -16329,7 +16490,10 @@
             const seasonKey = season === 'شتاء' ? 'winter' : season === 'صيف' ? 'summer' : 'mild';
             const seasonIcon = { winter: '❄️', mild: '🍂', summer: '☀️' }[seasonKey];
             const ventPlan = computeVentilationPlan(b, m);
-            const ventRows = ventPlan.map(v => `<div class="alert-item ${v.level}">${v.text}</div>`).join('');
+            const ventRows = ventPlan.map(v => `<div class="alert-item ${v.level}" style="display:flex;align-items:center;gap:6px;justify-content:space-between;flex-wrap:wrap;">
+                <span style="flex:1;">${v.text}</span>
+                ${v.actionLabel && v.actionOnclick ? `<button class="btn gold xs" style="flex-shrink:0;" onclick="${v.actionOnclick}" title="روح لمكان الحل">${v.actionLabel}</button>` : ''}
+            </div>`).join('');
             const respRisk = computeRespiratoryRisk(b, m);
             const respRiskHtml = !respRisk ? '' : `<div class="check-row" style="padding:0 0 8px;"><div class="txt">
                 <div style="color:${respRisk.level==='high'?'var(--red)':'var(--warning-text)'};font-weight:800;">🫁 احتمالية إجهاد/مشاكل تنفسية: ${respRisk.level==='high'?'مرتفعة':'متوسطة'}</div>
@@ -17597,7 +17761,7 @@
                 <div class="section-head"><h2>💳 الاعتماد على الأجل — امتى بيبقى ضرر بدل ميزة؟</h2></div>
                 <div class="card" style="display:grid;gap:8px;">
                     <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">فرق سعر الأجل فى العلف بتدفعه كل دورة للأبد طول ما مستمر تشتري من السوق. مصنع العلف/المجزر الخاص بيه رأس مال مرة واحدة بيلغي التكلفة المتكررة دي — "سنين الاسترداد" تحت بتقولك امتى الاستثمار ده يستاهل قبل ما تفضل تدفع فرق الأجل للأبد.</p>
-                    <div class="field"><label>فرق سعر الأجل للفرخة الواحدة (جنيه)</label><input type="number" step="0.01" id="exp_feedCreditMarkupPerBird" value="${inputs.feedCreditMarkupPerBird ?? ''}" placeholder="فرق سعر العلف بالأجل عن الكاش" onchange="saveExpansionInputs()"></div>
+                    <div class="field"><label>فرق سعر الأجل للفرخة الواحدة (جنيه)</label><input type="number" step="0.01" id="exp_feedCreditMarkupPerBird_dup2" value="${inputs.feedCreditMarkupPerBird ?? ''}" placeholder="فرق سعر العلف بالأجل عن الكاش" onchange="document.getElementById('exp_feedCreditMarkupPerBird').value=this.value; saveExpansionInputs();"></div>
                     <div class="field"><label>فرق سعر البيع مجزّر مقابل حي للفرخة (جنيه)</label><input type="number" step="0.01" id="exp_liveToProcessedUpliftPerBird" value="${inputs.liveToProcessedUpliftPerBird ?? ''}" placeholder="الهامش الإضافي لو بعت مجزّر بدل حي" onchange="saveExpansionInputs()"></div>
                     ${risk.creditDependency.feedCreditAnnualCost != null ? `
                     ${statLine(`تكلفة الأجل السنوية الحالية (على سعتك الحالية)`, `${money(risk.creditDependency.feedCreditAnnualCost)}`, {vStyle:`font-weight:900;color:var(--red);`})}
@@ -20124,6 +20288,28 @@
                     </p>
                     <button class="btn gold block" onclick="openAccountsModal()">👥 إدارة الحسابات والصلاحيات</button>
                 </div>
+                ${isWebAuthnSupported() ? `
+                <div class="card" style="margin-top:10px;">
+                    <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:4px;">👆 البصمة/الوجه على هذا الجهاز</label>
+                    <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                        ${hasBiometricEnrolled(currentRole, currentWorker ? currentWorker.id : null)
+                            ? 'حسابك ده مسجّل بصمة/وجه بالفعل على الجهاز ده. تقدر تفعّل قفل تلقائي بيها كل ما تفتح التطبيق أو ترجعله من الخلفية.'
+                            : 'لسه معملتش تسجيل بصمة/وجه لحسابك على الجهاز ده. سجّلها الأول عشان تقدر تفعّل القفل التلقائي.'}
+                    </p>
+                    ${!hasBiometricEnrolled(currentRole, currentWorker ? currentWorker.id : null) ? `
+                    <button class="btn ghost sm" onclick="enrollBiometricLogin(currentRole, currentWorker).then(()=>render())">👆 سجّل بصمتك/وجهك دلوقتي</button>
+                    ` : ''}
+                    <label class="check-row" style="cursor:pointer;margin-top:8px;">
+                        <input type="checkbox" id="set_appLock" ${isAppLockEnabled() ? 'checked' : ''} onchange="setAppLockEnabled(this.checked)">
+                        <div class="txt"><div style="font-weight:800;">🔒 قفل التطبيق تلقائيًا بالبصمة/الوجه</div>
+                        <div class="day">هيطلب بصمتك/وجهك (أو كلمة المرور كبديل) كل ما تفتح التطبيق من جديد أو ترجعله من الخلفية</div></div>
+                    </label>
+                </div>
+                ` : `
+                <div class="card" style="margin-top:10px;">
+                    <p style="font-size:11.5px;color:var(--muted);margin:0;">👆 الجهاز أو المتصفح ده مايدعمش الدخول بالبصمة/الوجه (WebAuthn).</p>
+                </div>
+                `}
                 ${snippetDeviceAccess}
             </div>
             <div class="section">
@@ -23104,8 +23290,7 @@
         // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
         function renderInsightGroupsSettings() {
             const groups = [
-                { key: 'forecast', label: '🔮 توقعات' },
-                { key: 'performance', label: '📊 أداء وكفاءة' },
+                { key: 'perfForecast', label: '📊🔮 أداء وتوقعات' },
                 { key: 'benchmark', label: '🌍 مقارنات ومعايير' },
             ];
             const hidden = (state.appSettings && state.appSettings.insightGroupsHidden) || [];
