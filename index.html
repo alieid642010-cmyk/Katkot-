@@ -2394,7 +2394,6 @@
                 </div>
                 <div class="field full"><label>الوصف / اسم المنتج</label><input id="p_desc" list="dl_invItems" placeholder="مثال: علف بادي - شركة X"></div>
                 <div class="field full"><label>المورد (اختياري)</label><input id="p_supplier" placeholder="مثال: شركة الأهرام للأعلاف"></div>
-                <div class="field full" id="p_supplierChips"></div>
                 <div class="field"><label>تاريخ الصلاحية (للقاحات/الأدوية — اختياري)</label><input id="p_expiry" type="date"></div>
                 <div class="field full"><label>رقم الشحنة/التشغيلة (اختياري — لتتبع أثر تغيير الشحنة على الأداء)</label><input id="p_lot" placeholder="مثال: LOT-2026-07"></div>
                 <div class="field"><label>الكمية</label><input id="p_qty" type="number" inputmode="decimal" step="0.01" value="1" oninput="recalcPurchaseTotal()" min="0"></div>
@@ -2708,25 +2707,7 @@
         </div>
     </div>
 
-    <!-- Modal: Quick Contact -->
-    <div class="modal-overlay" id="contactModalOverlay">
-        <div class="modal">
-            <button class="close-x" aria-label="إغلاق" onclick="closeModal('contactModalOverlay')">✕</button>
-            <h3 id="contactModalTitle">📇 إضافة جهة اتصال سريعة</h3>
-            <p style="font-size:11.5px;color:var(--muted);margin-top:-6px;">سجّل رقم المورد/الطبيب البيطري مرة واحدة، وبعدها زرار اتصال/واتساب سريع من داخل شاشات الشراء والسجل اليومي.</p>
-            <div class="form-grid">
-                <div class="field full"><label>الاسم</label><input id="ct_name" placeholder="مثال: د. أحمد - طبيب بيطري"></div>
-                <div class="field"><label>الصفة</label>
-                    <select id="ct_role"></select>
-                </div>
-                <div class="field"><label>رقم الهاتف (بصيغة دولية للواتساب، مثال: 20101xxxxxxx)</label><input id="ct_phone" type="tel" placeholder="20101xxxxxxx"></div>
-            </div>
-            <div class="row-actions"><button class="btn block" id="contactModalBtn" onclick="saveContact()">حفظ جهة الاتصال</button></div>
-        </div>
-    </div>
-
-    <!-- (تمت إزالة نافذة "سجل التواصل/الاستشارات" بناءً على طلب تبسيط الاستخدام) -->
-
+    <!-- (تمت إزالة نافذة "جهة اتصال سريعة" و"سجل التواصل/الاستشارات" بناءً على طلب إلغاء ميزة جهات الاتصال) -->
 
     <!-- Modal: Anon Snapshot Import -->
     <div class="modal-overlay" id="importSnapshotModalOverlay">
@@ -8065,17 +8046,8 @@
             box.innerHTML = photos.length
                 ? photos.map(src => `<img src="${src}" style="max-width:150px;max-height:150px;border-radius:8px;border:1px solid var(--line);">`).join('')
                 : '<div class="empty" style="padding:14px;">لا توجد صور لهذا اليوم.</div>';
-            const vets = state.contacts.filter(c => c.role === 'طبيب بيطري');
             const shareBox = document.getElementById('photoViewShareBox');
-            if (photos.length && vets.length) {
-                const text = `استشارة بخصوص دفعة "${b.name}" — يوم ${date} (عمر ${r.age}). ملاحظات: ${r.notesDay || r.notesNight || 'بدون ملاحظات'}. مرفق صورة توضيحية (سيتم إرفاقها يدويًا).`;
-                shareBox.innerHTML = `<p style="font-size:11px;color:var(--muted);margin:0 0 6px;">شارك ملخص اليوم مع الطبيب، ثم أرفق نفس الصورة يدويًا من معرض صورك داخل نفس المحادثة:</p>` +
-                    vets.map(v => `<a class="btn ghost block" style="margin-top:6px;color:#25D366;" href="${waLink(v.phone, text)}" target="_blank" rel="noopener">💬 مشاركة مع ${esc(v.name)} عبر واتساب</a>`).join('');
-            } else if (photos.length) {
-                shareBox.innerHTML = `<p style="font-size:11px;color:var(--muted);">أضف طبيب بيطري فى "جهات الاتصال السريعة" بالإعدادات عشان تقدر تشارك الصور معاه بضغطة واحدة.</p>`;
-            } else {
-                shareBox.innerHTML = '';
-            }
+            if (shareBox) shareBox.innerHTML = '';
             openModal('photoViewModalOverlay');
         }
 
@@ -8284,8 +8256,6 @@
             document.getElementById('p_date').value = todayStr(); document.getElementById('p_date').max = todayStr();
             document.getElementById('p_paid').value = '1';
             togglePurchaseDue();
-            const chipsBox = document.getElementById('p_supplierChips');
-            if (chipsBox) chipsBox.innerHTML = renderQuickContactChips('مورد') + renderQuickContactChips('طبيب بيطري');
             document.getElementById('purModalOverlay').classList.add('show'); }
 
         function manureSaleInfo(b) {
@@ -9800,7 +9770,6 @@
         let editingFeedAdditiveId = null;
         let editingWaterAdditiveId = null;
         let editingBiosecurityId = null;
-        let editingHouseId = null;
         let editingMovementId = null;
         let editingChecklistTaskId = null;
 
@@ -10000,80 +9969,9 @@
             });
         }
 
-        function addHouse() {
-            if (!requirePermission('management')) return; // 🔒 Red Team fix: كانت قابلة للنداء من Console بدون تحقق صلاحية
-            const b = getActiveBatch();
-            if (!b) return;
-            const name = document.getElementById('hs_name').value.trim();
-            const area = parseFloat(document.getElementById('hs_area').value) || 0;
-            const count = parseInt(document.getElementById('hs_count').value) || 0;
-            if (!name) { showToast('اكتب اسم العنبر/القسم أولاً'); return; }
-            if (editingHouseId) {
-                const h = b.houses.find(x => x.id === editingHouseId);
-                if (h) { h.name = name; h.area = area; h.count = count; }
-                editingHouseId = null;
-                persist();
-                ['hs_name','hs_area','hs_count'].forEach(id => document.getElementById(id).value = '');
-                document.getElementById('hsSaveBtn').textContent = '+ إضافة عنبر/قسم';
-                render();
-                showToast('تم تحديث العنبر ✅');
-                return;
-            }
-            b.houses.push({ id: uid(), name, area, count });
-            persist();
-            ['hs_name','hs_area','hs_count'].forEach(id => document.getElementById(id).value = '');
-            render();
-            showToast('تم إضافة العنبر 🏠');
-        }
-
-        function editHouse(id) {
-            const b = getActiveBatch();
-            if (!b) return;
-            const h = b.houses.find(x => x.id === id);
-            if (!h) return;
-            editingHouseId = id;
-            document.getElementById('hs_name').value = h.name;
-            document.getElementById('hs_area').value = h.area || '';
-            document.getElementById('hs_count').value = h.count || '';
-            document.getElementById('hsSaveBtn').textContent = '✏️ حفظ التعديل';
-            document.getElementById('hs_name').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function removeHouse(id) {
-            if (!requirePermission('management')) return; // 🔒 Red Team fix: كانت قابلة للنداء من Console بدون تحقق صلاحية
-            const b = getActiveBatch();
-            if (!b) return;
-            showConfirm('سيتم حذف هذه العنبر/الوحدة من القائمة. متأكد؟', () => {
-                b.houses = b.houses.filter(h => h.id !== id);
-                persist();
-                render();
-                showToast('تم الحذف');
-            });
-        }
+        // (تم إلغاء ميزة "العنابر/الأقسام" — addHouse/editHouse/removeHouse — وميزة "قواعد تعارض الإضافات" — addConflictRule/removeConflictRule — بناءً على طلب إلغاء هذه الميزات)
 
         // ============ (جديد) برنامج التحويل التدريجي بين نوعين علف — إدارة (إعدادات ← 🐔 المزرعة)، التطبيق تلقائي فى التسجيل اليومي عبر getActiveFeedTransition ============
-        // ============ (جديد) قواعد تعارض الإضافات — المستخدم بيعرّفها بنفسه (بناءً على معرفته البيطرية)، والتطبيق بيراقبها تلقائيًا كل يوم ============
-        function addConflictRule() {
-            if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
-            const a = document.getElementById('cr_a').value.trim();
-            const b = document.getElementById('cr_b').value.trim();
-            const note = document.getElementById('cr_note').value.trim();
-            if (!a || !b) { showToast('اكتب اسم/كلمة مفتاحية للصنفين'); return; }
-            if (!state.conflictRules) setState('conflictRules', []);
-            state.conflictRules.push({ id: uid(), a, b, note });
-            persist();
-            render();
-            showToast('✅ اتضافت قاعدة التعارض');
-        }
-        function removeConflictRule(id) {
-            if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
-            showConfirm('سيتم حذف قاعدة التعارض دي. متأكد؟', () => {
-                setState('conflictRules', (state.conflictRules || []).filter(r => r.id !== id));
-                persist();
-                render();
-                showToast('تم الحذف');
-            });
-        }
         function addFeedTransition() {
             if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
             const b = getActiveBatch();
@@ -15723,25 +15621,8 @@
                     }).join('')}
                 </div>
             </div>` : '';
-            // ============ تفصيل أداء العنابر (لو الدفعة موزّعة على أكتر من عنبر) ============
-            // ملحوظة: السجل اليومي مُسجَّل على مستوى الدفعة ككل (مفيش تسجيل يومي منفصل لكل عنبر)،
-            // فالتفصيل هنا تقديري بالتناسب مع عدد/مساحة كل عنبر — مفيد لمقارنة الكثافة، وليس بديلاً عن سجل يومي منفصل فعلي.
-            const housesSection = (b.houses && b.houses.length > 1) ? (() => {
-                const totalHouseCount = b.houses.reduce((s, h) => s + (h.count || 0), 0) || b.startCount;
-                const rows = b.houses.map(h => {
-                    const share = totalHouseCount > 0 ? (h.count || 0) / totalHouseCount : 0;
-                    const estLive = m.liveCount * share;
-                    const estDensity = (h.area > 0) ? (estLive * m.avgWeightG / 1000) / h.area : null;
-                    return `<div class="check-row"><div class="txt">
-                            <div style="font-weight:700;">🏠 ${esc(h.name)}</div>
-                            <div class="day">${fmt(h.count||0,0)} طائر بداية (${fmt(share*100,0)}% من الدفعة) · مساحة ${fmt(h.area||0,0)} م² ${estDensity!=null?`· كثافة تقديرية ${fmt(estDensity,1)} كجم/م²`:''}</div>
-                        </div></div>`;
-                }).join('');
-                return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>🏠 تفصيل أداء العنابر (تقديري بالتناسب)</h2></div>
-                    <div class="card" style="padding:0;">${rows}</div>
-                    <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 السجل اليومي مُسجَّل على مستوى الدفعة كاملة؛ الأرقام هنا تقديرية بالتناسب مع عدد/مساحة كل عنبر، مفيدة لمقارنة الكثافة بين العنابر وليست قياسًا فعليًا منفصلًا لكل عنبر.</p>
-                </div>`;
-            })() : '';
+            // (تم إلغاء قسم "تفصيل أداء العنابر" التابع لميزة "العنابر/الأقسام" بناءً على طلب إلغاء الميزة)
+            const housesSection = '';
             const ops = computeOpsRisk(b, m);
             const hs = computeHealthScore(b, m, alerts, ins, ops);
             // ============ 🎯 أهم 3 أفعال الآن: من محرك القرار الموحّد (إنتاج + مالية + تشغيل + بيئة/طقس فى مكان واحد) ============
@@ -19736,143 +19617,7 @@
         function telLink(phone) { return 'tel:' + cleanPhone(phone); }
         function waLink(phone, text) { return 'https://wa.me/' + cleanPhone(phone) + (text ? ('?text=' + encodeURIComponent(text)) : ''); }
 
-        let editingContactId = null;
-        function openContactModal(id) {
-            editingContactId = id || null;
-            const c = id ? state.contacts.find(x => x.id === id) : null;
-            document.getElementById('contactModalTitle').textContent = id ? '✏️ تعديل جهة اتصال' : '📇 إضافة جهة اتصال سريعة';
-            document.getElementById('ct_name').value = c ? c.name : '';
-            const roleSel = document.getElementById('ct_role');
-            const roles = (state.contactRoles && state.contactRoles.length) ? state.contactRoles : getDefaultContactRoles();
-            roleSel.innerHTML = roles.map(r => `<option value="${esc(r.label)}">${r.icon} ${esc(r.label)}</option>`).join('');
-            roleSel.value = c ? c.role : (roles[0] ? roles[0].label : 'مورد');
-            document.getElementById('ct_phone').value = c ? c.phone : '';
-            openModal('contactModalOverlay');
-        }
-        function saveContact() {
-            if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
-            const name = document.getElementById('ct_name').value.trim();
-            const role = document.getElementById('ct_role').value;
-            const phone = document.getElementById('ct_phone').value.trim();
-            if (!name) { showToast('⚠️ اكتب اسم جهة الاتصال'); return; }
-            if (!cleanPhone(phone)) { showToast('⚠️ اكتب رقم هاتف صحيح'); return; }
-            if (editingContactId) {
-                const c = state.contacts.find(x => x.id === editingContactId);
-                if (c) Object.assign(c, { name, role, phone });
-            } else {
-                state.contacts.push({ id: uid(), name, role, phone });
-            }
-            persist();
-            closeModal('contactModalOverlay');
-            showToast('✅ تم حفظ جهة الاتصال');
-            render();
-        }
-        function deleteContact(id) {
-            if (!requirePermission('owner')) return; // 🔒 Red Team fix: القسم بالكامل داخل تبويب الإعدادات المحجوب عن العمال
-            const c = (state.contacts || []).find(x => x.id === id);
-            showConfirm('حذف جهة الاتصال هذه؟ يمكن استرجاعها لاحقًا من سلة المهملات.', () => {
-                setState('contacts', state.contacts.filter(x => x.id !== id));
-                if (c) softDeleteToGlobalTrash('contact', c, `🗑️ حذف جهة اتصال: ${c.name || ''}`);
-                persist();
-                render();
-            });
-        }
-        function contactRoleIcon(roleLabel) {
-            const roles = (state.contactRoles && state.contactRoles.length) ? state.contactRoles : getDefaultContactRoles();
-            const found = roles.find(r => r.label === roleLabel);
-            return found ? found.icon : '📇';
-        }
-        function renderContactsSection() {
-            const rows = state.contacts.length ? state.contacts.map(c => `
-                <div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">${contactRoleIcon(c.role)} ${esc(c.name)}</div>
-                    <div class="day">${esc(c.role)} · ${esc(c.phone)}</div>
-                </div>
-                <div class="row-actions" style="gap:6px;">
-                    <a class="btn ghost xs" href="${telLink(c.phone)}">☎️ اتصال</a>
-                    <a class="btn ghost xs" style="color:#25D366;" href="${waLink(c.phone)}" target="_blank" rel="noopener">💬 واتساب</a>
-                    <button class="btn ghost xs" onclick="openContactModal('${c.id}')">✏️</button>
-                    <button class="btn ghost xs" style="color:var(--red);" onclick="deleteContact('${c.id}')">🗑️</button>
-                </div></div>`).join('') : '<div class="empty" style="padding:14px;"><div class="ico">📇</div>لا توجد جهات اتصال محفوظة بعد.</div>';
-            return `<div class="card" style="padding:0;">${rows}</div>
-                <div style="display:flex;gap:8px;margin-top:10px;">
-                    <button class="btn gold block" onclick="openContactModal()">+ إضافة جهة اتصال سريعة</button>
-                    <button class="btn ghost" style="flex-shrink:0;padding:10px 14px;" onclick="showContactRolesManager()" title="إدارة الأدوار">🏷️</button>
-                </div>`;
-        }
-        // ============ إدارة أدوار جهات الاتصال — إضافة/تعديل/حذف دور بأيقونته، نفس نمط دليل الأمراض ============
-        let editingContactRoleId = null;
-        function showContactRolesManager() {
-            if (!requirePermission('management')) return;
-            const html = `<div id="contactRolesList"></div>
-                <div class="form-grid" style="margin-top:10px;">
-                    <div class="field"><label>أيقونة (إيموجي)</label><input id="cr_icon" maxlength="4" placeholder="🚚" style="text-align:center;"></div>
-                    <div class="field"><label>اسم الدور</label><input id="cr_label" placeholder="مثال: مندوب توصيل"></div>
-                </div>
-                <button class="btn ghost block" id="crSaveBtn" style="margin-top:8px;" onclick="saveContactRole()">+ إضافة دور</button>`;
-            openGenericModal('🏷️ إدارة أدوار جهات الاتصال', html);
-            renderContactRolesList();
-        }
-        function renderContactRolesList() {
-            const box = document.getElementById('contactRolesList');
-            if (!box) return;
-            const roles = state.contactRoles || [];
-            box.innerHTML = roles.length ? roles.map(r => `
-                <div class="check-row"><button class="del-x" onclick="removeContactRole('${r.id}')" title="حذف">✕</button>
-                    <div class="txt" onclick="editContactRole('${r.id}')" style="cursor:pointer;">${r.icon} ${esc(r.label)}</div>
-                </div>`).join('') : '<div class="empty" style="padding:14px;">لا توجد أدوار بعد.</div>';
-        }
-        function editContactRole(id) {
-            const r = (state.contactRoles || []).find(x => x.id === id);
-            if (!r) return;
-            editingContactRoleId = id;
-            document.getElementById('cr_icon').value = r.icon;
-            document.getElementById('cr_label').value = r.label;
-            document.getElementById('crSaveBtn').textContent = '✏️ حفظ التعديل';
-        }
-        function saveContactRole() {
-            if (!requirePermission('management')) return;
-            const icon = document.getElementById('cr_icon').value.trim() || '📇';
-            const label = document.getElementById('cr_label').value.trim();
-            if (!label) { showToast('اكتب اسم الدور أولاً'); return; }
-            const roles = (state.contactRoles || []).slice();
-            if (editingContactRoleId) {
-                const idx = roles.findIndex(r => r.id === editingContactRoleId);
-                if (idx > -1) roles[idx] = { ...roles[idx], icon, label };
-            } else {
-                roles.push({ id: uid(), icon, label });
-            }
-            setState('contactRoles', roles);
-            persist();
-            editingContactRoleId = null;
-            document.getElementById('cr_icon').value = '';
-            document.getElementById('cr_label').value = '';
-            document.getElementById('crSaveBtn').textContent = '+ إضافة دور';
-            renderContactRolesList();
-            showToast('تم حفظ الدور ✅');
-        }
-        function removeContactRole(id) {
-            if (!requirePermission('management')) return;
-            showConfirm('حذف الدور ده مش هيمسح جهات الاتصال اللي مستخدماه، بس مش هيظهر تانى فى القايمة عند الإضافة. متأكد؟', () => {
-                setState('contactRoles', (state.contactRoles || []).filter(r => r.id !== id));
-                persist();
-                renderContactRolesList();
-            });
-        }
-        // شريط أزرار سريعة (اتصال/واتساب) يظهر بجوار حقل المورد فى شاشات الشراء/السجل — يفلتر حسب الصفة المطلوبة
-        function renderQuickContactChips(roleFilter) {
-            const list = roleFilter ? state.contacts.filter(c => c.role === roleFilter) : state.contacts;
-            if (!list.length) return '';
-            const chips = list.map(c => `
-                <span style="display:inline-flex;align-items:center;gap:4px;background:#f3f1e8;border-radius:20px;padding:4px 8px;font-size:11.5px;margin:2px;">
-                    ${esc(c.name)}
-                    <a href="${telLink(c.phone)}" title="اتصال" style="text-decoration:none;">☎️</a>
-                    <a href="${waLink(c.phone)}" target="_blank" rel="noopener" title="واتساب" style="text-decoration:none;">💬</a>
-                </span>`).join('');
-            return `<div style="grid-column:1/-1;margin:-4px 0 4px;">${chips}</div>`;
-        }
-
-        // (تمت إزالة نظام "سجل التواصل/الاستشارات" بالكامل بناءً على طلب تبسيط الاستخدام)
+        // (تمت إزالة ميزة "جهات الاتصال السريعة" بالكامل — إدارة جهات الاتصال، الأدوار، ونظام "سجل التواصل/الاستشارات" — بناءً على طلب إلغاء الميزة)
 
 
         let settingsSubTab = 'identity';
@@ -20024,46 +19769,8 @@
                     <button class="btn ghost block" id="ckSaveBtn" style="margin-top:6px;" onclick="addChecklistTask()">+ إضافة بند</button>
                 </div>
             </div>
-            <div class="section">
-                <div class="section-head"><h2>⚠️ قواعد تعارض الإضافات</h2></div>
-                <div class="card">
-                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
-                        عرّف هنا أي صنفين (علف/ماء) بتعرف من خبرتك إنهم متعارضين ومينفعش يتاخدوا مع بعض (زي حمض عضوي مع مضاد حيوي معين). اكتب كلمة مفتاحية من اسم كل صنف — لو الاتنين بقوا "نشطين" مع بعض فى نفس اليوم، هيظهرلك تنبيه أحمر فورًا فى التنبيهات.
-                    </p>
-                    ${(state.conflictRules||[]).map(r => `
-                        <div class="check-row"><div class="txt">"${esc(r.a)}" ⚡ "${esc(r.b)}"${r.note ? ` — ${esc(r.note)}` : ''}</div>
-                        <button class="btn danger sm" onclick="removeConflictRule('${r.id}')">🗑️</button></div>`).join('') || '<div class="empty" style="padding:14px;"><div class="ico">⚠️</div>لا توجد قواعد بعد.</div>'}
-                    <div class="form-grid" style="margin-top:12px;border-top:1.5px solid var(--line);padding-top:12px;">
-                        <div class="field"><label>كلمة مفتاحية من اسم الصنف الأول</label><input id="cr_a" placeholder="مثال: حمض الستريك"></div>
-                        <div class="field"><label>كلمة مفتاحية من اسم الصنف الثاني</label><input id="cr_b" placeholder="مثال: تيلميكوسين"></div>
-                        <div class="field full"><label>ملاحظة (اختياري)</label><input id="cr_note" placeholder="مثال: الحمض بيقلل فاعلية المضاد الحيوي"></div>
-                    </div>
-                    <button class="btn gold block" style="margin-top:6px;" onclick="addConflictRule()">+ إضافة قاعدة تعارض</button>
-                </div>
-            </div>
-            <div class="section">
-                <div class="section-head"><h2>🏠 العنابر/الأقسام (اختياري)</h2></div>
-                <div class="card">
-                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
-                        لو الدفعة موزعة على أكثر من عنبر أو قسم، سجّلهم هنا للتوثيق والمقارنة فقط — الحسابات الرئيسية تعتمد على "مساحة العنبر" و"عدد الكتاكيت" المُدخلة عند إنشاء الدفعة، مش على القائمة دي.
-                    </p>
-                    <div class="form-grid">
-                        <div class="field"><label>اسم العنبر/القسم</label><input id="hs_name" placeholder="مثال: عنبر 1"></div>
-                        <div class="field"><label>المساحة (م²)</label><input id="hs_area" type="number" inputmode="decimal" step="0.1" min="0"></div>
-                        <div class="field"><label>عدد الطيور</label><input id="hs_count" type="number" inputmode="decimal" min="0"></div>
-                    </div>
-                    <button class="btn ghost block" id="hsSaveBtn" style="margin-top:6px;" onclick="addHouse()">+ إضافة عنبر/قسم</button>
-                    ${b.houses.length ? `<div class="scroll-x" style="margin-top:10px;"><table><thead><tr><th>الاسم</th><th>المساحة</th><th>الطيور</th><th></th></tr></thead><tbody>${b.houses.map(h => `
-                        <tr><td>${esc(h.name)}</td><td>${fmt(h.area,1)} م²</td><td>${fmt(h.count,0)}</td>
-                        <td><button class="btn ghost sm" onclick="editHouse('${h.id}')">✏️</button> <button class="btn danger sm" onclick="removeHouse('${h.id}')">حذف</button></td></tr>`).join('')}</tbody></table></div>
-                    ${statLine(`الإجمالي`, `${fmt(b.houses.reduce((s,h)=>s+(h.area||0),0),1)} م² · ${fmt(b.houses.reduce((s,h)=>s+(h.count||0),0),0)} طائر`, {lineStyle:`margin-top:8px;border-top:2px solid var(--barn-dark);padding-top:8px;`,kStyle:`font-weight:900;`})}`
-                    : ''}
-                </div>
-            </div>` : ''}
-            <div class="section">
-                <div class="section-head"><h2>📇 جهات الاتصال السريعة</h2></div>
-                ${renderContactsSection()}
-            </div>`;
+            ` : ''}`;
+            // (تم إلغاء أقسام "قواعد تعارض الإضافات" و"العنابر/الأقسام" و"جهات الاتصال السريعة" من صفحة الإعدادات بناءً على طلب إلغاء هذه الميزات)
 
             // ============ فئة 2: الأدوات والحاسبات ============
             const catTools = `
@@ -22937,8 +22644,6 @@
                 { label: '💧 حاسبة تركيز محلول الإماهة/اللقاح فى المياه', tab: 'production', run: () => openWaterCalcModal() },
                 { label: '📖 دليل المصطلحات', tab: 'settings', run: () => showGlossaryFull() },
                 { label: '🩺 دليل الأمراض', tab: 'settings', run: () => showDiseaseLibrary() },
-                { label: '🏷️ إدارة أدوار جهات الاتصال', tab: 'settings', run: () => showContactRolesManager() },
-                { label: '📇 إضافة جهة اتصال سريعة', tab: 'settings', run: () => openContactModal() },
                 { label: '📋 مهام اليوم (كل المستحقات)', tab: 'daily', run: () => showTodayTasksModal() },
                 { label: '📁 أرشيف الدورات', tab: 'settings', run: () => openArchiveModal() },
                 { label: '🖨️ طباعة ورقة تعليمات يومية للعامل', tab: 'settings', run: () => openWorkerSheetPrint() },
@@ -22996,7 +22701,6 @@
                 { key: 'purchases', label: '🛒 المشتريات', items: [] },
                 { key: 'sales', label: '💰 المبيعات', items: [] },
                 { key: 'ops', label: '🛡️ العمليات والأمان الحيوي', items: [] },
-                { key: 'contacts', label: '📇 جهات الاتصال', items: [] },
             ];
             getFeatureDirectory().forEach(f => {
                 if (has(f.label)) cats[0].items.push({ label: f.label, sub: 'اضغط للفتح مباشرة', tab: f.tab, runFeature: f.run });
@@ -23017,9 +22721,6 @@
                 (b.biosecurityLog || []).forEach(o => {
                     if (has(o.note) || has(o.type)) cats[5].items.push({ label: `${esc(o.type)} — ${esc(b.name)}`, sub: `${o.date}${o.note ? ' · ' + esc(o.note).slice(0, 60) : ''}`, batchId: b.id, tab: 'daily' });
                 });
-            });
-            (state.contacts || []).forEach(c => {
-                if (has(c.name) || has(c.phone) || has(c.role)) cats[6].items.push({ label: esc(c.name), sub: `${esc(c.role || '')} · ${esc(c.phone || '')}`, tab: 'settings' });
             });
             const nonEmpty = cats.filter(c => c.items.length);
             if (!nonEmpty.length && !pageMatches.length) { box.innerHTML = '<p style="font-size:12px;color:var(--muted);text-align:center;padding:14px;">لا توجد نتائج مطابقة</p>'; return; }
