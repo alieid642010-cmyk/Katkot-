@@ -148,18 +148,6 @@
         .subtab-btn .count { opacity: .75; font-weight: 700; margin-inline-start: 3px; }
 
         /* -- كارت درجة الصحة (اللون بس بيفضل ديناميكي inline لأنه مبني على قيمة محسوبة، الباقي كله كلاس) -- */
-        /* -- 🆕 إصلاح: الكلاس ده كان مستخدم فى JS (runKatkotAction نوع scroll + editBatch focusField) لتمييز
-           العنصر اللي التنقل وصلّك له، بس مكانش معرّف فى الـCSS خالص فعليًا — يعني التنقل كان بيحصل من غير أي
-           تأثير بصري ملحوظ. دلوقتي وميض واضح مؤقت (لون ذهبي) يفضل ~2 ثانية ثم يختفي تدريجيًا. -- */
-        @keyframes priorityActionFlash {
-            0% { box-shadow: 0 0 0 3px rgba(217,165,68,.85); background-color: rgba(217,165,68,.18); }
-            100% { box-shadow: 0 0 0 3px rgba(217,165,68,0); background-color: transparent; }
-        }
-        .priority-action-highlight {
-            animation: priorityActionFlash 2.2s ease-out;
-            border-radius: var(--radius-sm, 8px);
-        }
-
         .health-score-card {
             margin-bottom: var(--space-4);
             padding: var(--space-4);
@@ -205,8 +193,8 @@
         }
         .insight-group .igrp-desc { font-size: var(--fs-2xs); color: var(--muted); font-weight: 400; margin-top: 2px; margin-inline-start: 34px; }
         .insight-group[data-gkey="attention"] { --group-color: var(--red); --group-bg: var(--danger-bg); }
-        .insight-group[data-gkey="perfForecast"] { --group-color: var(--green); --group-bg: var(--success-bg); }
-        .insight-group[data-gkey="perfForecast"] summary { background: linear-gradient(90deg, var(--info-bg), var(--success-bg)); } /* 🆕 تدرج أزرق↔أخضر يعكس دمج زاويتي التوقع والأداء فى قسم واحد */
+        .insight-group[data-gkey="forecast"] { --group-color: var(--blue); --group-bg: var(--info-bg); }
+        .insight-group[data-gkey="performance"] { --group-color: var(--green); --group-bg: var(--success-bg); }
         .insight-group[data-gkey="benchmark"] { --group-color: var(--wheat); --group-bg: var(--warning-bg); }
         .insight-group > div.igrp-body { padding: 0 var(--space-3); }
 
@@ -1263,17 +1251,7 @@
         }
         .bt-tab .bt-ic { font-size: 19px; line-height: 1; }
         .bt-tab .bt-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .bt-tab.active {
-            color: var(--barn);
-            background: rgba(47, 69, 56, .1);
-            background: color-mix(in srgb, var(--barn) 14%, transparent);
-        }
-        .bt-tab.active .bt-ic { transform: scale(1.08); }
-        .bt-tab.active::after {
-            content: '';
-            position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
-            width: 16px; height: 3px; border-radius: 999px; background: var(--barn);
-        }
+        .bt-tab.active { color: var(--barn); }
         .bt-tab .badge {
             position: absolute; top: 0; left: 50%; transform: translateX(6px);
             background: var(--red); color: #fff; font-size: var(--fs-2xs);
@@ -1784,24 +1762,6 @@
         </div>
     </div>
 
-    <!-- ===== شاشة قفل التطبيق (بصمة/وجه — تظهر عند فتح التطبيق أو الرجوع له لو القفل التلقائي مفعّل) ===== -->
-    <div class="auth-overlay" id="appLockOverlay" style="display:none;">
-        <div class="auth-card" style="text-align:center;">
-            <div style="font-size:44px;margin-bottom:6px;">🔒</div>
-            <h2 style="text-align:center;">التطبيق مقفول</h2>
-            <div class="sub" style="text-align:center;" id="appLockSub">افتحه ببصمتك أو وجهك للمتابعة</div>
-            <button class="btn gold" onclick="unlockAppWithBiometric()">👆 افتح بالبصمة/الوجه</button>
-            <div style="text-align:center;margin-top:10px;">
-                <a href="javascript:void(0)" style="font-size:11.5px;color:var(--muted);text-decoration:underline;" onclick="toggleAppLockPasswordFallback()">🔑 افتح بكلمة المرور بدل البصمة</a>
-            </div>
-            <div id="appLockPassBox" style="display:none;margin-top:10px;">
-                <input type="password" id="appLockPassInput" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')unlockAppWithPassword()">
-                <button class="btn ghost" onclick="unlockAppWithPassword()">فتح</button>
-            </div>
-            <div class="auth-err" id="appLockErr" style="margin-top:8px;"></div>
-        </div>
-    </div>
-
     <!-- ===== نافذة إدارة الحسابات (مالك فقط) ===== -->
     <div class="modal-overlay" id="accountsModalOverlay">
         <div class="modal" style="max-width:440px;">
@@ -1874,6 +1834,7 @@
             <button class="btn gold block-owner-btn" id="newBatchBtn" style="padding:13px 22px;font-size:15px;font-weight:800;width:100%;margin-top:12px;box-shadow:0 6px 16px rgba(0,0,0,.18);display:none;" onclick="openBatchModal()">+ دفعة تسمين جديدة</button>
         </div>
         <div class="batch-switch" id="batchSwitch"></div>
+        <div class="alert-banner" id="alertBanner"></div>
     </header>
 
     <main>
@@ -2394,6 +2355,7 @@
                 </div>
                 <div class="field full"><label>الوصف / اسم المنتج</label><input id="p_desc" list="dl_invItems" placeholder="مثال: علف بادي - شركة X"></div>
                 <div class="field full"><label>المورد (اختياري)</label><input id="p_supplier" placeholder="مثال: شركة الأهرام للأعلاف"></div>
+                <div class="field full" id="p_supplierChips"></div>
                 <div class="field"><label>تاريخ الصلاحية (للقاحات/الأدوية — اختياري)</label><input id="p_expiry" type="date"></div>
                 <div class="field full"><label>رقم الشحنة/التشغيلة (اختياري — لتتبع أثر تغيير الشحنة على الأداء)</label><input id="p_lot" placeholder="مثال: LOT-2026-07"></div>
                 <div class="field"><label>الكمية</label><input id="p_qty" type="number" inputmode="decimal" step="0.01" value="1" oninput="recalcPurchaseTotal()" min="0"></div>
@@ -2707,7 +2669,25 @@
         </div>
     </div>
 
-    <!-- (تمت إزالة نافذة "جهة اتصال سريعة" و"سجل التواصل/الاستشارات" بناءً على طلب إلغاء ميزة جهات الاتصال) -->
+    <!-- Modal: Quick Contact -->
+    <div class="modal-overlay" id="contactModalOverlay">
+        <div class="modal">
+            <button class="close-x" aria-label="إغلاق" onclick="closeModal('contactModalOverlay')">✕</button>
+            <h3 id="contactModalTitle">📇 إضافة جهة اتصال سريعة</h3>
+            <p style="font-size:11.5px;color:var(--muted);margin-top:-6px;">سجّل رقم المورد/الطبيب البيطري مرة واحدة، وبعدها زرار اتصال/واتساب سريع من داخل شاشات الشراء والسجل اليومي.</p>
+            <div class="form-grid">
+                <div class="field full"><label>الاسم</label><input id="ct_name" placeholder="مثال: د. أحمد - طبيب بيطري"></div>
+                <div class="field"><label>الصفة</label>
+                    <select id="ct_role"></select>
+                </div>
+                <div class="field"><label>رقم الهاتف (بصيغة دولية للواتساب، مثال: 20101xxxxxxx)</label><input id="ct_phone" type="tel" placeholder="20101xxxxxxx"></div>
+            </div>
+            <div class="row-actions"><button class="btn block" id="contactModalBtn" onclick="saveContact()">حفظ جهة الاتصال</button></div>
+        </div>
+    </div>
+
+    <!-- (تمت إزالة نافذة "سجل التواصل/الاستشارات" بناءً على طلب تبسيط الاستخدام) -->
+
 
     <!-- Modal: Anon Snapshot Import -->
     <div class="modal-overlay" id="importSnapshotModalOverlay">
@@ -4681,7 +4661,7 @@
                     const dutyPct = (target.totalM3h / totalFanCapacity) * 100;
                     if (dutyPct > 100) {
                         const deficit = target.totalM3h - totalFanCapacity;
-                        items.push({ level: 'danger', actionLabel: '🌀 حدّث بيانات الشفاطات', actionOnclick: 'editActiveBatchFans()', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) أقل من الحد الأدنى المطلوب الآن (${fmt(m.liveCount,0)} طائر، عمر ${age} يوم): <b>~${fmt(target.totalM3h,0)} م³/ساعة</b> — نقص حوالي ${fmt(deficit,0)} م³/ساعة. فكّر فى إضافة شفاط إضافي بقدرة مماثلة أو تشغيل الموجود بأقصى سرعة باستمرار.` });
+                        items.push({ level: 'danger', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) أقل من الحد الأدنى المطلوب الآن (${fmt(m.liveCount,0)} طائر، عمر ${age} يوم): <b>~${fmt(target.totalM3h,0)} م³/ساعة</b> — نقص حوالي ${fmt(deficit,0)} م³/ساعة. فكّر فى إضافة شفاط إضافي بقدرة مماثلة أو تشغيل الموجود بأقصى سرعة باستمرار.` });
                     } else {
                         const runMinutesPer5 = (dutyPct / 100) * 5;
                         items.push({ level: 'info', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) تكفي الحد الأدنى المطلوب الآن (~${fmt(target.totalM3h,0)} م³/ساعة لـ ${fmt(m.liveCount,0)} طائر، عمر ${age} يوم) — شغّلها بدورة تشغيل حوالي <b>${fmt(dutyPct,0)}%</b> من الوقت (مثلاً ${fmt(runMinutesPer5,1)} دقيقة تشغيل من كل 5 دقائق) بدل التشغيل المستمر.` });
@@ -4701,7 +4681,7 @@
                 const hotHigh = b.area * HOT_VENT_M3MIN_PER_M2_HIGH * 60;
                 if (totalFanCapacity > 0) {
                     if (totalFanCapacity < hotLow) {
-                        items.push({ level: season === 'صيف' ? 'danger' : 'warn', actionLabel: '🌀 حدّث بيانات الشفاطات', actionOnclick: 'editActiveBatchFans()', text: `☀️ لتهوية كافية وقت الحر لمساحة عنبرك (${fmt(b.area,0)} م²): المطلوب بين <b>${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة</b>، وقدرتك الحالية ${fmt(totalFanCapacity,0)} م³/ساعة أقل من ذلك بوضوح — فكّر جديًا فى زيادة عدد/سعة الشفاطات قبل ذروة الصيف.` });
+                        items.push({ level: season === 'صيف' ? 'danger' : 'warn', text: `☀️ لتهوية كافية وقت الحر لمساحة عنبرك (${fmt(b.area,0)} م²): المطلوب بين <b>${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة</b>، وقدرتك الحالية ${fmt(totalFanCapacity,0)} م³/ساعة أقل من ذلك بوضوح — فكّر جديًا فى زيادة عدد/سعة الشفاطات قبل ذروة الصيف.` });
                     } else {
                         items.push({ level: 'info', text: `☀️ قدرة شفاطاتك الحالية (${fmt(totalFanCapacity,0)} م³/ساعة) تغطي المعدل الانتقالي الموصى به وقت الحر لمساحة عنبرك (${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة) — حافظ على صيانتها الدورية (نظافة الشفرات والستائر) لضمان الأداء الفعلي.` });
                     }
@@ -4719,7 +4699,7 @@
                 if (ventType === 'tunnel') {
                     items.push({ level: 'info', text: `🌀 المرحلة الثالثة (٢٢+ يوم) — نظام نفقي: فعّل التشغيل التدريجي للمراوح (Staged Fans) وارفع عدد المراوح العاملة كلما زادت الكتلة الحيوية، مع تشغيل البادات وقت الذروة الحرارية.` });
                 } else if (season === 'صيف') {
-                    items.push({ level: 'warn', actionLabel: '🌀 حدّث بيانات الشفاطات', actionOnclick: 'editActiveBatchFans()', text: `☀️ المرحلة الثالثة صيفًا بنظام ${ventLabel}: خطر إجهاد حراري مرتفع فى هذا العمر — فكّر فى تركيب مراوح مساعدة أو التحويل لتهوية نفقية جزئية، وافتح الفتحات الجانبية بالكامل مع تظليل السقف لو ممكن.` });
+                    items.push({ level: 'warn', text: `☀️ المرحلة الثالثة صيفًا بنظام ${ventLabel}: خطر إجهاد حراري مرتفع فى هذا العمر — فكّر فى تركيب مراوح مساعدة أو التحويل لتهوية نفقية جزئية، وافتح الفتحات الجانبية بالكامل مع تظليل السقف لو ممكن.` });
                 } else if (season === 'شتاء') {
                     items.push({ level: 'info', text: `❄️ المرحلة الثالثة شتاءً بنظام ${ventLabel}: حافظ على تهوية انتقالية متوازنة — لا تُغلق الفتحات كليًا رغم البرودة لتفادي تراكم الرطوبة والأمونيا، وزد الفتح تدريجيًا صباحًا.` });
                 } else {
@@ -4781,21 +4761,21 @@
             const actualAirspeed = avgOf(lastEnv.airspeedDay, lastEnv.airspeedNight) ?? lastEnv.airspeed;
             if (actualAirspeed != null && refs.airspeed) {
                 if (actualAirspeed < refs.airspeed * 0.7) {
-                    items.push({ level: 'warn', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أقل من المعيار لعمر ${age} يوم (${fmt(refs.airspeed,1)} م/ث) — زد عدد/سرعة المراوح أو اتساع الفتحات.` });
+                    items.push({ level: 'warn', text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أقل من المعيار لعمر ${age} يوم (${fmt(refs.airspeed,1)} م/ث) — زد عدد/سرعة المراوح أو اتساع الفتحات.` });
                 } else if (age <= 14 && actualAirspeed > refs.airspeed * 1.6) {
-                    items.push({ level: 'warn', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أعلى من اللازم فى هذا العمر الصغير — قد تسبب تيارات باردة مباشرة على الكتاكيت، قلّل معدل التهوية أو غيّر اتجاه الفتحات بعيدًا عن مستوى الفرشة.` });
+                    items.push({ level: 'warn', text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أعلى من اللازم فى هذا العمر الصغير — قد تسبب تيارات باردة مباشرة على الكتاكيت، قلّل معدل التهوية أو غيّر اتجاه الفتحات بعيدًا عن مستوى الفرشة.` });
                 }
             }
             const actualCo2 = avgOf(lastEnv.co2Day, lastEnv.co2Night) ?? lastEnv.co2;
             if (actualCo2 != null && actualCo2 >= 3000) {
-                items.push({ level: 'danger', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `🌫️ ثاني أكسيد الكربون مرتفع جدًا (${fmt(actualCo2,0)} ppm) — زد التهوية فورًا، المعدل الآمن أقل من 3000 ppm.` });
+                items.push({ level: 'danger', text: `🌫️ ثاني أكسيد الكربون مرتفع جدًا (${fmt(actualCo2,0)} ppm) — زد التهوية فورًا، المعدل الآمن أقل من 3000 ppm.` });
             }
             const actualNh3 = avgOf(lastEnv.nh3Day, lastEnv.nh3Night) ?? lastEnv.nh3;
             if (actualNh3 != null && actualNh3 >= 20) {
                 const nh3Advice = floorType === 'cage' ? 'راجع انتظام إزالة الزرق وتهوية أسفل الأقفاص'
                     : floorType === 'slat' ? 'راجع تجمّع الزرق أسفل الأرضية الشبكية وتهوية الحيز السفلي'
                     : 'راجع رطوبة الفرشة';
-                items.push({ level: actualNh3 >= 25 ? 'danger' : 'warn', actionLabel: '📝 سجّل قراءة بيئية', actionOnclick: "openDailyModal('day')", text: `🌫️ الأمونيا مرتفعة (${fmt(actualNh3,0)} ppm) — زد معدل التهوية و${nh3Advice}، المعدل المثالي أقل من 20 ppm.` });
+                items.push({ level: actualNh3 >= 25 ? 'danger' : 'warn', text: `🌫️ الأمونيا مرتفعة (${fmt(actualNh3,0)} ppm) — زد معدل التهوية و${nh3Advice}، المعدل المثالي أقل من 20 ppm.` });
             }
 
             // ===== 4) الطقس المتوقع (لو مفعّل تحديد الموقع) — تنبيه استباقي =====
@@ -5947,112 +5927,6 @@
             refreshBiometricLoginButton();
         }
 
-        // ============ 🔒 قفل التطبيق التلقائي بالبصمة/الوجه — منفصل عن "الدخول بالبصمة" اللي فوق ============
-        // الفرق: اللي فوق ده بيستخدم بدل كلمة المرور فى أول دخول. اللي هنا قفل إضافي بيتفعّله المستخدم
-        // اختياريًا من الإعدادات، وبيظهر تلقائيًا (فوق الشاشة كلها) عند أول فتح للتطبيق وكل مرة يرجع
-        // للمقدمة من الخلفية — حتى لو الجلسة (session) لسه شغالة أصلًا. تخزين الإعداد محلي بالجهاز
-        // (زي تسجيل البصمة نفسه) مش على السحابة، لأن قفل الجهاز ده قرار خاص بكل جهاز لوحده.
-        const APP_LOCK_KEY = 'poultry_applock_v1';
-        function isAppLockEnabled() {
-            try { return localStorage.getItem(APP_LOCK_KEY) === '1'; } catch (e) { return false; }
-        }
-        function currentAuthRoleWorkerId() {
-            return { role: currentRole, workerId: currentRole === 'worker' && currentWorker ? currentWorker.id : null };
-        }
-        function canUseAppLock() {
-            if (!isWebAuthnSupported()) return false;
-            const { role, workerId } = currentAuthRoleWorkerId();
-            if (!role) return false;
-            return hasBiometricEnrolled(role, workerId);
-        }
-        async function setAppLockEnabled(checked) {
-            if (checked && !canUseAppLock()) {
-                // لسه مفيش بصمة مسجّلة لهذا الحساب على الجهاز ده — سجّلها الأول قبل ما نفعّل القفل
-                const { role } = currentAuthRoleWorkerId();
-                const ok = await enrollBiometricLogin(role, currentWorker);
-                if (!ok) { render(); return; }
-            }
-            try { localStorage.setItem(APP_LOCK_KEY, checked ? '1' : '0'); } catch (e) {}
-            showToast(checked ? '🔒 اتفعّل قفل التطبيق التلقائي على الجهاز ده' : '🔓 اتلغى قفل التطبيق التلقائي على الجهاز ده');
-            render();
-        }
-        function toggleAppLockPasswordFallback() {
-            const box = document.getElementById('appLockPassBox');
-            if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
-        }
-        function showAppLockOverlay() {
-            const ov = document.getElementById('appLockOverlay');
-            if (!ov) return;
-            const errEl = document.getElementById('appLockErr');
-            if (errEl) errEl.textContent = '';
-            const passBox = document.getElementById('appLockPassBox');
-            if (passBox) passBox.style.display = 'none';
-            ov.style.display = 'flex';
-            window._appLocked = true;
-        }
-        function hideAppLockOverlay() {
-            const ov = document.getElementById('appLockOverlay');
-            if (ov) ov.style.display = 'none';
-            window._appLocked = false;
-        }
-        async function unlockAppWithBiometric() {
-            const err = document.getElementById('appLockErr');
-            if (err) err.textContent = '';
-            const { role, workerId } = currentAuthRoleWorkerId();
-            const auth = getAuth();
-            if (!auth) return;
-            const entries = (auth.biometric || []).filter(b => b.role === role && (role === 'owner' || b.workerId === workerId));
-            if (!entries.length) { if (err) err.textContent = '⚠️ مفيش بصمة مسجّلة لهذا الحساب — افتح بكلمة المرور.'; return; }
-            try {
-                const assertion = await navigator.credentials.get({
-                    publicKey: {
-                        challenge: crypto.getRandomValues(new Uint8Array(32)),
-                        allowCredentials: entries.map(e => ({ type: 'public-key', id: b64urlToBuf(e.credentialId) })),
-                        userVerification: 'required', timeout: 60000,
-                    }
-                });
-                if (!assertion) { if (err) err.textContent = '❌ فشل التحقق بالبصمة'; return; }
-                hideAppLockOverlay();
-            } catch (e) {
-                console.error('فشل فتح القفل بالبصمة', e);
-                if (err) err.textContent = '❌ اتلغى الفتح بالبصمة أو فشل التطابق — جرّب تاني أو افتح بكلمة المرور';
-            }
-        }
-        async function unlockAppWithPassword() {
-            const err = document.getElementById('appLockErr');
-            const pass = document.getElementById('appLockPassInput').value;
-            if (err) err.textContent = '';
-            if (!pass) { if (err) err.textContent = 'اكتب كلمة المرور'; return; }
-            const auth = getAuth();
-            if (!auth) return;
-            const { role, workerId } = currentAuthRoleWorkerId();
-            let ok = false;
-            if (role === 'owner') {
-                ok = await verifyPassword(pass, auth.ownerSalt, auth.ownerHash);
-            } else {
-                const w = (auth.workers || []).find(x => x.id === workerId);
-                ok = w && await verifyPassword(pass, w.passSalt, w.passHash);
-            }
-            if (!ok) { if (err) err.textContent = '❌ كلمة المرور غلط'; return; }
-            hideAppLockOverlay();
-        }
-        // بيتنادى مرة واحدة بس عند بدء الجلسة — بيراقب رجوع التطبيق من الخلفية للمقدمة عشان يقفله تاني
-        function initAppLockWatcher() {
-            if (window._appLockWatcherSet) return;
-            window._appLockWatcherSet = true;
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    if (isAppLockEnabled() && canUseAppLock()) window._appLockPending = true;
-                } else if (window._appLockPending) {
-                    window._appLockPending = false;
-                    showAppLockOverlay();
-                }
-            });
-        }
-        function maybeShowAppLockOnStart() {
-            if (isAppLockEnabled() && canUseAppLock()) showAppLockOverlay();
-        }
-
         let _setupInFlight = false; // 🔒 تحصين: يمنع نداء متزامن مزدوج أثناء انتظار secureHash غير المتزامنة
         async function doSetup() {
             if (_setupInFlight) return;
@@ -6175,8 +6049,6 @@
                 document.getElementById('workerRoleBadge').textContent = `👷 ${currentWorker.name} — ${batchName}`;
             }
             render();
-            initAppLockWatcher();
-            if (!isFreshLogin) maybeShowAppLockOnStart(); // قفل تلقائي بس لو ده استرجاع جلسة قديمة (فتح تطبيق مقفول أصلًا)، مش أول دخول لسه
             setTimeout(() => checkAndNotifyToday(false), 2000);
             setTimeout(() => maybeShowOnboarding(), 300);
             setTimeout(() => maybeShowDailyBrief(), 600); // بعد الترحيب (لو ظاهر) عشان مايتزاحموش فوق بعض
@@ -6355,13 +6227,7 @@
             let points = attendanceDays * 2 + onTimeDays * 2 + Math.floor(longestStreak / 7) * 5;
             if (batch) points += Math.round((recordCompletionRate || 0) * attendanceDays * 3);
 
-            // 🔧 Fix: التصنيف كان بعتبات ثابتة (80/50/25) اتحسبت قبل إضافة بونص انتظام السجل (لحد 90 نقطة إضافية)،
-            // فبقى الحد الأقصى الفعلي ~230 نقطة بدل ~140 — أي عامل منتظم عادي كان بيوصل "ممتاز" بسهولة، والتصنيف
-            // فقد قدرته على التمييز فى القمة. دلوقتي العتبات نسبة مئوية من أقصى نقاط ممكنة فعليًا لنفس الفترة،
-            // فتفضل عادلة سواء العامل مرتبط بدفعة (بونص السجل متاح) أو لأ.
-            const maxPossiblePoints = days * 2 + days * 2 + Math.floor(days / 7) * 5 + (batch ? days * 3 : 0);
-            const tierPct = maxPossiblePoints > 0 ? points / maxPossiblePoints : 0;
-            const tier = tierPct >= 0.75 ? '🏆 ممتاز' : tierPct >= 0.5 ? '👍 جيد' : tierPct >= 0.25 ? '⚠️ متوسط' : (attendanceDays > 0 ? '🔴 يحتاج متابعة' : '➖ لا يوجد نشاط');
+            const tier = points >= 80 ? '🏆 ممتاز' : points >= 50 ? '👍 جيد' : points >= 25 ? '⚠️ متوسط' : (attendanceDays > 0 ? '🔴 يحتاج متابعة' : '➖ لا يوجد نشاط');
             const pointValue = (state.appSettings && state.appSettings.workerPointValueEGP != null) ? state.appSettings.workerPointValueEGP : null;
             const suggestedReward = pointValue != null ? points * pointValue : null;
 
@@ -6599,10 +6465,6 @@
             if (editingWorkerId) {
                 const w = auth.workers.find(x => x.id === editingWorkerId);
                 if (w) {
-                    // 🔧 Fix: لو الدفعة المرتبطة اتغيّرت (تعيين/نقل)، سجّل تاريخ الانضمام الفعلي للدفعة الجديدة —
-                    // ده أساسي لعدالة حساب نقاط "انتظام السجل" و"الحضور" فى computeCyclePointsBreakdown، اللي
-                    // كانت بتفترض دايمًا إن العامل موجود من أول يوم فى الدورة (b.startDate) حتى لو انضم متأخر.
-                    if (w.batchId !== batchId) w.assignedAt = batchId ? new Date().toISOString() : null;
                     w.name = name; w.username = username; w.batchId = batchId; w.permissions = permissions;
                     if (pass) { const h = await secureHash(pass); w.passHash = h.hash; w.passSalt = h.salt; } // 🔒 SHA-256+Salt
                 }
@@ -6610,8 +6472,7 @@
                 if (currentWorker && currentWorker.id === editingWorkerId) currentWorker.permissions = permissions;
             } else {
                 const h = await secureHash(pass); // 🔒 SHA-256+Salt بدل التجزئة البسيطة القديمة
-                // 🔧 Fix: نسجّل assignedAt من أول لحظة لو العامل اتربط بدفعة من البداية
-                auth.workers.push({ id: uid(), name, username, passHash: h.hash, passSalt: h.salt, batchId, permissions, assignedAt: batchId ? new Date().toISOString() : null });
+                auth.workers.push({ id: uid(), name, username, passHash: h.hash, passSalt: h.salt, batchId, permissions });
                 showToast('✅ تم إضافة العامل');
             }
             saveAuth(auth);
@@ -7013,18 +6874,6 @@
             if (!state.diseaseKB) setState('diseaseKB', getDefaultDiseaseKB()); // ⚠️ ترحيل: دليل الأمراض بقى قابل للتعديل الكامل من المستخدم
             if (!state.contactRoles) setState('contactRoles', getDefaultContactRoles()); // ⚠️ ترحيل: أدوار جهات الاتصال بقت قابلة للتعديل
             if (!state.pendingCarryOver) setState('pendingCarryOver', []); // ⚠️ ترحيل: قائمة انتظار مخزون الدورات المؤرشفة حديثًا
-            // ⚠️ ترحيل: قسما "توقعات" و"أداء وكفاءة" اندمجوا فى قسم هجين واحد "perfForecast" — لو المستخدم كان
-            // مخفّي أي واحد منهم قبل كده، نخفي القسم المدمج بدل ما يفتح فجأة من غير قصد بعد التحديث.
-            if (state.appSettings && Array.isArray(state.appSettings.insightGroupsHidden)) {
-                const oldHidden = state.appSettings.insightGroupsHidden;
-                if ((oldHidden.includes('forecast') || oldHidden.includes('performance')) && !oldHidden.includes('perfForecast')) {
-                    state.appSettings.insightGroupsHidden = [...new Set([...oldHidden.filter(k => k !== 'forecast' && k !== 'performance'), 'perfForecast'])];
-                    persist();
-                } else if (oldHidden.includes('forecast') || oldHidden.includes('performance')) {
-                    state.appSettings.insightGroupsHidden = oldHidden.filter(k => k !== 'forecast' && k !== 'performance');
-                    persist();
-                }
-            }
             state.batches.forEach(migrateBatch);
             if (!state.activeId && activeBatches().length) setState('activeId', activeBatches()[0].id);
             maybeAutoSnapshot();
@@ -7252,7 +7101,7 @@
             document.getElementById('batchModalOverlay').classList.add('show');
         }
 
-        function editBatch(id, focusField) {
+        function editBatch(id) {
             if (currentRole === 'worker' && !workerHasPermission('createBatch')) { showToast('🚫 مالك المزرعة لم يمنحك صلاحية تعديل بيانات الدفعة'); return; }
             const b = state.batches.find(x => x.id === id);
             if (!b) return;
@@ -7293,24 +7142,6 @@
             document.getElementById('batchModalTitle').textContent = `✏️ تعديل بيانات دفعة: ${b.name}`;
             document.getElementById('batchModalBtn').textContent = 'حفظ التعديلات';
             document.getElementById('batchModalOverlay').classList.add('show');
-            // ============ 🆕 التهوية بقت تفاعلية: زرار "حدّث بيانات الشفاطات" من التنبيه بيفتح المودال ده ويوديك مباشرة لحقل الشفاطات ============
-            if (focusField) {
-                setTimeout(() => {
-                    const el = document.getElementById(focusField);
-                    if (!el) return;
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    el.focus();
-                    el.classList.add('priority-action-highlight');
-                    setTimeout(() => el.classList.remove('priority-action-highlight'), 2200);
-                }, 150);
-            }
-        }
-        // ============ 🆕 التهوية بقت تفاعلية: بدل ما تنبيهات الشفاطات (نقص القدرة/الحر) تكون نص بس، دلوقتي بتفتح
-        // مودال تعديل بيانات الدفعة وتوديك لحقل "عدد الشفاطات العاملة" على طول عشان تحدّثه فورًا ============
-        function editActiveBatchFans() {
-            const b = getActiveBatch();
-            if (!b) { showToast('لا توجد دفعة نشطة'); return; }
-            editBatch(b.id, 'b_fancount');
         }
 
         function onSpeciesChange() {
@@ -8046,8 +7877,17 @@
             box.innerHTML = photos.length
                 ? photos.map(src => `<img src="${src}" style="max-width:150px;max-height:150px;border-radius:8px;border:1px solid var(--line);">`).join('')
                 : '<div class="empty" style="padding:14px;">لا توجد صور لهذا اليوم.</div>';
+            const vets = state.contacts.filter(c => c.role === 'طبيب بيطري');
             const shareBox = document.getElementById('photoViewShareBox');
-            if (shareBox) shareBox.innerHTML = '';
+            if (photos.length && vets.length) {
+                const text = `استشارة بخصوص دفعة "${b.name}" — يوم ${date} (عمر ${r.age}). ملاحظات: ${r.notesDay || r.notesNight || 'بدون ملاحظات'}. مرفق صورة توضيحية (سيتم إرفاقها يدويًا).`;
+                shareBox.innerHTML = `<p style="font-size:11px;color:var(--muted);margin:0 0 6px;">شارك ملخص اليوم مع الطبيب، ثم أرفق نفس الصورة يدويًا من معرض صورك داخل نفس المحادثة:</p>` +
+                    vets.map(v => `<a class="btn ghost block" style="margin-top:6px;color:#25D366;" href="${waLink(v.phone, text)}" target="_blank" rel="noopener">💬 مشاركة مع ${esc(v.name)} عبر واتساب</a>`).join('');
+            } else if (photos.length) {
+                shareBox.innerHTML = `<p style="font-size:11px;color:var(--muted);">أضف طبيب بيطري فى "جهات الاتصال السريعة" بالإعدادات عشان تقدر تشارك الصور معاه بضغطة واحدة.</p>`;
+            } else {
+                shareBox.innerHTML = '';
+            }
             openModal('photoViewModalOverlay');
         }
 
@@ -8256,6 +8096,8 @@
             document.getElementById('p_date').value = todayStr(); document.getElementById('p_date').max = todayStr();
             document.getElementById('p_paid').value = '1';
             togglePurchaseDue();
+            const chipsBox = document.getElementById('p_supplierChips');
+            if (chipsBox) chipsBox.innerHTML = renderQuickContactChips('مورد') + renderQuickContactChips('طبيب بيطري');
             document.getElementById('purModalOverlay').classList.add('show'); }
 
         function manureSaleInfo(b) {
@@ -8637,11 +8479,10 @@
             if (currentRole === 'worker' && currentWorker) {
                 // اربط العامل تلقائيًا بالدفعة اللي أنشأها بنفسه عشان يقدر يشتغل عليها فورًا
                 currentWorker.batchId = batch.id;
-                currentWorker.assignedAt = new Date().toISOString(); // 🔧 Fix: نفس منطق assignedAt عشان الحساب يكون متسق
                 const auth = getAuth();
                 if (auth) {
                     const w = (auth.workers || []).find(x => x.id === currentWorker.id);
-                    if (w) { w.batchId = batch.id; w.assignedAt = currentWorker.assignedAt; saveAuth(auth); }
+                    if (w) { w.batchId = batch.id; saveAuth(auth); }
                 }
                 const badge = document.getElementById('workerRoleBadge');
                 if (badge) badge.textContent = `👷 ${currentWorker.name} — ${batch.name}`;
@@ -9770,6 +9611,7 @@
         let editingFeedAdditiveId = null;
         let editingWaterAdditiveId = null;
         let editingBiosecurityId = null;
+        let editingHouseId = null;
         let editingMovementId = null;
         let editingChecklistTaskId = null;
 
@@ -9969,9 +9811,80 @@
             });
         }
 
-        // (تم إلغاء ميزة "العنابر/الأقسام" — addHouse/editHouse/removeHouse — وميزة "قواعد تعارض الإضافات" — addConflictRule/removeConflictRule — بناءً على طلب إلغاء هذه الميزات)
+        function addHouse() {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix: كانت قابلة للنداء من Console بدون تحقق صلاحية
+            const b = getActiveBatch();
+            if (!b) return;
+            const name = document.getElementById('hs_name').value.trim();
+            const area = parseFloat(document.getElementById('hs_area').value) || 0;
+            const count = parseInt(document.getElementById('hs_count').value) || 0;
+            if (!name) { showToast('اكتب اسم العنبر/القسم أولاً'); return; }
+            if (editingHouseId) {
+                const h = b.houses.find(x => x.id === editingHouseId);
+                if (h) { h.name = name; h.area = area; h.count = count; }
+                editingHouseId = null;
+                persist();
+                ['hs_name','hs_area','hs_count'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('hsSaveBtn').textContent = '+ إضافة عنبر/قسم';
+                render();
+                showToast('تم تحديث العنبر ✅');
+                return;
+            }
+            b.houses.push({ id: uid(), name, area, count });
+            persist();
+            ['hs_name','hs_area','hs_count'].forEach(id => document.getElementById(id).value = '');
+            render();
+            showToast('تم إضافة العنبر 🏠');
+        }
+
+        function editHouse(id) {
+            const b = getActiveBatch();
+            if (!b) return;
+            const h = b.houses.find(x => x.id === id);
+            if (!h) return;
+            editingHouseId = id;
+            document.getElementById('hs_name').value = h.name;
+            document.getElementById('hs_area').value = h.area || '';
+            document.getElementById('hs_count').value = h.count || '';
+            document.getElementById('hsSaveBtn').textContent = '✏️ حفظ التعديل';
+            document.getElementById('hs_name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function removeHouse(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix: كانت قابلة للنداء من Console بدون تحقق صلاحية
+            const b = getActiveBatch();
+            if (!b) return;
+            showConfirm('سيتم حذف هذه العنبر/الوحدة من القائمة. متأكد؟', () => {
+                b.houses = b.houses.filter(h => h.id !== id);
+                persist();
+                render();
+                showToast('تم الحذف');
+            });
+        }
 
         // ============ (جديد) برنامج التحويل التدريجي بين نوعين علف — إدارة (إعدادات ← 🐔 المزرعة)، التطبيق تلقائي فى التسجيل اليومي عبر getActiveFeedTransition ============
+        // ============ (جديد) قواعد تعارض الإضافات — المستخدم بيعرّفها بنفسه (بناءً على معرفته البيطرية)، والتطبيق بيراقبها تلقائيًا كل يوم ============
+        function addConflictRule() {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
+            const a = document.getElementById('cr_a').value.trim();
+            const b = document.getElementById('cr_b').value.trim();
+            const note = document.getElementById('cr_note').value.trim();
+            if (!a || !b) { showToast('اكتب اسم/كلمة مفتاحية للصنفين'); return; }
+            if (!state.conflictRules) setState('conflictRules', []);
+            state.conflictRules.push({ id: uid(), a, b, note });
+            persist();
+            render();
+            showToast('✅ اتضافت قاعدة التعارض');
+        }
+        function removeConflictRule(id) {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
+            showConfirm('سيتم حذف قاعدة التعارض دي. متأكد؟', () => {
+                setState('conflictRules', (state.conflictRules || []).filter(r => r.id !== id));
+                persist();
+                render();
+                showToast('تم الحذف');
+            });
+        }
         function addFeedTransition() {
             if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
             const b = getActiveBatch();
@@ -14058,9 +13971,8 @@
                 }
             }
             // ===== بروتوكول توصيات التهوية — تُدرج التنبيهات العاجلة منه ضمن التنبيهات العامة، والبروتوكول الكامل معروض فى تبويب العمليات =====
-            // 🆕 التهوية بقت تفاعلية: بنقل actionLabel/actionOnclick (لو موجودين) للتنبيه العام، بدل ما يبقى نص بس بلا فعل
             computeVentilationPlan(b, m).filter(v => v.level === 'danger' || v.level === 'warn')
-                .forEach(v => alerts.push({ level: v.level, text: v.text, actionLabel: v.actionLabel, actionOnclick: v.actionOnclick }));
+                .forEach(v => alerts.push({ level: v.level, text: v.text }));
 
             // ===== فترة الراحة بين الدورات — مقارنة فعلية بتاريخ أرشفة آخر دورة من نفس النوع =====
             if (m.todayAge <= 10) {
@@ -14484,6 +14396,18 @@
         window.addEventListener('offline', updateConnStatus);
 
         function render() {
+            // ============ 🎯 إصلاح: حفظ/استرجاع حالة "فتح" الأقسام القابلة للطي و<details> الداخلية عبر render() ============
+            // المشكلة: render() بيهد innerHTML كامل ويعيد بنائه فى كل عملية حفظ/تنفيذ (130+ نداء فى كل
+            // التطبيق). قبل الإصلاح ده، أي قسم قابل للطي (غير الأول) أو أي <details> جوه المحتوى (زي
+            // "إدارة جداول السقاية"، "الصيغ وطريقة التسجيل"...) كان بيرجع مقفول تلقائيًا بعد كل render()
+            // إلا لو المستخدم كان "ثبّته" مفتوح يدويًا بالضغط على عنوانه قبل كده — فيحس المستخدم إن
+            // الشاشة "رجعت لبدايتها/الرئيسية" بعد كل حفظ رغم إنه لسه فى نفس التبويب بالظبط، ويحتاج يفتح
+            // نفس القسم تاني عشان يكمل تنفيذ اللي بعده. الحل: نلقط أي قسم/<details> مفتوح فعليًا فى الشاشة
+            // قبل الهدم مباشرة (باستخدام scope الشاشة الحالية من آخر رسمة)، ونخزّنه كأنه "مفضّل مفتوح" —
+            // فلما renderInner() يعيد البناء، آلية العرض الموجودة أصلاً (getSectionOpenState) وrestoreDetailsOpenState
+            // بيرجعوا يفتحوه تلقائيًا من غير أي تدخل يدوي جديد من المستخدم.
+            if (_lastRenderedScopeId) { captureOpenSectionsState(_lastRenderedScopeId); captureDetailsOpenState(_lastRenderedScopeId); }
+
             // ============ 🎯 تحسين UX (المرحلة 1 من خطة الهندسة المعمارية): حفظ موضع السكرول والتركيز ============
             // الرسم الحالي بيهد الصفحة كاملة (innerHTML) ويبنيها من جديد فى كل نداء render() (130+ نداء فى
             // كل التطبيق)، وده كان بيرجّع المستخدم لأعلى الصفحة فى كل مرة يضغط فيها حفظ/حذف/تبديل قسم —
@@ -14525,6 +14449,8 @@
             }
 
             _lastRenderedTab = state.activeTab;
+            _lastRenderedScopeId = currentUiScopeId();
+            restoreDetailsOpenState(_lastRenderedScopeId); // استرجاع <details> المفتوحة (الأقسام القابلة للطي بترجع تفتح لوحدها من جوه renderInner عبر applySectionCollapsing اللي بيقرأ القيمة اللي لقطناها فوق)
 
             // ⏱️ قياس أداء: لو الرسم أخد وقت ملحوظ (>120ms، حد محسوس فعليًا على الموبايل)، نسجّل تحذير
             // فى الـ Console يوضح التبويب وحجم البيانات وقتها — عشان لو حصل يومًا إبطاء حقيقي مع كبر
@@ -14555,6 +14481,53 @@
             }
         }
         let _lastRenderedTab = null;
+        let _lastRenderedScopeId = null; // نطاق الشاشة المرسومة فعليًا دلوقتي (تبويب/تبويب فرعي) — يُستخدم لحفظ/استرجاع حالة الطي بدقة لكل شاشة على حدة
+
+        // ============ نطاق الشاشة الحالي — نفس أسماء الـscope المستخدمة أصلاً مع applySectionCollapsing، فى مكان واحد ============
+        function currentUiScopeId() {
+            if (state.activeTab === 'settings') return 'settings_' + settingsSubTab;
+            if (state.activeTab === 'management') return 'management_' + managementSubTab;
+            return state.activeTab; // 'dashboard' | 'daily' | 'production'
+        }
+
+        // ============ 🎯 لقطة الأقسام المفتوحة فعليًا (قبل الهدم) — بتتخزن بنفس صيغة sectionOpenState اللي
+        // بيقرأها getSectionOpenState/applySectionCollapsing أصلًا، فمفيش داعي لتعديل منطق العرض نفسه ============
+        function captureOpenSectionsState(scopeId) {
+            const main = document.getElementById('mainContent');
+            if (!main || !scopeId) return;
+            const sections = [...main.querySelectorAll(':scope > .section[data-skey]')];
+            if (!sections.length) return; // مفيش أقسام متعلّمة (data-skey) لسه فى الشاشة دي — سيبها للسلوك الافتراضي
+            const openKeys = sections.filter(s => !s.classList.contains('section-collapsed')).map(s => s.dataset.skey);
+            if (!state.appSettings) setState('appSettings', {});
+            if (!state.appSettings.sectionOpenState) state.appSettings.sectionOpenState = {};
+            state.appSettings.sectionOpenState[scopeId] = openKeys;
+        }
+
+        // ============ 🎯 حفظ/استرجاع أي <details> ديناميكي داخل الشاشة (مش بس أقسام .section) — زي "إدارة
+        // جداول السقاية"، "الصيغ وطريقة التسجيل"... المفتاح مبني على نص الـsummary + ترتيبه فى الصفحة ============
+        function _detailsKey(d, i) {
+            const summary = d.querySelector('summary');
+            return (summary ? summary.textContent.trim() : ('details_' + i)) + '#' + i;
+        }
+        function captureDetailsOpenState(scopeId) {
+            const main = document.getElementById('mainContent');
+            if (!main || !scopeId) return;
+            const openKeys = [...main.querySelectorAll('details')]
+                .map((d, i) => ({ d, i }))
+                .filter(({ d }) => d.open)
+                .map(({ d, i }) => _detailsKey(d, i));
+            if (!state.appSettings) setState('appSettings', {});
+            if (!state.appSettings.detailsOpenState) state.appSettings.detailsOpenState = {};
+            state.appSettings.detailsOpenState[scopeId] = openKeys;
+        }
+        function restoreDetailsOpenState(scopeId) {
+            const main = document.getElementById('mainContent');
+            const st = (state.appSettings && state.appSettings.detailsOpenState) || {};
+            const openKeys = st[scopeId];
+            if (!main || !openKeys || !openKeys.length) return;
+            [...main.querySelectorAll('details')].forEach((d, i) => { if (openKeys.includes(_detailsKey(d, i))) d.open = true; });
+        }
+
         function renderInner() {
             // ============ 🔒 (جديد) تحذير أمني وقت التشغيل لو أسرار التفعيل لسه على القيمة الافتراضية ============
             // MASTER_OVERRIDE_CODE و ACTIVATION_SECRET_SALT ظاهرين نص صريح فى ملف الـHTML العام على GitHub Pages —
@@ -14587,6 +14560,7 @@
             const b = getActiveBatch();
             const main = document.getElementById('mainContent');
             document.getElementById('fabAdd').style.display = (b && state.activeTab === 'daily') ? 'block' : 'none';
+            document.getElementById('alertBanner').innerHTML = '';
             refreshInvDatalist();
 
             if (state.activeTab === 'settings') {
@@ -14621,8 +14595,12 @@
             notifyNewDangerAlerts(alerts, b.id); // ============ اهتزاز مرة واحدة فقط عند ظهور تنبيه خطر جديد (بغض النظر عن التبويب الحالي) ============
 
             renderTabbar(alerts.filter(a => !a.dismissed).length);
-            // 🗑️ Removed by request: الشريط العلوي "alertBanner" اللي كان بيتكرر فى كل التبويبات (غير الداشبورد) اتشال
-            // نهائيًا — كان بيتكرر مع "⚠️ يحتاج متابعتك الآن" فى الداشبورد من غير فايدة عملية إضافية.
+            // الشريط العلوي مفيد كتذكير أثناء العمل فى تبويبات تانية، لكن فى الداشبورد (فيه "🎯 أهم 3 أفعال" والقائمة الكاملة) بيبقى تكرار حرفي — نخفيه هناك فقط.
+            if (state.activeTab === 'dashboard') {
+                document.getElementById('alertBanner').innerHTML = '';
+            } else {
+                renderAlertBanner(alerts);
+            }
 
             if (state.activeTab === 'dashboard') main.innerHTML = renderDashboard(b, m, fin, alerts);
             else if (state.activeTab === 'daily') main.innerHTML = renderDailyTab(b, m);
@@ -14667,6 +14645,24 @@
             const mid = Math.ceil(tabs.length / 2);
             const fabSlot = `<div class="bt-fab-slot"><div class="bt-fab" onclick="openQuickAccessMenu()" title="الوصول السريع">⚡</div></div>`;
             document.getElementById('tabbar').innerHTML = [...tabs.slice(0, mid), fabSlot, ...tabs.slice(mid)].join('');
+        }
+
+        function renderAlertBanner(alerts) {
+            // ============ 🔴 إصلاح Red Team (مدموج): نفس معادلة الوزن المستخدمة فى "أهم 3 أفعال" — عشان تنبيه اتكتم ============
+            // كتير قبل كده منيفضلش يظهر بنفس الوضوح فى الشريط العلوي (تناقض بين البانر والقائمة الذكية).
+            const scored = alerts.filter(a => (a.level === 'danger' || a.level === 'warn') && !a.dismissed)
+                .map(a => {
+                    let w = a.level === 'danger' ? 8 : 5;
+                    if (a.level === 'warn' && a.dismissCount > 0) w *= Math.max(0.5, 1 - a.dismissCount * 0.12);
+                    return { ...a, _w: w };
+                })
+                .sort((x, y) => y._w - x._w);
+            const top = scored.slice(0, 3);
+            if (top.length === 0) return;
+            const extra = scored.length - top.length;
+            document.getElementById('alertBanner').innerHTML = top.map(a =>
+                `<div class="alert-item ${a.level}">${esc(a.text)}</div>`).join('')
+                + (extra > 0 ? `<div style="font-size:10.5px;color:var(--muted);padding:3px 8px;">+${extra} تنبيه آخر — التفاصيل فى الداشبورد أو تبويب الإنتاج</div>` : '');
         }
 
         // ============ Dashboard ============
@@ -15114,8 +15110,15 @@
                     <div class="foot-note">💡 النسبة بجانب كل مؤشر فوق = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ده ترتيب نسبي مقابل نفسك بس، مش مقياس عالمي مطلق (استخدم المرجع المطلق تحت لده).</div>
                 </div>`;
             })();
-            // 🗑️ Removed by request: كارت "فاتك تسجيل الوزن/تغطية تسجيل منخفضة" اتشال من الداشبورد
-            const recCompHtml = '';
+            // ============ مؤشر كثافة التسجيل: تحذير أعلى التحليلات لو التغطية اليومية ضعيفة، عشان يعرف المستخدم أن دقة كل التحليلات التالية محدودة بجودة تسجيله ============
+            const recComp = computeRecordingCompleteness(b, m);
+            const dataConf = computeDataConfidence(b, m);
+            const recCompHtml = (recComp.expectedDays >= 5 && recComp.pct < 70) || dataConf ? `
+                <div class="card data-quality-warning">
+                    ${(recComp.expectedDays >= 5 && recComp.pct < 70) ? `<div class="line">⚠️ تغطية تسجيل منخفضة: ${fmt(recComp.pct,0)}% فقط من أيام الدورة (${recComp.actualDays} من ${recComp.expectedDays} يوم) مُسجَّلة فعليًا</div>` : ''}
+                    ${dataConf ? `<div class="line" style="${(recComp.expectedDays >= 5 && recComp.pct < 70) ? 'margin-top:6px;' : ''}">⚠️ فاتك تسجيل الوزن ${dataConf.missingWeight} من آخر ${dataConf.ofDays} أيام${dataConf.missingFeed?' والعلف '+dataConf.missingFeed+' يوم':''}</div>` : ''}
+                    <div class="hint">التحليلات والتنبؤات بالأسفل أقل دقة مع تسجيل متقطع — سجّل يوميًا لأفضل النتائج</div>
+                </div>` : '';
             // ============ (جديد) شفافية مصدر المرجع المعياري المستخدم فى المقارنة — عشان المستخدم يعرف بيتقارن بإيه بالظبط ============
             const refBreedKey = detectBreedKey(b.breed);
             const refSourceNote = refBreedKey ? `🧬 المرجع المستخدم: منحنى ${GLOBAL_BREED_BENCHMARKS[refBreedKey].label} (تلقائي حسب اسم السلالة "${esc(b.breed)}")` : '';
@@ -15554,19 +15557,8 @@
             })();
             // ============ تجميع التحليلات فى 4 مجموعات مصنّفة بدل عرضها كلها فى كومة واحدة غير منظمة ============
             const groupAttentionArr = [respRiskHtml, devOnsetHtml, riskIndexHtml, upcomingVaccHtml, weeklyStressHtml, weightZHtml, stressHtml, waterFeedRatioHtml, waterQualityCorrHtml].filter(Boolean);
-            // ============ 🆕 نظام هجين: "توقعات" و"أداء وكفاءة" كانوا قسمين منفصلين رغم إنهم بيحكوا نفس القصة من
-            // زاويتين (الحالة دلوقتي + التوقع المبني عليها) — بقوا هنا قسم واحد مرتّب بالموضوع (وزن/FCR سوا، نفوق
-            // وسببه سوا، تدخلات سوا، جودة مدخلات سوا) بدل ترتيب عشوائي فى قسمين منفصلين. المرجع/المقارنات فضلت
-            // لوحدها لأنها زاوية مختلفة فعلاً (مقارنة بتاريخك وبمعيار عالمي، مش وصف حالي ولا توقع).
-            const groupPerfForecastArr = [
-                effScoreHtml, epefProjHtml,           // 📊 نظرة عامة: كفاءة الدورة الحالية + إسقاط EPEF المتوقع
-                devHtml, narrativeHtml, predHtml,      // ⚖️ الوزن: الانحراف الحالي + قصته + توقع وزن البيع
-                fcrPredHtml, feedCorrHtml, feedForecastHtml, lotHtml, // 🌾 العلف/FCR: توقع + ارتباط بالنفوق + توقع استهلاك + تحليل الشحنة
-                mortCostHtml, causeHtml,               // 🐣 النفوق: التكلفة + السبب السائد
-                additiveHtml, treatmentHtml, vaccineImpactHtml, // 💊 أثر التدخلات (إضافات/علاج/تحصين)
-                uniformityHtml, waterQualityHtml,      // 🩺 جودة القطيع والمياه
-                weekOverWeekHtml, saleHtml,            // 📈 الاتجاه مقابل تاريخك + قرار البيع الأمثل (خلاصة عملية فى الآخر)
-            ].filter(Boolean);
+            const groupForecastArr = [epefProjHtml, saleHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
+            const groupPerformanceArr = [effScoreHtml, mortCostHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
             const groupBenchmarkArr = [seasonalHtml, globalBenchHtml, blendedCurveHtml, farmBenchHtml, bestCyclesHtml].filter(Boolean);
             // ============ 🔴 إصلاح Red Team (مدموج): إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو ============
             // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
@@ -15588,21 +15580,17 @@
             // السبب: كانت نفس الفكرة ("حاجة عاجلة محتاجة تتصرف فيها") معروضة فى 3 أماكن مختلفة بالداشبورد
             // (hero-priority + هنا + allAlertsSection) بميكانيكية وتسميات مختلفة — ده كان اللي بيلخبط.
             // "تحليلات ذكية" دلوقتي بقت مخصصة بس للتحليل التفسيري/الاستشرافي (مش للتنبيهات العاجلة).
-            const totalInsights = ['perfForecast','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
-                .reduce((s, k) => s + ({perfForecast: groupPerfForecastArr, benchmark: groupBenchmarkArr}[k].length), 0);
-            // ============ 🆕 نظام هجين متطور واحد فعلي: دمج "🩺 حالة الدفعة الشاملة" و"🔬 تحليلات ذكية" فى كارت واحد بصريًا
-            // (مش بس مرتبطين بشرح نصي وجنب بعض). كانوا قبل كده كارتين منفصلين حتى لو متجاورين — دلوقتي التفاصيل الكاملة
-            // (أداء وتوقعات + مقارنات ومعايير) بقت أكورديونات جوه نفس الكارت اللي فيه الدرجة، مش section مستقلة بـ h2 لوحدها. ============
-            const hybridDetailsHtml = !totalInsights ? '' : `
-                <div id="smartInsightsSection" style="margin-top:10px;padding-top:10px;border-top:1px dashed #e5ddc8;">
-                    <div style="font-size:var(--fs-xs);font-weight:800;color:var(--barn-dark);margin-bottom:2px;">🔬 التفاصيل الكاملة — تحليلات ذكية</div>
-                    <p style="font-size:10.5px;color:var(--muted);margin:0 0 8px;">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فى "⚠️ يحتاج متابعتك الآن" تحت.</p>
-                    <div class="card" style="padding:0;overflow:hidden;">
-                        ${insightGroup('perfForecast', 'أداء وتوقعات', '📊🔮', 'الحالة الحالية والتوقع المبني عليها لكل محور (وزن، FCR، نفوق، تدخلات، جودة) مجمّعين مع بعض بدل التكرار', groupPerfForecastArr, true)}
-                        ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
-                    </div>
-                    <p style="font-size:10px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
-                </div>`;
+            const totalInsights = ['forecast','performance','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
+                .reduce((s, k) => s + ({forecast: groupForecastArr, performance: groupPerformanceArr, benchmark: groupBenchmarkArr}[k].length), 0);
+            const insightsSection = !totalInsights ? '' : `<div class="section" id="smartInsightsSection"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
+                <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فوق فى "⚠️ يحتاج متابعتك الآن".</p>
+                <div class="card" style="padding:0;overflow:hidden;">
+                    ${insightGroup('forecast', 'توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, true)}
+                    ${insightGroup('performance', 'أداء وكفاءة', '📊', 'تحليل وصفي لأداء الدورة الحالية (تكلفة، تجانس، أثر الإضافات)', groupPerformanceArr, false)}
+                    ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
+                </div>
+                <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
+            </div>`;
             const others = activeBatches();
             const multiHouseSection = others.length > 1 ? `
             <div class="section" style="margin-top:0;"><div class="section-head"><h2>🏘️ نظرة عامة على كل الدفعات/العنابر النشطة</h2></div>
@@ -15621,8 +15609,25 @@
                     }).join('')}
                 </div>
             </div>` : '';
-            // (تم إلغاء قسم "تفصيل أداء العنابر" التابع لميزة "العنابر/الأقسام" بناءً على طلب إلغاء الميزة)
-            const housesSection = '';
+            // ============ تفصيل أداء العنابر (لو الدفعة موزّعة على أكتر من عنبر) ============
+            // ملحوظة: السجل اليومي مُسجَّل على مستوى الدفعة ككل (مفيش تسجيل يومي منفصل لكل عنبر)،
+            // فالتفصيل هنا تقديري بالتناسب مع عدد/مساحة كل عنبر — مفيد لمقارنة الكثافة، وليس بديلاً عن سجل يومي منفصل فعلي.
+            const housesSection = (b.houses && b.houses.length > 1) ? (() => {
+                const totalHouseCount = b.houses.reduce((s, h) => s + (h.count || 0), 0) || b.startCount;
+                const rows = b.houses.map(h => {
+                    const share = totalHouseCount > 0 ? (h.count || 0) / totalHouseCount : 0;
+                    const estLive = m.liveCount * share;
+                    const estDensity = (h.area > 0) ? (estLive * m.avgWeightG / 1000) / h.area : null;
+                    return `<div class="check-row"><div class="txt">
+                            <div style="font-weight:700;">🏠 ${esc(h.name)}</div>
+                            <div class="day">${fmt(h.count||0,0)} طائر بداية (${fmt(share*100,0)}% من الدفعة) · مساحة ${fmt(h.area||0,0)} م² ${estDensity!=null?`· كثافة تقديرية ${fmt(estDensity,1)} كجم/م²`:''}</div>
+                        </div></div>`;
+                }).join('');
+                return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>🏠 تفصيل أداء العنابر (تقديري بالتناسب)</h2></div>
+                    <div class="card" style="padding:0;">${rows}</div>
+                    <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 السجل اليومي مُسجَّل على مستوى الدفعة كاملة؛ الأرقام هنا تقديرية بالتناسب مع عدد/مساحة كل عنبر، مفيدة لمقارنة الكثافة بين العنابر وليست قياسًا فعليًا منفصلًا لكل عنبر.</p>
+                </div>`;
+            })() : '';
             const ops = computeOpsRisk(b, m);
             const hs = computeHealthScore(b, m, alerts, ins, ops);
             // ============ 🎯 أهم 3 أفعال الآن: من محرك القرار الموحّد (إنتاج + مالية + تشغيل + بيئة/طقس فى مكان واحد) ============
@@ -15681,7 +15686,7 @@
                 <div class="section-head"><h2>⚠️ يحتاج متابعتك الآن</h2></div>
                 <p style="font-size:10.5px;color:var(--muted);margin:-4px 2px 8px;">
                     🔕 <b>تأجيل</b> = بيخفي البطاقة لحد بكرة بس، مش معناها إنك حليت المشكلة. الزرار الدهبي = فعل حقيقي بيتسجّل فعليًا.
-                    لو محتاج تفهم الاتجاه العام/التوقعات المبنية على اللي هنا، هتلاقيها فى "🩺 حالة الدفعة الشاملة" فوق (قسم "🔬 التفاصيل الكاملة" جواها).
+                    لو محتاج تفهم الاتجاه العام/التوقعات المبنية على اللي هنا، هتلاقيها فى "🔬 تحليلات ذكية" تحت.
                 </p>
                 <div class="card" style="padding:10px 12px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -15699,8 +15704,15 @@
                     value="${getLatestMarketPrice(b) != null ? getLatestMarketPrice(b) : ''}" style="flex:1;min-width:90px;">
                 <button class="btn gold sm owner-only" onclick="updateMarketPriceFromDashboard('${b.id}')">💾 حفظ</button>
             </div>`;
-            // 🗑️ Removed by request: بنر "ابدأ سلسلة التسجيل اليومي" اتشال من الداشبورد (كان هنا سلسلة أيام التسجيل + تذكير آخر السجل)
-            const streakHtml = '';
+            // ============ سلسلة أيام التسجيل المتتالية + تذكير ذكي لو فات وقت التسجيل المعتاد ولسه محدش سجّل اليوم ============
+            const streak = computeLoggingStreak(b);
+            const hasTodayRecord = b.records.some(r => r.date === todayStr());
+            const nowHour = new Date().getHours();
+            const streakHtml = !b.archivedDate ? `
+            <div class="card" style="margin-bottom:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                <span class="streak-pill">🔥 ${streak > 0 ? `${streak} يوم متتالي بتسجل بيانات دفعتك` : 'ابدأ سلسلة التسجيل اليومي'}</span>
+                ${(!hasTodayRecord && nowHour >= 19) ? `<span style="font-size:11.5px;font-weight:700;color:var(--red);">⏰ لسه ما سجّلتش سجل اليوم</span>` : ''}
+            </div>` : '';
             const healthScoreCardHtml = `
             <div class="health-score-card" style="border-color:${hs.color};">
                 <div class="caption">🩺 حالة الدفعة الشاملة (آنية + مقارنة + استباقية)${glossHtml('healthScore')}</div>
@@ -15730,17 +15742,24 @@
                     </details>`;
                 })()}
                 ${(() => {
-                    // 🆕 نظام هجين متطور: التوقعات التفصيلية (وزن البيع + FCR + كل باقي محاور الأداء) بقت قسم
-                    // "📊🔮 أداء وتوقعات" منقول تحت الكارت ده على طول (مش بعيد فى آخر الصفحة زي الأول) — فمفيش
-                    // داعي نكرر نفس الأرقام هنا مرتين. هنا بس ملخص سطر واحد يربط الدرجة/الترتيب فوق بالتفاصيل تحت.
+                    // ============ نظام هجين موحّد: توقعات نهاية الدورة (FCR/الوزن) بقت هنا كملخص سريع، مش مدفونة
+                    // جوه "تحليلات ذكية" لوحدها — عشان تقرأها فى نفس اللحظة اللي بتشوف فيها الدرجة والترتيب، لأنها
+                    // كلها بتحكي نفس القصة (الأداء) من 3 زوايا زمنية مختلفة: دلوقتي (الدرجة) / تاريخيًا (الترتيب) / قدام (التوقع). ============
                     if (!ins.fcrPrediction && !ins.weightPrediction) return '';
-                    const wp = ins.weightPrediction, fp = ins.fcrPrediction;
-                    const parts = [];
-                    if (wp && wp.diffPct != null) parts.push(`⚖️ الوزن يوم ${wp.targetAge}: ${wp.diffPct>=0?'+':''}${fmt(wp.diffPct,1)}%`);
-                    if (fp && fp.diffPct != null) parts.push(`🌾 FCR يوم ${fp.targetAge}: ${fp.diffPct>=0?'+':''}${fmt(fp.diffPct,1)}%`);
-                    return `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;font-size:var(--fs-xs);">
-                        <span style="font-weight:800;color:var(--barn-dark);">🔮 توقع نهاية الدورة:</span> ${parts.join(' · ')}
-                        <span style="color:var(--muted);"> — التفاصيل الكاملة 👇 فى "أداء وتوقعات" تحت على طول</span>
+                    const rows = [];
+                    if (ins.weightPrediction && ins.weightPrediction.diffPct != null) {
+                        const wp = ins.weightPrediction;
+                        const c = wp.diffPct >= 0 ? 'var(--green)' : 'var(--red)';
+                        rows.push(`<div>⚖️ الوزن المتوقع يوم ${wp.targetAge}: <b>${fmt(wp.predictedG,0)} جم</b> <span style="color:${c};font-weight:700;">(${wp.diffPct>=0?'+':''}${fmt(wp.diffPct,1)}% عن المعيار)</span></div>`);
+                    }
+                    if (ins.fcrPrediction && ins.fcrPrediction.diffPct != null) {
+                        const fp = ins.fcrPrediction;
+                        const c = fp.diffPct <= 0 ? 'var(--green)' : 'var(--red)';
+                        rows.push(`<div>🌾 الـFCR المتوقع يوم ${fp.targetAge}: <b>${fmt(fp.predictedFcr,2)}</b> <span style="color:${c};font-weight:700;">(${fp.diffPct>=0?'+':''}${fmt(fp.diffPct,1)}% عن المعيار)</span></div>`);
+                    }
+                    return `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;">
+                        <div style="font-size:var(--fs-xs);font-weight:800;color:var(--barn-dark);">🔮 توقعات نهاية الدورة (لو استمر الأداء الحالي)</div>
+                        <div style="margin-top:4px;font-size:var(--fs-2xs);line-height:1.9;">${rows.join('')}</div>
                     </div>`;
                 })()}
                 ${(() => {
@@ -15761,9 +15780,8 @@
                         <div style="margin-top:4px;font-size:var(--fs-2xs);">${reasonsHtml}</div>
                     </div>`;
                 })()}
-                ${hybridDetailsHtml}
                 <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;font-size:9.5px;color:var(--muted);line-height:1.7;">
-                    💡 الكارت ده بقى نظام هجين واحد فعلي (مش قسمين متجاورين) — كل حاجة عن أداء دفعتك دلوقتي فى مكان واحد: <b>الدرجة</b> (الوضع الآن) + <b>الترتيب</b> (مقابل تاريخك) + <b>التوقع الملخّص</b> + <b>احتمالية مشكلة قادمة</b> (إشارات مبكرة) + <b>التفاصيل الكاملة</b> فوق مباشرة (لكل محور: وزن/FCR/نفوق/تدخلات/جودة + مقارنات ومعايير). "🎯 أهم فعل عليك اتخاذه الآن" فوق الكارت ده مبني على نفس المصادر دي بالظبط، و"⚠️ يحتاج متابعتك الآن" تحت بيوريك تفاصيل أي فعل عاجل مطلوب.
+                    💡 الكارت ده بيجمع 4 زوايا لنفس القصة: <b>الدرجة</b> (الوضع دلوقتي) + <b>الترتيب</b> (مقابل تاريخك) + <b>التوقع</b> (لو استمر كده لآخر الدورة) + <b>احتمالية مشكلة قادمة</b> (إشارات مبكرة). "🎯 أهم فعل عليك اتخاذه الآن" فوق مبني على نفس المصادر دي بالظبط، و"⚠️ يحتاج متابعتك الآن" تحت بيوريك التفاصيل الكاملة وراها.
                 </div>
             </div>`;
             return `
@@ -15801,6 +15819,7 @@
                 <div class="kpi"><div class="lbl">🥩 تكلفة كيلو اللحم</div><div class="val">${fmt(fin.costPerKg, 2)} <small>ج/كجم</small></div></div>
                 <div class="kpi"><div class="lbl">🌡️ آخر قراءة بيئية</div><div class="val" style="font-size:13px;">${m.lastEnv.humidity != null ? 'رطوبة ' + fmt(m.lastEnv.humidity, 0) + '%' : '—'} ${m.lastEnv.health != null ? '· صحة ' + m.lastEnv.health + '/10' : ''}</div></div>
             </div>
+            ${insightsSection}
             <div class="section"><div class="section-head"><h2>📈 الرسوم البيانية</h2></div>
                 <details class="card" style="padding:0;overflow:hidden;" ontoggle="if(this.open) redrawDashboardChartsIfNeeded()">
                     <summary style="padding:10px 12px;cursor:pointer;background:#faf8f2;font-weight:800;font-size:13px;">📊 اضغط لعرض منحنيات النمو والنفوق والتجانس والأسعار والعلف</summary>
@@ -16371,10 +16390,7 @@
             const seasonKey = season === 'شتاء' ? 'winter' : season === 'صيف' ? 'summer' : 'mild';
             const seasonIcon = { winter: '❄️', mild: '🍂', summer: '☀️' }[seasonKey];
             const ventPlan = computeVentilationPlan(b, m);
-            const ventRows = ventPlan.map(v => `<div class="alert-item ${v.level}" style="display:flex;align-items:center;gap:6px;justify-content:space-between;flex-wrap:wrap;">
-                <span style="flex:1;">${v.text}</span>
-                ${v.actionLabel && v.actionOnclick ? `<button class="btn gold xs" style="flex-shrink:0;" onclick="${v.actionOnclick}" title="روح لمكان الحل">${v.actionLabel}</button>` : ''}
-            </div>`).join('');
+            const ventRows = ventPlan.map(v => `<div class="alert-item ${v.level}">${v.text}</div>`).join('');
             const respRisk = computeRespiratoryRisk(b, m);
             const respRiskHtml = !respRisk ? '' : `<div class="check-row" style="padding:0 0 8px;"><div class="txt">
                 <div style="color:${respRisk.level==='high'?'var(--red)':'var(--warning-text)'};font-weight:800;">🫁 احتمالية إجهاد/مشاكل تنفسية: ${respRisk.level==='high'?'مرتفعة':'متوسطة'}</div>
@@ -16571,7 +16587,7 @@
 
             return `
             <div class="row-actions" style="margin:0 0 12px;">
-                <button class="btn ghost sm owner-only" style="flex:1;" onclick="openWaterCalcModal()">🧮 حاسبة احتياج الماء</button>
+                <button class="btn ghost sm owner-only" style="flex:1;" onclick="openWaterCalcModal()">🧮 حاسبة تركيز محلول الإماهة/اللقاح/المضاد</button>
                 <button class="btn ghost sm owner-only" style="flex:1;" onclick="openProtocolModal()">🧬 بروتوكولات محفوظة</button>
             </div>
             <div class="section" style="margin-top:0;"><div class="section-head"><h2>🕐 جدولة سقاية الماء بفترات اليوم</h2></div>
@@ -16776,7 +16792,7 @@
             let bodyHtml = '';
             if (managementSubTab === 'finance') bodyHtml = renderFinanceTab(b, m, fin, alerts);
             else if (managementSubTab === 'compare') bodyHtml = renderCompareTab();
-            else if (managementSubTab === 'expansion') bodyHtml = renderExpansionTab(b);
+            else if (managementSubTab === 'expansion') bodyHtml = renderExpansionTab(b, m, fin);
             return navHtml + bodyHtml;
         }
 
@@ -17342,12 +17358,17 @@
             };
         }
 
-        function renderExpansionTab(b) {
+        function renderExpansionTab(b, m, fin) {
+            m = m || computeMetrics(b);
+            fin = fin || computeFinance(b, m);
             const species = getExpansionSelectedSpecies();
             const inputs = getExpansionInputs(species);
             const plan = computeExpansionPlan(species);
             const hist = plan.hist;
             const bp = computeBreederFlockPlan(inputs);
+            // دراسة الجدوى (دورة/دفعة واحدة) بتتحسب دايمًا على الدفعة النشطة حاليًا — لو نوعها مختلف عن النوع
+            // المختار هنا فى خطة التوسع، بنوضّح ده بدل ما نعرض أرقام نوع تاني على إنها خاصة بالنوع المختار.
+            const feasSpeciesMatches = !b || !b.species || b.species === species;
 
             let html = `
             <div class="section">
@@ -17363,7 +17384,38 @@
                     <p style="font-size:10.5px;color:var(--muted);margin:0;">💾 كل الأرقام تحت (سعة العنبر/رأس المال/الأمهات/العلف...) بتتحفظ لكل نوع لوحده — تقدر تنقّل بين الأنواع من غير ما تفقد بيانات أي نوع تاني.</p>
                 </div>
             </div>
+            ${!plan.insufficientData ? (() => {
+                // ============ الإسقاط السنوي على مستوى خطة التوسع كاملة (كل عنابر القاعدة الأفقية معًا) ============
+                // بيكمّل الإسقاط السنوي "على مستوى العنبر الواحد" الموجود تحت فى دراسة الجدوى — هنا بنضرب فى إجمالي
+                // سعة القاعدة الأفقية (houseCount × سعة العنبر) بدل عنبر واحد، مع إعادة استخدام plan.profitPerBird
+                // و plan.hist نفسهم المحسوبين فوق (بدون تكرار منطق حساب منفصل) عشان يفضل متزامن مع باقي الخطة.
+                const restDays = AS().restDaysBetweenCycles;
+                const cycleDays = hist.avgCycleDays || 35;
+                const cyclesPerYear = (cycleDays + restDays) > 0 ? 365 / (cycleDays + restDays) : 0;
+                const baseCapacity = plan.timeline[0].totalCapacity;
+                const annualProfitPlan = baseCapacity * cyclesPerYear * plan.profitPerBird;
+                const revenuePerBird = hist.avgTotalCostPerBird != null ? hist.avgTotalCostPerBird + hist.avgProfitPerBird : null;
+                const annualRevenuePlan = revenuePerBird != null ? baseCapacity * cyclesPerYear * revenuePerBird : null;
+                return `
+            <div class="section">
+                <div class="section-head"><h2>📅 الإسقاط السنوي على مستوى خطة التوسع (${plan.timeline[0].houseCount} عنبر)</h2></div>
+                <div class="card">
+                    <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">بافتراض ثبات نفس أداء الطائر (${money(plan.profitPerBird)} ربح/طائر) على مدار السنة عبر كل عنابر القاعدة الأفقية (${plan.timeline[0].houseCount} عنبر × ${fmt(plan.timeline[0].totalCapacity / plan.timeline[0].houseCount, 0)} طائر ≈ ${fmt(baseCapacity, 0)} طائر إجمالي)، بمعدل ${fmt(cyclesPerYear, 1)} دورة/سنة للعنبر الواحد — هذا غير الإسقاط السنوي لعنبر واحد بس الموجود تحت فى دراسة الجدوى.</p>
+                    ${annualRevenuePlan != null ? statLine(`إجمالي الإيرادات السنوية المتوقعة (كل العنابر)`, `${money(annualRevenuePlan)}`, {vStyle:`color:var(--green);`}) : ''}
+                    ${statLine(`صافي الربح السنوي المتوقع (كل العنابر)`, `${money(annualProfitPlan)}`, {lineStyle:`border-top:2px solid var(--barn-dark);padding-top:8px;`, kStyle:`font-weight:900;color:var(--barn-dark);`, vStyle:`color:${annualProfitPlan>=0?'var(--green)':'var(--red)'};font-size:16px;`})}
+                    <p style="font-size:10.5px;color:var(--muted);margin:8px 0 0;line-height:1.6;">💡 ده على سعة القاعدة الأفقية الحالية فقط (بداية خطة التوسع)، ومش بيحسب العنابر الجديدة اللي هتتفتح من كرة الثلج تحت — ده رقم "لو وقفت التوسع دلوقتي" مش سقف الخطة.</p>
+                </div>
+            </div>`;
+            })() : ''}
             ${renderExpansionIncidentWarnings(species)}
+            <div class="section">
+                <div class="section-head"><h2>📈 دراسة جدوى مفصلة — الدفعة النشطة الحالية</h2></div>
+                ${feasSpeciesMatches ? renderFeasibilityStudy(b, m, fin) : `
+                <div class="card" style="text-align:center;padding:16px;">
+                    <p style="font-size:12px;color:var(--muted);margin:0;line-height:1.7;">⚠️ الدفعة النشطة حاليًا (${esc(b.name)}) من نوع "${expansionSpeciesLabel(b.species)}"، ودراسة الجدوى بتتحسب على الدفعة النشطة فقط — مش على النوع المختار هنا ("${expansionSpeciesLabel(species)}"). غيّر النوع فوق لـ"${expansionSpeciesLabel(b.species)}" لعرض دراسة الجدوى الخاصة بالدفعة النشطة، أو بدّل الدفعة النشطة لدفعة من نوع "${expansionSpeciesLabel(species)}".</p>
+                </div>
+                `}
+            </div>
             <div class="section">
                 <div class="section-head"><h2>📋 الأساسيات — ${expansionSpeciesLabel(species)}</h2></div>
                 <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -17624,7 +17676,7 @@
             <div class="section">
                 <div class="section-head"><h2>📊 تحليل الحساسية المُعمَّق (مدموج مع دراسة الجدوى) — سيناريوهات علف + بيع معًا</h2></div>
                 <div class="card" style="display:grid;gap:8px;">
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">نفس منطق وتسمية سيناريوهات "الوضع الحالي / متفائل / متشائم" الموجودة فى دراسة الجدوى لدفعتك الحالية، لكن مطبّقة هنا على مسار الصندوق وتوقيت الأهداف الكبرى بالكامل عبر خطة التوسع — مش بس ربح دورة واحدة.</p>
+                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">نفس منطق وتسمية سيناريوهات "الوضع الحالي / متفائل / متشائم" الموجودة فى دراسة الجدوى فوق للدفعة الحالية، لكن مطبّقة هنا على مسار الصندوق وتوقيت الأهداف الكبرى بالكامل عبر خطة التوسع — مش بس ربح دورة واحدة.</p>
                     <div class="field"><label>نسبة اختبار ضغط سعر البيع %</label><input type="number" id="exp_salePriceStressPct" value="${inputs.salePriceStressPct ?? 10}" onchange="saveExpansionInputs()"></div>
                     <div class="scroll-x">
                         <table><thead><tr><th>السيناريو</th><th>ربح الطائر</th><th>أدنى رصيد صندوق</th><th>الحالة</th></tr></thead>
@@ -17642,7 +17694,7 @@
                 <div class="section-head"><h2>💳 الاعتماد على الأجل — امتى بيبقى ضرر بدل ميزة؟</h2></div>
                 <div class="card" style="display:grid;gap:8px;">
                     <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">فرق سعر الأجل فى العلف بتدفعه كل دورة للأبد طول ما مستمر تشتري من السوق. مصنع العلف/المجزر الخاص بيه رأس مال مرة واحدة بيلغي التكلفة المتكررة دي — "سنين الاسترداد" تحت بتقولك امتى الاستثمار ده يستاهل قبل ما تفضل تدفع فرق الأجل للأبد.</p>
-                    <div class="field"><label>فرق سعر الأجل للفرخة الواحدة (جنيه)</label><input type="number" step="0.01" id="exp_feedCreditMarkupPerBird_dup2" value="${inputs.feedCreditMarkupPerBird ?? ''}" placeholder="فرق سعر العلف بالأجل عن الكاش" onchange="document.getElementById('exp_feedCreditMarkupPerBird').value=this.value; saveExpansionInputs();"></div>
+                    <div class="field"><label>فرق سعر الأجل للفرخة الواحدة (جنيه)</label><input type="number" step="0.01" id="exp_feedCreditMarkupPerBird" value="${inputs.feedCreditMarkupPerBird ?? ''}" placeholder="فرق سعر العلف بالأجل عن الكاش" onchange="saveExpansionInputs()"></div>
                     <div class="field"><label>فرق سعر البيع مجزّر مقابل حي للفرخة (جنيه)</label><input type="number" step="0.01" id="exp_liveToProcessedUpliftPerBird" value="${inputs.liveToProcessedUpliftPerBird ?? ''}" placeholder="الهامش الإضافي لو بعت مجزّر بدل حي" onchange="saveExpansionInputs()"></div>
                     ${risk.creditDependency.feedCreditAnnualCost != null ? `
                     ${statLine(`تكلفة الأجل السنوية الحالية (على سعتك الحالية)`, `${money(risk.creditDependency.feedCreditAnnualCost)}`, {vStyle:`font-weight:900;color:var(--red);`})}
@@ -18015,13 +18067,15 @@
 
         function renderFinanceTab(b, m, fin, alerts) {
             const profitClass = fin.netProfit >= 0 ? 'profit' : 'loss';
+            const feas = computeFeasibility(b, m, fin);
             const heatUnit = b.heattype === 'solar' ? 'لتر' : b.heattype === 'gas' ? 'أنبوبة' : '';
             const cumHeat = fin.cumHeatFuel;
             const heatTypeLabel = {gas:'غاز (أنبوبة)',solar:'سولار / ديزل',electric:'كهرباء',none:'بدون تدفئة'}[b.heattype]||'';
             const heatPriceUnit = b.heattype === 'gas' ? 'جنيه/أنبوبة' : 'جنيه/لتر';
             return `
             <!-- الربح النهائي: أهم رقم فى التقرير الشامل بالكامل، أول حاجة تظهر ودايمًا ظاهرة (مش قابلة للطي) -->
-            <div class="section" style="margin-top:0;"><div class="section-head"><h2>💰 الربح/الخسارة النهائية</h2></div><div class="card">
+            <!-- مجموعة 1: الربح/الخسارة + ربحية الدورة + الإسقاط السنوي + هيكل التكاليف — كلهم فى كارت واحد -->
+            <div class="section" style="margin-top:0;"><div class="section-head"><h2>💰 الربح/الخسارة وربحية الدورة</h2></div><div class="card">
                 <div class="big-result ${profitClass}">
                     <div style="font-size:13px;font-weight:700;color:var(--muted);">${fin.netProfit>=0?'صافي الربح':'صافي الخسارة'}</div>
                     <div class="v" style="color:${fin.netProfit>=0?'var(--green)':'var(--red)'};">${money(Math.abs(fin.netProfit))}</div>
@@ -18036,9 +18090,28 @@
                 ${statLine(`مستحق من العملاء (آجل)`, `${money(fin.totalReceivable)}`, {vStyle:`color:var(--wheat);`})}
                 ${statLine(`صافي الموقف النقدي الفعلي`, `${money(fin.netCashPosition)}`, {lineStyle:`border-top:1.5px solid var(--line);padding-top:8px;`, kStyle:`font-weight:900;`, vStyle:`font-weight:900;color:${fin.netCashPosition>=0?'var(--green)':'var(--red)'};`})}
                 <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 صافي الموقف النقدي = صافي الربح الدفتري − المستحق من العملاء + المستحق للموردين (يعكس النقد الفعلي المتاح لو حصّلت والتزمت بكل المستحقات الآن).</p>` : ''}
+
+                <div class="feas-sub-card" style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;">
+                    <h4>📅 الإسقاط السنوي (تقديري)</h4>
+                    ${feas.earlyCycle ? `<p style="font-size:11px;color:var(--red);font-weight:700;margin:-2px 0 8px;">⚠️ الدورة لسه فى بدايتها (يوم ${fmt(m.age,0)} من ${fmt(feas.cycleDays,0)}) — الأرقام دي مبنية على تكاليف/إيرادات جزئية غير مكتملة وممكن تتغيّر بشكل كبير مع تقدّم الدورة، خصوصًا قبل أول عملية بيع.</p>` : ''}
+                    <p style="font-size:11px;color:var(--muted);margin:-2px 0 8px;">افتراض: مدة الدورة ${fmt(feas.cycleDays,0)} يوم + ${feas.restDays} يوم راحة/تنظيف وتعقيم بين الدورات ≈ ${fmt(feas.cyclesPerYear,1)} دورة/سنة</p>
+                    ${statLine(`إجمالي الإيرادات السنوية المتوقعة`, `${money(feas.annualRevenue)}`, {vStyle:`color:var(--green);`})}
+                    ${statLine(`إجمالي التكاليف السنوية المتوقعة`, `${money(feas.annualCosts)}`, {vStyle:`color:var(--red);`})}
+                    ${statLine(`صافي الربح السنوي المتوقع`, `${money(feas.annualProfit)}`, {lineStyle:`border-top:2px solid var(--barn-dark);padding-top:8px;`, kStyle:`font-weight:900;color:var(--barn-dark);`, vStyle:`color:${feas.annualProfit>=0?'var(--green)':'var(--red)'};font-size:16px;`})}
+                    <p style="font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.6;">💡 هذا إسقاط عنبر واحد (الدفعة الحالية) بافتراض تكرار نفس الأداء كل دورة — إسقاط سنوي على مستوى خطة التوسع كاملة (كل العنابر) موجود فى تبويب "🚀 خطة التوسع".</p>
+                </div>
+
+                <div class="feas-sub-card" style="margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;">
+                    <h4>🧮 هيكل التكاليف</h4>
+                    ${statLine(`العلف`, `${fmt(feas.costShare.feed,1)}%`)}
+                    ${statLine(`الكتاكيت`, `${fmt(feas.costShare.chick,1)}%`)}
+                    ${statLine(`وقود التدفئة`, `${fmt(feas.costShare.heat,1)}%`)}
+                    ${feas.costShare.processing>0?`${statLine(`الذبح والتصنيع`, `${fmt(feas.costShare.processing,1)}%`)}`:''}
+                    ${statLine(`باقي التكاليف (أدوية، فرشة، إضافات، عمالة، أخرى)`, `${fmt(feas.costShare.other,1)}%`)}
+                </div>
             </div></div>
 
-            <!-- قسم الأداء الإنتاجي (أهم ملخص فى هذا التبويب، يفضل مفتوح افتراضيًا) -->
+            <!-- مجموعة 2: ملخص الأداء الإنتاجي + نقطة البيع المثلى + الإيرادات والتكاليف — كلهم فى كارت واحد -->
             <div class="section"><div class="section-head"><h2>🐔 ملخص الأداء الإنتاجي</h2></div><div class="card">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                     ${statLine(`عمر القطيع`, `${m.age} يوم`)}
@@ -18057,11 +18130,45 @@
                     FCR ممتاز &lt;1.75 | جيد &lt;2.0 | مقبول &lt;2.2 | ضعيف &gt;2.2
                     EPEF ممتاز &gt;400 | جيد &gt;320 | مقبول &gt;250
                 </div>
+
+                <div class="feas-sub-card" style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;">
+                    ${renderOptimalSaleCard(b, m, fin)}
+                </div>
+
+                <div class="feas-sub-card" style="margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;">
+                    <h4>📊 توزيع الإيرادات</h4>
+                    <canvas id="chartRevPie" height="190"></canvas>
+                    <div id="revPieLegend" class="legend-row"></div>
+                    ${statLine(`إيراد اللحم (${fmt(fin.soldWeightKg,1)} كجم)`, `${money(fin.meatRevenue)}`, {lineStyle:`margin-top:10px;`})}
+                    ${fin.avgCarcassYield!=null?`${statLine(`متوسط نسبة التصافي (Carcass Yield)`, `${fmt(fin.avgCarcassYield,1)}%`)}`:''}
+                    ${fin.processingCost>0?`${statLine(`تكلفة الذبح والتصنيع`, `${money(fin.processingCost)}`)}`:''}
+                    ${statLine(`إيراد السبلة`, `${money(fin.litterRevenue)}`)}
+                    ${statLine(`بنود إضافية (إيرادات)`, `${money(fin.customRevenue)}`)}
+                    ${statLine(`إجمالي الإيرادات`, `${money(fin.totalRevenue)}`, {lineStyle:`border-top:2px solid var(--barn-dark);padding-top:8px;`,kStyle:`font-weight:900;color:var(--barn-dark);`,vStyle:`color:var(--green);`})}
+                </div>
+
+                <div class="feas-sub-card" style="margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;">
+                    <h4>📊 توزيع التكاليف</h4>
+                    <canvas id="chartCostPie" height="190"></canvas>
+                    <div id="costPieLegend" class="legend-row"></div>
+                    ${statLine(`علف`, `${money(fin.feedCost)}`, {lineStyle:`margin-top:10px;`})}
+                    ${statLine(`كتاكيت`, `${money(fin.chickCost)}`)}
+                    ${statLine(`أدوية ولقاحات`, `${money(fin.medFromPurchases)}`)}
+                    ${statLine(`فرشة`, `${money(fin.beddingFromPurchases)}`)}
+                    ${statLine(`وقود التدفئة (غاز/سولار)`, `${money(fin.heatCost)}`)}
+                    ${statLine(`تكلفة الذبح والتصنيع`, `${money(fin.processingCost)}`)}
+                    ${statLine(`إضافات + كهرباء + عمالة + أخرى`, `${money(fin.addFromPurchases+fin.utilFromPurchases+fin.laborFromPurchases+fin.otherFromPurchases)}`)}
+                    ${statLine(`بنود إضافية (تكاليف)`, `${money(fin.customCosts)}`)}
+                    ${statLine(`إجمالي التكاليف`, `${money(fin.totalCosts)}`, {lineStyle:`border-top:2px solid var(--barn-dark);padding-top:8px;font-weight:900;color:var(--barn-dark);`,vStyle:`color:var(--red);`})}
+                </div>
             </div></div>
 
             ${renderFinancialCalendarSection()}
-            <!-- دراسة الجدوى المفصلة -->
-            <div class="section no-print">${renderFeasibilityStudy(b, m, fin)}</div>
+            <!-- دراسة الجدوى المفصلة (سيناريوهات + محاكي "ماذا لو" التفاعلي) اتنقلت لتبويب "🚀 خطة التوسع" ودُمجت هناك مع تحليل الحساسية المُعمَّق وسيناريوهات الصندوق -->
+            <div class="section no-print"><div class="card" style="text-align:center;padding:16px;">
+                <p style="font-size:12.5px;color:var(--muted);margin:0;line-height:1.7;">📈 دراسة الجدوى المفصلة (سيناريوهات + محاكي "ماذا لو" التفاعلي) اتنقلت لتبويب <b>🚀 خطة التوسع</b> (الإدارة والتخطيط) ودُمجت هناك مع تحليل الحساسية العام وسيناريوهات صندوق التوسع.</p>
+                <button class="btn gold" style="margin-top:10px;" onclick="setManagementSubTab('expansion')">🚀 افتح خطة التوسع</button>
+            </div></div>
 
             <!-- رسوم بيانية إنتاجية -->
             <div class="section"><div class="section-head"><h2>📈 منحنى نمو الوزن (فعلي vs معياري)</h2></div><div class="card">
@@ -18087,58 +18194,10 @@
                 ${b.heattype==='gas' && cumHeat>0?`<div style="font-size:11px;color:var(--muted);margin-top:6px;">💡 كل وحدة = أنبوبة غاز كاملة. الاستهلاك المسجّل يمثل كسور من الأنبوبة (مثال: 0.3 = 30% من الأنبوبة).</div>`:''}
             </div></div>` : ''}
 
-            <!-- ملخص التكاليف -->
-            <div class="section"><div class="section-head"><h2>📊 توزيع التكاليف</h2></div><div class="card">
-                <canvas id="chartCostPie" height="190"></canvas>
-                <div id="costPieLegend" class="legend-row"></div>
-                ${statLine(`علف`, `${money(fin.feedCost)}`, {lineStyle:`margin-top:10px;`})}
-                ${statLine(`كتاكيت`, `${money(fin.chickCost)}`)}
-                ${statLine(`أدوية ولقاحات`, `${money(fin.medFromPurchases)}`)}
-                ${statLine(`فرشة`, `${money(fin.beddingFromPurchases)}`)}
-                ${statLine(`وقود التدفئة (غاز/سولار)`, `${money(fin.heatCost)}`)}
-                ${statLine(`تكلفة الذبح والتصنيع`, `${money(fin.processingCost)}`)}
-                ${statLine(`إضافات + كهرباء + عمالة + أخرى`, `${money(fin.addFromPurchases+fin.utilFromPurchases+fin.laborFromPurchases+fin.otherFromPurchases)}`)}
-                ${statLine(`بنود إضافية (تكاليف)`, `${money(fin.customCosts)}`)}
-                ${statLine(`إجمالي التكاليف`, `${money(fin.totalCosts)}`, {lineStyle:`border-top:2px solid var(--barn-dark);padding-top:8px;font-weight:900;color:var(--barn-dark);`,vStyle:`color:var(--red);`})}
-            </div></div>
-
-            <!-- ملخص الإيرادات -->
-            <div class="section"><div class="section-head"><h2>📊 توزيع الإيرادات</h2></div><div class="card">
-                <canvas id="chartRevPie" height="190"></canvas>
-                <div id="revPieLegend" class="legend-row"></div>
-                ${statLine(`إيراد اللحم (${fmt(fin.soldWeightKg,1)} كجم)`, `${money(fin.meatRevenue)}`, {lineStyle:`margin-top:10px;`})}
-                ${fin.avgCarcassYield!=null?`${statLine(`متوسط نسبة التصافي (Carcass Yield)`, `${fmt(fin.avgCarcassYield,1)}%`)}`:''}
-                ${fin.processingCost>0?`${statLine(`تكلفة الذبح والتصنيع`, `${money(fin.processingCost)}`)}`:''}
-                ${statLine(`إيراد السبلة`, `${money(fin.litterRevenue)}`)}
-                ${statLine(`بنود إضافية (إيرادات)`, `${money(fin.customRevenue)}`)}
-                ${statLine(`إجمالي الإيرادات`, `${money(fin.totalRevenue)}`, {lineStyle:`border-top:2px solid var(--barn-dark);padding-top:8px;`,kStyle:`font-weight:900;color:var(--barn-dark);`,vStyle:`color:var(--green);`})}
-            </div></div>
-
-            <!-- تحليل الحساسية المالية (ماذا لو؟) -->
-            <div class="section no-print"><div class="section-head"><h2>🎯 تحليل الحساسية (ماذا لو؟)</h2></div><div class="card">
-
-                <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">تقدير سريع لأثر تغيّر سعر العلف أو سعر البيع على الربح، بافتراض ثبات باقي البنود. تقريبي وليس بديلاً عن إعادة حساب دقيقة.</p>
-                ${(() => {
-                    const scenarios = [
-                        { label: 'سعر العلف +10%', feedMult: 1.10, saleMult: 1 },
-                        { label: 'سعر العلف -10%', feedMult: 0.90, saleMult: 1 },
-                        { label: 'سعر البيع +10%', feedMult: 1, saleMult: 1.10 },
-                        { label: 'سعر البيع -10%', feedMult: 1, saleMult: 0.90 },
-                        { label: 'الأسوأ: علف +10% وبيع -10%', feedMult: 1.10, saleMult: 0.90 },
-                        { label: 'الأفضل: علف -10% وبيع +10%', feedMult: 0.90, saleMult: 1.10 }
-                    ];
-                    const rows = scenarios.map(sc => {
-                        const newFeedCost = fin.feedCost * sc.feedMult;
-                        const newMeatRevenue = fin.meatRevenue * sc.saleMult;
-                        const newTotalCosts = fin.totalCosts - fin.feedCost + newFeedCost;
-                        const newTotalRevenue = fin.totalRevenue - fin.meatRevenue + newMeatRevenue;
-                        const newProfit = newTotalRevenue - newTotalCosts;
-                        const delta = newProfit - fin.netProfit;
-                        return `<tr><td style="text-align:right;">${sc.label}</td><td>${money(newProfit)}</td>
-                            <td style="color:${delta>=0?'var(--green)':'var(--red)'};font-weight:800;">${delta>=0?'+':''}${money(delta)}</td></tr>`;
-                    }).join('');
-                    return `<div class="scroll-x"><table><thead><tr><th>السيناريو</th><th>الربح المتوقع</th><th>التغيّر عن الحالي</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-                })()}
+            <!-- تحليل الحساسية / محاكاة "ماذا لو" اتنقلت لتبويب "🚀 خطة التوسع" ودُمجت هناك مع دراسة الجدوى (على مستوى العنبر/الدفعة) ومع تحليل الحساسية المُعمَّق وسيناريوهات صندوق التوسع (على مستوى خطة التوسع الكاملة) — بدل نسخة مبسّطة منفصلة هنا كانت بتكرر نفس الحساب من غير ربط بالعنبر أو بخطة التوسع -->
+            <div class="section no-print"><div class="card" style="text-align:center;padding:16px;">
+                <p style="font-size:12.5px;color:var(--muted);margin:0;line-height:1.7;">🎯 تحليل الحساسية ومحاكاة "ماذا لو" اتنقلوا لتبويب <b>🚀 خطة التوسع</b> (الإدارة والتخطيط) ودُمجوا هناك: نسخة على مستوى العنبر/الدفعة الحالية (جدول سيناريوهات + محاكي تفاعلي بالأسلايدرز)، ونسخة أعمق على مستوى خطة التوسع الكاملة (تأثير تقلب سعر العلف/البيع على صندوق التوسع ومساره).</p>
+                <button class="btn gold" style="margin-top:10px;" onclick="setManagementSubTab('expansion')">🚀 افتح خطة التوسع</button>
             </div></div>
 
             <!-- بنود إضافية (تكاليف/إيرادات يدوية) -->
@@ -19617,7 +19676,143 @@
         function telLink(phone) { return 'tel:' + cleanPhone(phone); }
         function waLink(phone, text) { return 'https://wa.me/' + cleanPhone(phone) + (text ? ('?text=' + encodeURIComponent(text)) : ''); }
 
-        // (تمت إزالة ميزة "جهات الاتصال السريعة" بالكامل — إدارة جهات الاتصال، الأدوار، ونظام "سجل التواصل/الاستشارات" — بناءً على طلب إلغاء الميزة)
+        let editingContactId = null;
+        function openContactModal(id) {
+            editingContactId = id || null;
+            const c = id ? state.contacts.find(x => x.id === id) : null;
+            document.getElementById('contactModalTitle').textContent = id ? '✏️ تعديل جهة اتصال' : '📇 إضافة جهة اتصال سريعة';
+            document.getElementById('ct_name').value = c ? c.name : '';
+            const roleSel = document.getElementById('ct_role');
+            const roles = (state.contactRoles && state.contactRoles.length) ? state.contactRoles : getDefaultContactRoles();
+            roleSel.innerHTML = roles.map(r => `<option value="${esc(r.label)}">${r.icon} ${esc(r.label)}</option>`).join('');
+            roleSel.value = c ? c.role : (roles[0] ? roles[0].label : 'مورد');
+            document.getElementById('ct_phone').value = c ? c.phone : '';
+            openModal('contactModalOverlay');
+        }
+        function saveContact() {
+            if (!requirePermission('management')) return; // 🔒 Red Team fix (جولة 3)
+            const name = document.getElementById('ct_name').value.trim();
+            const role = document.getElementById('ct_role').value;
+            const phone = document.getElementById('ct_phone').value.trim();
+            if (!name) { showToast('⚠️ اكتب اسم جهة الاتصال'); return; }
+            if (!cleanPhone(phone)) { showToast('⚠️ اكتب رقم هاتف صحيح'); return; }
+            if (editingContactId) {
+                const c = state.contacts.find(x => x.id === editingContactId);
+                if (c) Object.assign(c, { name, role, phone });
+            } else {
+                state.contacts.push({ id: uid(), name, role, phone });
+            }
+            persist();
+            closeModal('contactModalOverlay');
+            showToast('✅ تم حفظ جهة الاتصال');
+            render();
+        }
+        function deleteContact(id) {
+            if (!requirePermission('owner')) return; // 🔒 Red Team fix: القسم بالكامل داخل تبويب الإعدادات المحجوب عن العمال
+            const c = (state.contacts || []).find(x => x.id === id);
+            showConfirm('حذف جهة الاتصال هذه؟ يمكن استرجاعها لاحقًا من سلة المهملات.', () => {
+                setState('contacts', state.contacts.filter(x => x.id !== id));
+                if (c) softDeleteToGlobalTrash('contact', c, `🗑️ حذف جهة اتصال: ${c.name || ''}`);
+                persist();
+                render();
+            });
+        }
+        function contactRoleIcon(roleLabel) {
+            const roles = (state.contactRoles && state.contactRoles.length) ? state.contactRoles : getDefaultContactRoles();
+            const found = roles.find(r => r.label === roleLabel);
+            return found ? found.icon : '📇';
+        }
+        function renderContactsSection() {
+            const rows = state.contacts.length ? state.contacts.map(c => `
+                <div class="check-row"><div class="txt">
+                    <div style="font-weight:800;">${contactRoleIcon(c.role)} ${esc(c.name)}</div>
+                    <div class="day">${esc(c.role)} · ${esc(c.phone)}</div>
+                </div>
+                <div class="row-actions" style="gap:6px;">
+                    <a class="btn ghost xs" href="${telLink(c.phone)}">☎️ اتصال</a>
+                    <a class="btn ghost xs" style="color:#25D366;" href="${waLink(c.phone)}" target="_blank" rel="noopener">💬 واتساب</a>
+                    <button class="btn ghost xs" onclick="openContactModal('${c.id}')">✏️</button>
+                    <button class="btn ghost xs" style="color:var(--red);" onclick="deleteContact('${c.id}')">🗑️</button>
+                </div></div>`).join('') : '<div class="empty" style="padding:14px;"><div class="ico">📇</div>لا توجد جهات اتصال محفوظة بعد.</div>';
+            return `<div class="card" style="padding:0;">${rows}</div>
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <button class="btn gold block" onclick="openContactModal()">+ إضافة جهة اتصال سريعة</button>
+                    <button class="btn ghost" style="flex-shrink:0;padding:10px 14px;" onclick="showContactRolesManager()" title="إدارة الأدوار">🏷️</button>
+                </div>`;
+        }
+        // ============ إدارة أدوار جهات الاتصال — إضافة/تعديل/حذف دور بأيقونته، نفس نمط دليل الأمراض ============
+        let editingContactRoleId = null;
+        function showContactRolesManager() {
+            if (!requirePermission('management')) return;
+            const html = `<div id="contactRolesList"></div>
+                <div class="form-grid" style="margin-top:10px;">
+                    <div class="field"><label>أيقونة (إيموجي)</label><input id="cr_icon" maxlength="4" placeholder="🚚" style="text-align:center;"></div>
+                    <div class="field"><label>اسم الدور</label><input id="cr_label" placeholder="مثال: مندوب توصيل"></div>
+                </div>
+                <button class="btn ghost block" id="crSaveBtn" style="margin-top:8px;" onclick="saveContactRole()">+ إضافة دور</button>`;
+            openGenericModal('🏷️ إدارة أدوار جهات الاتصال', html);
+            renderContactRolesList();
+        }
+        function renderContactRolesList() {
+            const box = document.getElementById('contactRolesList');
+            if (!box) return;
+            const roles = state.contactRoles || [];
+            box.innerHTML = roles.length ? roles.map(r => `
+                <div class="check-row"><button class="del-x" onclick="removeContactRole('${r.id}')" title="حذف">✕</button>
+                    <div class="txt" onclick="editContactRole('${r.id}')" style="cursor:pointer;">${r.icon} ${esc(r.label)}</div>
+                </div>`).join('') : '<div class="empty" style="padding:14px;">لا توجد أدوار بعد.</div>';
+        }
+        function editContactRole(id) {
+            const r = (state.contactRoles || []).find(x => x.id === id);
+            if (!r) return;
+            editingContactRoleId = id;
+            document.getElementById('cr_icon').value = r.icon;
+            document.getElementById('cr_label').value = r.label;
+            document.getElementById('crSaveBtn').textContent = '✏️ حفظ التعديل';
+        }
+        function saveContactRole() {
+            if (!requirePermission('management')) return;
+            const icon = document.getElementById('cr_icon').value.trim() || '📇';
+            const label = document.getElementById('cr_label').value.trim();
+            if (!label) { showToast('اكتب اسم الدور أولاً'); return; }
+            const roles = (state.contactRoles || []).slice();
+            if (editingContactRoleId) {
+                const idx = roles.findIndex(r => r.id === editingContactRoleId);
+                if (idx > -1) roles[idx] = { ...roles[idx], icon, label };
+            } else {
+                roles.push({ id: uid(), icon, label });
+            }
+            setState('contactRoles', roles);
+            persist();
+            editingContactRoleId = null;
+            document.getElementById('cr_icon').value = '';
+            document.getElementById('cr_label').value = '';
+            document.getElementById('crSaveBtn').textContent = '+ إضافة دور';
+            renderContactRolesList();
+            showToast('تم حفظ الدور ✅');
+        }
+        function removeContactRole(id) {
+            if (!requirePermission('management')) return;
+            showConfirm('حذف الدور ده مش هيمسح جهات الاتصال اللي مستخدماه، بس مش هيظهر تانى فى القايمة عند الإضافة. متأكد؟', () => {
+                setState('contactRoles', (state.contactRoles || []).filter(r => r.id !== id));
+                persist();
+                renderContactRolesList();
+            });
+        }
+        // شريط أزرار سريعة (اتصال/واتساب) يظهر بجوار حقل المورد فى شاشات الشراء/السجل — يفلتر حسب الصفة المطلوبة
+        function renderQuickContactChips(roleFilter) {
+            const list = roleFilter ? state.contacts.filter(c => c.role === roleFilter) : state.contacts;
+            if (!list.length) return '';
+            const chips = list.map(c => `
+                <span style="display:inline-flex;align-items:center;gap:4px;background:#f3f1e8;border-radius:20px;padding:4px 8px;font-size:11.5px;margin:2px;">
+                    ${esc(c.name)}
+                    <a href="${telLink(c.phone)}" title="اتصال" style="text-decoration:none;">☎️</a>
+                    <a href="${waLink(c.phone)}" target="_blank" rel="noopener" title="واتساب" style="text-decoration:none;">💬</a>
+                </span>`).join('');
+            return `<div style="grid-column:1/-1;margin:-4px 0 4px;">${chips}</div>`;
+        }
+
+        // (تمت إزالة نظام "سجل التواصل/الاستشارات" بالكامل بناءً على طلب تبسيط الاستخدام)
 
 
         let settingsSubTab = 'identity';
@@ -19769,8 +19964,46 @@
                     <button class="btn ghost block" id="ckSaveBtn" style="margin-top:6px;" onclick="addChecklistTask()">+ إضافة بند</button>
                 </div>
             </div>
-            ` : ''}`;
-            // (تم إلغاء أقسام "قواعد تعارض الإضافات" و"العنابر/الأقسام" و"جهات الاتصال السريعة" من صفحة الإعدادات بناءً على طلب إلغاء هذه الميزات)
+            <div class="section">
+                <div class="section-head"><h2>⚠️ قواعد تعارض الإضافات</h2></div>
+                <div class="card">
+                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                        عرّف هنا أي صنفين (علف/ماء) بتعرف من خبرتك إنهم متعارضين ومينفعش يتاخدوا مع بعض (زي حمض عضوي مع مضاد حيوي معين). اكتب كلمة مفتاحية من اسم كل صنف — لو الاتنين بقوا "نشطين" مع بعض فى نفس اليوم، هيظهرلك تنبيه أحمر فورًا فى التنبيهات.
+                    </p>
+                    ${(state.conflictRules||[]).map(r => `
+                        <div class="check-row"><div class="txt">"${esc(r.a)}" ⚡ "${esc(r.b)}"${r.note ? ` — ${esc(r.note)}` : ''}</div>
+                        <button class="btn danger sm" onclick="removeConflictRule('${r.id}')">🗑️</button></div>`).join('') || '<div class="empty" style="padding:14px;"><div class="ico">⚠️</div>لا توجد قواعد بعد.</div>'}
+                    <div class="form-grid" style="margin-top:12px;border-top:1.5px solid var(--line);padding-top:12px;">
+                        <div class="field"><label>كلمة مفتاحية من اسم الصنف الأول</label><input id="cr_a" placeholder="مثال: حمض الستريك"></div>
+                        <div class="field"><label>كلمة مفتاحية من اسم الصنف الثاني</label><input id="cr_b" placeholder="مثال: تيلميكوسين"></div>
+                        <div class="field full"><label>ملاحظة (اختياري)</label><input id="cr_note" placeholder="مثال: الحمض بيقلل فاعلية المضاد الحيوي"></div>
+                    </div>
+                    <button class="btn gold block" style="margin-top:6px;" onclick="addConflictRule()">+ إضافة قاعدة تعارض</button>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-head"><h2>🏠 العنابر/الأقسام (اختياري)</h2></div>
+                <div class="card">
+                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                        لو الدفعة موزعة على أكثر من عنبر أو قسم، سجّلهم هنا للتوثيق والمقارنة فقط — الحسابات الرئيسية تعتمد على "مساحة العنبر" و"عدد الكتاكيت" المُدخلة عند إنشاء الدفعة، مش على القائمة دي.
+                    </p>
+                    <div class="form-grid">
+                        <div class="field"><label>اسم العنبر/القسم</label><input id="hs_name" placeholder="مثال: عنبر 1"></div>
+                        <div class="field"><label>المساحة (م²)</label><input id="hs_area" type="number" inputmode="decimal" step="0.1" min="0"></div>
+                        <div class="field"><label>عدد الطيور</label><input id="hs_count" type="number" inputmode="decimal" min="0"></div>
+                    </div>
+                    <button class="btn ghost block" id="hsSaveBtn" style="margin-top:6px;" onclick="addHouse()">+ إضافة عنبر/قسم</button>
+                    ${b.houses.length ? `<div class="scroll-x" style="margin-top:10px;"><table><thead><tr><th>الاسم</th><th>المساحة</th><th>الطيور</th><th></th></tr></thead><tbody>${b.houses.map(h => `
+                        <tr><td>${esc(h.name)}</td><td>${fmt(h.area,1)} م²</td><td>${fmt(h.count,0)}</td>
+                        <td><button class="btn ghost sm" onclick="editHouse('${h.id}')">✏️</button> <button class="btn danger sm" onclick="removeHouse('${h.id}')">حذف</button></td></tr>`).join('')}</tbody></table></div>
+                    ${statLine(`الإجمالي`, `${fmt(b.houses.reduce((s,h)=>s+(h.area||0),0),1)} م² · ${fmt(b.houses.reduce((s,h)=>s+(h.count||0),0),0)} طائر`, {lineStyle:`margin-top:8px;border-top:2px solid var(--barn-dark);padding-top:8px;`,kStyle:`font-weight:900;`})}`
+                    : ''}
+                </div>
+            </div>` : ''}
+            <div class="section">
+                <div class="section-head"><h2>📇 جهات الاتصال السريعة</h2></div>
+                ${renderContactsSection()}
+            </div>`;
 
             // ============ فئة 2: الأدوات والحاسبات ============
             const catTools = `
@@ -19778,7 +20011,6 @@
                 <div class="section-head"><h2>🧮 حاسبات ومراجع سريعة</h2></div>
                 <div class="card" style="display:grid;gap:10px;">
                     <button class="btn ghost block" onclick="openFeedCalcModal()">🧮 حاسبة تكوين العلف</button>
-                    <button class="btn ghost block" onclick="openWaterCalcModal()">💧 حاسبة تركيز محلول الإماهة/اللقاح فى المياه</button>
                     <button class="btn ghost block" onclick="showGlossaryFull()">📖 دليل المصطلحات</button>
                     <button class="btn ghost block" onclick="showDiseaseLibrary()">🩺 دليل الأمراض (قابل للتعديل)</button>
                     <button class="btn ghost block" onclick="openGlobalSearch()">🔎 بحث شامل فى التطبيق</button>
@@ -19791,23 +20023,6 @@
                     <button class="btn ghost block" onclick="openArchiveModal()">📁 أرشيف الدورات</button>
                     <button class="btn ghost block" onclick="openWorkerSheetPrint()">🖨️ طباعة ورقة تعليمات يومية للعامل</button>
                     <button class="btn ghost block" onclick="openCsvImportModal()">📂 استيراد سجل يومي من CSV/Excel</button>
-                </div>
-            </div>
-            <div class="section">
-                <div class="section-head"><h2>🔮 محاكي ما قبل الدورة (توأم رقمي)</h2></div>
-                <div class="card">
-                    <div class="day" style="margin-bottom:8px;">قبل ما تبدأ دفعة جديدة فعليًا: جرّب كثافة وشهر بدء مختلفين، واتوقّع EPEF والربح المتوقع بناءً على تاريخ مزرعتك الفعلي — قبل ما تلتزم بالقرار</div>
-                    <div class="form-grid">
-                        <div class="field"><label>الكثافة المخططة (كجم/م²)</label><input type="number" step="0.5" id="pc_density" placeholder="مثال: 22"></div>
-                        <div class="field"><label>شهر بدء التربية</label>
-                            <select id="pc_month">
-                                ${['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'].map((n,i)=>`<option value="${i}" ${i===new Date().getMonth()?'selected':''}>${n}</option>`).join('')}
-                            </select>
-                        </div>
-                    </div>
-                    <button type="button" class="btn gold sm" style="margin-top:6px;" onclick="runPreCycleForecast()">🔮 احسب توقع مبدئي</button>
-                    <div id="preCycleResult" style="margin-top:8px;"></div>
-                    <div class="day" style="margin-top:6px;color:var(--muted);">⚠️ مؤشر استرشادي مبني على دوراتك المؤرشفة السابقة فقط — كل ما راكمت دورات أكتر زادت دقته</div>
                 </div>
             </div>`;
 
@@ -19995,28 +20210,6 @@
                     </p>
                     <button class="btn gold block" onclick="openAccountsModal()">👥 إدارة الحسابات والصلاحيات</button>
                 </div>
-                ${isWebAuthnSupported() ? `
-                <div class="card" style="margin-top:10px;">
-                    <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:4px;">👆 البصمة/الوجه على هذا الجهاز</label>
-                    <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
-                        ${hasBiometricEnrolled(currentRole, currentWorker ? currentWorker.id : null)
-                            ? 'حسابك ده مسجّل بصمة/وجه بالفعل على الجهاز ده. تقدر تفعّل قفل تلقائي بيها كل ما تفتح التطبيق أو ترجعله من الخلفية.'
-                            : 'لسه معملتش تسجيل بصمة/وجه لحسابك على الجهاز ده. سجّلها الأول عشان تقدر تفعّل القفل التلقائي.'}
-                    </p>
-                    ${!hasBiometricEnrolled(currentRole, currentWorker ? currentWorker.id : null) ? `
-                    <button class="btn ghost sm" onclick="enrollBiometricLogin(currentRole, currentWorker).then(()=>render())">👆 سجّل بصمتك/وجهك دلوقتي</button>
-                    ` : ''}
-                    <label class="check-row" style="cursor:pointer;margin-top:8px;">
-                        <input type="checkbox" id="set_appLock" ${isAppLockEnabled() ? 'checked' : ''} onchange="setAppLockEnabled(this.checked)">
-                        <div class="txt"><div style="font-weight:800;">🔒 قفل التطبيق تلقائيًا بالبصمة/الوجه</div>
-                        <div class="day">هيطلب بصمتك/وجهك (أو كلمة المرور كبديل) كل ما تفتح التطبيق من جديد أو ترجعله من الخلفية</div></div>
-                    </label>
-                </div>
-                ` : `
-                <div class="card" style="margin-top:10px;">
-                    <p style="font-size:11.5px;color:var(--muted);margin:0;">👆 الجهاز أو المتصفح ده مايدعمش الدخول بالبصمة/الوجه (WebAuthn).</p>
-                </div>
-                `}
                 ${snippetDeviceAccess}
             </div>
             <div class="section">
@@ -20302,9 +20495,25 @@
                     <div class="day" style="margin-top:6px;color:var(--muted);">⚠️ تنبؤ إحصائي مبني على ${profitAttr.n} دورة سابقة فقط (R²=${fmt((profitAttr.r2||0)*100,0)}%) — مؤشر استرشادي وليس ضمانًا، خصوصًا لو غيّرت رقم بعيد جدًا عن مدى بياناتك المعتاد</div>
                 </div></div>`;
             })();
-            const crossCycleSection = (chickSrcHtml || protoEffHtml || seasonalityHtml || crossItemsHtml || crossTreatmentsHtml || crossFeedLotsHtml || perfSeasonHtml || arrivalQHtml || densityPerfHtml || complianceHtml || weatherHistHtml || corrMatrixHtml || profitAttrHtml || whatIfHtml || criticalWeekHtml) ? `
+            // ============ محاكي ما قبل الدورة (توأم رقمي) — نفس محرك التحليل فوق (كثافة/موسمية/عوامل الربح)، لكن مستخدَم للتخطيط لدورة جديدة لسه ما بدأتش بدل تفسير دورة قديمة ============
+            const preCycleHtml = (!densityPerf && !perfSeason && !profitAttr) ? '' : `<div class="check-row"><div class="txt">
+                    <div>🔮 محاكي ما قبل الدورة (توأم رقمي) — قبل ما تبدأ دفعة جديدة فعليًا</div>
+                    <div class="day" style="margin-top:4px;">جرّب كثافة وشهر بدء مختلفين، واتوقّع EPEF والربح المتوقع بناءً على تاريخ مزرعتك الفعلي — قبل ما تلتزم بالقرار</div>
+                    <div class="form-grid" style="margin-top:8px;">
+                        <div class="field"><label>الكثافة المخططة (كجم/م²)</label><input type="number" step="0.5" id="pc_density" placeholder="مثال: 22"></div>
+                        <div class="field"><label>شهر بدء التربية</label>
+                            <select id="pc_month">
+                                ${['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'].map((n,i)=>`<option value="${i}" ${i===new Date().getMonth()?'selected':''}>${n}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn gold sm" style="margin-top:6px;" onclick="runPreCycleForecast()">🔮 احسب توقع مبدئي</button>
+                    <div id="preCycleResult" style="margin-top:8px;"></div>
+                    <div class="day" style="margin-top:6px;color:var(--muted);">⚠️ مؤشر استرشادي مبني على دوراتك المؤرشفة السابقة فقط (نفس نماذج الكثافة/الموسمية/عوامل الربح أعلاه) — كل ما راكمت دورات أكتر زادت دقته</div>
+                </div></div>`;
+            const crossCycleSection = (chickSrcHtml || protoEffHtml || seasonalityHtml || crossItemsHtml || crossTreatmentsHtml || crossFeedLotsHtml || perfSeasonHtml || arrivalQHtml || densityPerfHtml || complianceHtml || weatherHistHtml || corrMatrixHtml || profitAttrHtml || whatIfHtml || preCycleHtml || criticalWeekHtml) ? `
             <div class="section"><div class="section-head"><h2>🔬 تحليلات ذكية عبر الدورات</h2></div>
-                <div class="card" style="padding:0;">${corrMatrixHtml}${profitAttrHtml}${whatIfHtml}${criticalWeekHtml}${chickSrcHtml}${protoEffHtml}${seasonalityHtml}${perfSeasonHtml}${arrivalQHtml}${densityPerfHtml}${complianceHtml}${weatherHistHtml}${crossItemsHtml}${crossTreatmentsHtml}${crossFeedLotsHtml}</div>
+                <div class="card" style="padding:0;">${corrMatrixHtml}${profitAttrHtml}${whatIfHtml}${preCycleHtml}${criticalWeekHtml}${chickSrcHtml}${protoEffHtml}${seasonalityHtml}${perfSeasonHtml}${arrivalQHtml}${densityPerfHtml}${complianceHtml}${weatherHistHtml}${crossItemsHtml}${crossTreatmentsHtml}${crossFeedLotsHtml}</div>
                 <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات تحتاج عدة دورات مؤرشفة لتكون ذات معنى إحصائي، وتزداد دقتها كل ما راكمت بيانات أكتر.</p>
                 ${(crossItemsHtml || crossTreatmentsHtml || crossFeedLotsHtml) ? `<div class="row-actions" style="margin-top:8px;">
                     <button class="btn ghost sm" style="flex:1;" onclick="printAdditiveEffectivenessReport()">🖨️ طباعة تقرير فعالية الإضافات</button>
@@ -22644,6 +22853,8 @@
                 { label: '💧 حاسبة تركيز محلول الإماهة/اللقاح فى المياه', tab: 'production', run: () => openWaterCalcModal() },
                 { label: '📖 دليل المصطلحات', tab: 'settings', run: () => showGlossaryFull() },
                 { label: '🩺 دليل الأمراض', tab: 'settings', run: () => showDiseaseLibrary() },
+                { label: '🏷️ إدارة أدوار جهات الاتصال', tab: 'settings', run: () => showContactRolesManager() },
+                { label: '📇 إضافة جهة اتصال سريعة', tab: 'settings', run: () => openContactModal() },
                 { label: '📋 مهام اليوم (كل المستحقات)', tab: 'daily', run: () => showTodayTasksModal() },
                 { label: '📁 أرشيف الدورات', tab: 'settings', run: () => openArchiveModal() },
                 { label: '🖨️ طباعة ورقة تعليمات يومية للعامل', tab: 'settings', run: () => openWorkerSheetPrint() },
@@ -22701,6 +22912,7 @@
                 { key: 'purchases', label: '🛒 المشتريات', items: [] },
                 { key: 'sales', label: '💰 المبيعات', items: [] },
                 { key: 'ops', label: '🛡️ العمليات والأمان الحيوي', items: [] },
+                { key: 'contacts', label: '📇 جهات الاتصال', items: [] },
             ];
             getFeatureDirectory().forEach(f => {
                 if (has(f.label)) cats[0].items.push({ label: f.label, sub: 'اضغط للفتح مباشرة', tab: f.tab, runFeature: f.run });
@@ -22721,6 +22933,9 @@
                 (b.biosecurityLog || []).forEach(o => {
                     if (has(o.note) || has(o.type)) cats[5].items.push({ label: `${esc(o.type)} — ${esc(b.name)}`, sub: `${o.date}${o.note ? ' · ' + esc(o.note).slice(0, 60) : ''}`, batchId: b.id, tab: 'daily' });
                 });
+            });
+            (state.contacts || []).forEach(c => {
+                if (has(c.name) || has(c.phone) || has(c.role)) cats[6].items.push({ label: esc(c.name), sub: `${esc(c.role || '')} · ${esc(c.phone || '')}`, tab: 'settings' });
             });
             const nonEmpty = cats.filter(c => c.items.length);
             if (!nonEmpty.length && !pageMatches.length) { box.innerHTML = '<p style="font-size:12px;color:var(--muted);text-align:center;padding:14px;">لا توجد نتائج مطابقة</p>'; return; }
@@ -22991,7 +23206,8 @@
         // "مقارنات ومعايير" مثلاً مش مفيدة لمزرعتك، تشيلها نهائيًا بدل ما تطويها كل مرة تفتح الداشبورد.
         function renderInsightGroupsSettings() {
             const groups = [
-                { key: 'perfForecast', label: '📊🔮 أداء وتوقعات' },
+                { key: 'forecast', label: '🔮 توقعات' },
+                { key: 'performance', label: '📊 أداء وكفاءة' },
                 { key: 'benchmark', label: '🌍 مقارنات ومعايير' },
             ];
             const hidden = (state.appSettings && state.appSettings.insightGroupsHidden) || [];
