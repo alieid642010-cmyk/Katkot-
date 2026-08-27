@@ -9576,6 +9576,55 @@
             showToast('تم حفظ عملية البيع 💰');
         }
 
+        // ============ 🔧 إصلاح: سجل تفاعلي للمشتريات/المبيعات ============
+        // الاكتشاف: editPurchase/deletePurchase/editSale/deleteSale/markPurchasePaid/markSaleCollected
+        // كلها دوال جاهزة وشغالة بالكامل (منطق تعديل/حذف/تسديد كامل)، لكن ملهاش أي زرار فى الواجهة
+        // بينده عليها — يعني المستخدم مقدرش يعدّل أو يحذف عملية شراء/بيع سابقة، ولا يسجّل سداد/تحصيل
+        // مستحق مُعلّق، رغم إن كل المنطق ده موجود وشغال فى الكود. الأرجح إنها اتفقدت مع دمج تبويب
+        // "المخزون" جوه "المالية" فى تعديل سابق. الحل: سجل واحد موحّد بيعرض العمليتين مع أزرار
+        // ✏️ تعديل / 🗑️ حذف / ✅ سداد-تحصيل تنده مباشرة على نفس الدوال القائمة أصلاً.
+        function showTransactionsLedger() {
+            const b = getActiveBatch();
+            if (!b) { showToast('اختر أو أنشئ دفعة أولًا'); return; }
+            const purchasesSorted = [...(b.purchases || [])].sort((a, c) => c.date.localeCompare(a.date));
+            const salesSorted = [...(b.sales || [])].sort((a, c) => c.date.localeCompare(a.date));
+            const purRows = purchasesSorted.map(p => `
+                <div class="check-row">
+                    <button class="del-x" onclick="deletePurchase('${p.id}')" title="حذف">✕</button>
+                    <div class="txt" onclick="editPurchase('${p.id}')" style="cursor:pointer;">
+                        <div style="font-weight:800;color:var(--barn-dark);">🛒 ${esc(p.desc) || esc(p.type)} <span style="font-size:10px;color:var(--muted);font-weight:400;">(✏️ اضغط للتعديل)</span></div>
+                        <div class="day" style="margin-top:2px;">${p.date} · ${esc(p.supplier) || 'بدون مورد'} · <b>${money(p.total)}</b>${p.paid === false ? ' · <span style="color:var(--red);">⏳ مستحق سداد</span>' : ''}</div>
+                    </div>
+                    ${p.paid === false ? `<button class="btn gold sm" style="margin-top:4px;" onclick="markPurchasePaid('${p.id}')">✅ تسجيل سداد</button>` : ''}
+                </div>`).join('');
+            const salRows = salesSorted.map(s => `
+                <div class="check-row">
+                    <button class="del-x" onclick="deleteSale('${s.id}')" title="حذف">✕</button>
+                    <div class="txt" onclick="editSale('${s.id}')" style="cursor:pointer;">
+                        <div style="font-weight:800;color:var(--barn-dark);">💰 ${s.kind === 'litter' ? 'بيع سبلة/زرق' : 'بيع لحم'} <span style="font-size:10px;color:var(--muted);font-weight:400;">(✏️ اضغط للتعديل)</span></div>
+                        <div class="day" style="margin-top:2px;">${s.date} · ${esc(s.buyer) || 'بدون مشترٍ'} · <b>${money(s.total)}</b>${s.paid === false ? ' · <span style="color:var(--red);">⏳ مستحق تحصيل</span>' : ''}</div>
+                    </div>
+                    ${s.paid === false ? `<button class="btn gold sm" style="margin-top:4px;" onclick="markSaleCollected('${s.id}')">✅ تسجيل تحصيل</button>` : ''}
+                </div>`).join('');
+            const html = `
+                <input id="ledgerSearchInput" type="text" placeholder="ابحث بالمورد/المشترى/الوصف..." style="width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;margin-bottom:8px;" oninput="filterTransactionsLedger(this.value)">
+                <details open><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">🛒 المشتريات (${purchasesSorted.length})</summary>
+                    <div id="ledgerPurList">${purRows || '<div class="empty" style="padding:14px;">لا توجد عمليات شراء بعد</div>'}</div>
+                </details>
+                <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">💰 المبيعات (${salesSorted.length})</summary>
+                    <div id="ledgerSalList">${salRows || '<div class="empty" style="padding:14px;">لا توجد عمليات بيع بعد</div>'}</div>
+                </details>`;
+            openGenericModal('🧾 سجل المشتريات والمبيعات', html);
+        }
+        function filterTransactionsLedger(qRaw) {
+            const q = (qRaw || '').trim().toLowerCase();
+            ['ledgerPurList', 'ledgerSalList'].forEach(boxId => {
+                const box = document.getElementById(boxId);
+                if (!box) return;
+                box.querySelectorAll('.check-row').forEach(row => { row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none'; });
+            });
+        }
+
         // تسجيل سريع لتحصيل/سداد بضغطة واحدة من الجدول، بدون فتح النموذج الكامل
         function markPurchasePaid(id) {
             if (!requirePermission('management')) return; // 🔒 Red Team fix
@@ -18260,6 +18309,7 @@
                     <div class="row-actions" style="margin-bottom:10px;">
                         <button class="btn gold" style="flex:1;" onclick="openPurchaseModal()">🛒 شراء</button>
                         <button class="btn danger" style="flex:1;" onclick="openSaleModal()">💰 بيع</button>
+                        <button class="btn ghost" style="flex:0.6;" onclick="showTransactionsLedger()" title="عرض/تعديل/حذف عمليات سابقة">🧾 السجل</button>
                     </div>
                     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
                         <div onclick="toggleDashInvActions()" title="اضغط لتعديل أو حذف هذا الصنف" style="cursor:pointer;">${ringHtml}</div>
@@ -18429,6 +18479,7 @@
                 ${statLine(`مستحق من العملاء (آجل)`, `${money(fin.totalReceivable)}`, {vStyle:`color:var(--wheat);`})}
                 ${statLine(`صافي الموقف النقدي الفعلي`, `${money(fin.netCashPosition)}`, {lineStyle:`border-top:1.5px solid var(--line);padding-top:8px;`, kStyle:`font-weight:900;`, vStyle:`font-weight:900;color:${fin.netCashPosition>=0?'var(--green)':'var(--red)'};`})}
                 <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 صافي الموقف النقدي = صافي الربح الدفتري − المستحق من العملاء + المستحق للموردين (يعكس النقد الفعلي المتاح لو حصّلت والتزمت بكل المستحقات الآن).</p>` : ''}
+                <button class="btn ghost block" style="margin-top:10px;" onclick="showTransactionsLedger()">🧾 عرض/تعديل/حذف كل عمليات الشراء والبيع</button>
             </div></div>
 
             <!-- قسم الأداء الإنتاجي (أهم ملخص فى هذا التبويب، يفضل مفتوح افتراضيًا) -->
