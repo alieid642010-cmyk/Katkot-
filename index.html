@@ -5364,8 +5364,33 @@
         }
 
         // ===== المسار الأساسي: طلب دخول حقيقي بالاسم ورقم الموبايل، يوصل لصاحب التطبيق ويوافق/يرفض بنفسه =====
-        function activationRequestFormHtml() {
+        // ============ 🔧 إصلاح تكرار كود: الدالتين دول كانوا بيكرروا نفس الـ IDs (activationErr, activationCodeInput,
+        // recoverySignInBox, recSignInEmail, recSignInPass) حرفيًا فى مكانين. بما إنهم لا يظهروا فى الـ DOM معًا أبدًا
+        // (واحد بس بيتحقن جوه .auth-card حسب حالة الاتصال) مفيش تعارض وقت التشغيل، لكن التكرار نفسه عيب صيانة —
+        // اتّحدوا فى دالة واحدة (activationFormHtml) وأجزاء مشتركة، مع الاحتفاظ بالاسمين القديمين كـ wrapper
+        // عشان أي استدعاء قديم (زي إعادة إرسال الطلب بعد الرفض) يفضل شغال بالظبط زي ما هو من غير أي تعديل تانى. ============
+        function activationCodeInputHtml() {
+            return `<input type="text" id="activationCodeInput" placeholder="اكتب كود التفعيل" style="text-align:center;letter-spacing:2px;font-weight:800;">`;
+        }
+        function recoverySignInBlockHtml() {
+            return `<div style="text-align:center;margin-top:8px;"><a href="javascript:void(0)" onclick="toggleRecoverySignIn()" style="font-size:11.5px;color:var(--muted);">🛡️ أنا صاحب التطبيق وعندي حساب استرداد</a></div>
+            <div id="recoverySignInBox" style="display:none;margin-top:10px;">
+                <input type="email" id="recSignInEmail" placeholder="إيميل الاسترداد" autocomplete="email">
+                <input type="password" id="recSignInPass" placeholder="كلمة المرور" autocomplete="current-password" style="margin-top:8px;">
+                <button class="btn ghost" style="margin-top:6px;" onclick="submitRecoverySignIn()">🔓 دخول واسترجاع صلاحية المالك</button>
+            </div>`;
+        }
+        function activationFormHtml(offline) {
             const dc = getOrCreateDeviceCode();
+            if (offline) {
+                return `<h2>🔒 التطبيق محتاج إذن استخدام</h2>
+                <div class="sub">مفيش اتصال بالإنترنت دلوقتي، فمينفعش نبعت طلب لصاحب التطبيق مباشرة. لو معاك كود تفعيل يدوي منه، اكتبه تحت. لو لأ، وصّل نت وجرّب تاني.</div>
+                <p style="font-size:10.5px;color:var(--muted);margin:0 0 6px;">كود جهازك: <b>${dc}</b></p>
+                ${activationCodeInputHtml()}
+                <div class="auth-err" id="activationErr"></div>
+                <button class="btn gold" onclick="submitManualActivation()">تفعيل بالكود</button>
+                ${recoverySignInBlockHtml()}`;
+            }
             return `<h2>🔒 التطبيق محتاج إذن استخدام</h2>
             <div class="sub">التطبيق ده ملك خاص. اكتب اسمك ورقم موبايلك وابعت طلب دخول — صاحب التطبيق هيشوفه ويوافق أو يرفض بنفسه، وهتدخل تلقائيًا فور الموافقة من غير ما تحتاج تعمل حاجة تانية.</div>
             <input type="text" id="accReqName" placeholder="اسمك">
@@ -5375,31 +5400,13 @@
             <div style="text-align:center;margin-top:12px;"><a href="javascript:void(0)" onclick="toggleManualActivation()" style="font-size:11.5px;color:var(--muted);">🔑 عندي كود تفعيل يدوي بالفعل</a></div>
             <div id="manualActivationBox" style="display:none;margin-top:10px;">
                 <p style="font-size:10.5px;color:var(--muted);margin:0 0 6px;">كود جهازك (لو صاحب التطبيق طلبه منك تليفونيًا): <b>${dc}</b></p>
-                <input type="text" id="activationCodeInput" placeholder="اكتب كود التفعيل" style="text-align:center;letter-spacing:2px;font-weight:800;">
+                ${activationCodeInputHtml()}
                 <button class="btn ghost" style="margin-top:6px;" onclick="submitManualActivation()">تفعيل بالكود</button>
             </div>
-            <div style="text-align:center;margin-top:8px;"><a href="javascript:void(0)" onclick="toggleRecoverySignIn()" style="font-size:11.5px;color:var(--muted);">🛡️ أنا صاحب التطبيق وعندي حساب استرداد</a></div>
-            <div id="recoverySignInBox" style="display:none;margin-top:10px;">
-                <input type="email" id="recSignInEmail" placeholder="إيميل الاسترداد" autocomplete="email">
-                <input type="password" id="recSignInPass" placeholder="كلمة المرور" autocomplete="current-password" style="margin-top:8px;">
-                <button class="btn ghost" style="margin-top:6px;" onclick="submitRecoverySignIn()">🔓 دخول واسترجاع صلاحية المالك</button>
-            </div>`;
+            ${recoverySignInBlockHtml()}`;
         }
-        function activationManualOnlyHtml() {
-            const dc = getOrCreateDeviceCode();
-            return `<h2>🔒 التطبيق محتاج إذن استخدام</h2>
-            <div class="sub">مفيش اتصال بالإنترنت دلوقتي، فمينفعش نبعت طلب لصاحب التطبيق مباشرة. لو معاك كود تفعيل يدوي منه، اكتبه تحت. لو لأ، وصّل نت وجرّب تاني.</div>
-            <p style="font-size:10.5px;color:var(--muted);margin:0 0 6px;">كود جهازك: <b>${dc}</b></p>
-            <input type="text" id="activationCodeInput" placeholder="اكتب كود التفعيل" style="text-align:center;letter-spacing:2px;font-weight:800;">
-            <div class="auth-err" id="activationErr"></div>
-            <button class="btn gold" onclick="submitManualActivation()">تفعيل بالكود</button>
-            <div style="text-align:center;margin-top:8px;"><a href="javascript:void(0)" onclick="toggleRecoverySignIn()" style="font-size:11.5px;color:var(--muted);">🛡️ أنا صاحب التطبيق وعندي حساب استرداد</a></div>
-            <div id="recoverySignInBox" style="display:none;margin-top:10px;">
-                <input type="email" id="recSignInEmail" placeholder="إيميل الاسترداد" autocomplete="email">
-                <input type="password" id="recSignInPass" placeholder="كلمة المرور" autocomplete="current-password" style="margin-top:8px;">
-                <button class="btn ghost" style="margin-top:6px;" onclick="submitRecoverySignIn()">🔓 دخول واسترجاع صلاحية المالك</button>
-            </div>`;
-        }
+        function activationRequestFormHtml() { return activationFormHtml(false); }
+        function activationManualOnlyHtml() { return activationFormHtml(true); }
         function statusPill(s) {
             if (s === 'pending') return '<span class="pill" style="font-size:10px;background:#fff3cd;color:#997404;">⏳ معلّق</span>';
             if (s === 'approved') return '<span class="pill ok" style="font-size:10px;">✅ مسموح</span>';
@@ -9588,6 +9595,7 @@
             if (!b) { showToast('اختر أو أنشئ دفعة أولًا'); return; }
             const purchasesSorted = [...(b.purchases || [])].sort((a, c) => c.date.localeCompare(a.date));
             const salesSorted = [...(b.sales || [])].sort((a, c) => c.date.localeCompare(a.date));
+            const movementsSorted = [...(b.stockMovements || [])].sort((a, c) => c.date.localeCompare(a.date));
             const purRows = purchasesSorted.map(p => `
                 <div class="check-row">
                     <button class="del-x" onclick="deletePurchase('${p.id}')" title="حذف">✕</button>
@@ -9606,19 +9614,33 @@
                     </div>
                     ${s.paid === false ? `<button class="btn gold sm" style="margin-top:4px;" onclick="markSaleCollected('${s.id}')">✅ تسجيل تحصيل</button>` : ''}
                 </div>`).join('');
+            // 🔧 إصلاح: editMovement/deleteMovement كانوا شغالين بالكامل من غير أي زرار فى الواجهة يستدعيهم —
+            // نفس مشكلة المشتريات/المبيعات بالظبط، تضاف هنا كقسم تالت فى نفس السجل.
+            const movTypeLabel = { in: '📥 إضافة', out: '📤 صرف/استهلاك', adjust: '✏️ تسوية/تصحيح' };
+            const movRows = movementsSorted.map(mv => `
+                <div class="check-row">
+                    <button class="del-x" onclick="deleteMovement('${mv.id}')" title="حذف">✕</button>
+                    <div class="txt" onclick="editMovement('${mv.id}')" style="cursor:pointer;">
+                        <div style="font-weight:800;color:var(--barn-dark);">${movTypeLabel[mv.type] || mv.type} — ${esc(mv.itemName)} <span style="font-size:10px;color:var(--muted);font-weight:400;">(✏️ اضغط للتعديل)</span></div>
+                        <div class="day" style="margin-top:2px;">${mv.date} · <b>${fmt(mv.qty,1)}</b>${mv.note ? ' · ' + esc(mv.note) : ''}</div>
+                    </div>
+                </div>`).join('');
             const html = `
-                <input id="ledgerSearchInput" type="text" placeholder="ابحث بالمورد/المشترى/الوصف..." style="width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;margin-bottom:8px;" oninput="filterTransactionsLedger(this.value)">
+                <input id="ledgerSearchInput" type="text" placeholder="ابحث بالمورد/المشترى/الصنف/الوصف..." style="width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;margin-bottom:8px;" oninput="filterTransactionsLedger(this.value)">
                 <details open><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">🛒 المشتريات (${purchasesSorted.length})</summary>
                     <div id="ledgerPurList">${purRows || '<div class="empty" style="padding:14px;">لا توجد عمليات شراء بعد</div>'}</div>
                 </details>
                 <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">💰 المبيعات (${salesSorted.length})</summary>
                     <div id="ledgerSalList">${salRows || '<div class="empty" style="padding:14px;">لا توجد عمليات بيع بعد</div>'}</div>
+                </details>
+                <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">📦 حركات المخزون (${movementsSorted.length})</summary>
+                    <div id="ledgerMovList">${movRows || '<div class="empty" style="padding:14px;">لا توجد حركات مخزون مسجّلة بعد</div>'}</div>
                 </details>`;
-            openGenericModal('🧾 سجل المشتريات والمبيعات', html);
+            openGenericModal('🧾 سجل المشتريات والمبيعات وحركات المخزون', html);
         }
         function filterTransactionsLedger(qRaw) {
             const q = (qRaw || '').trim().toLowerCase();
-            ['ledgerPurList', 'ledgerSalList'].forEach(boxId => {
+            ['ledgerPurList', 'ledgerSalList', 'ledgerMovList'].forEach(boxId => {
                 const box = document.getElementById(boxId);
                 if (!box) return;
                 box.querySelectorAll('.check-row').forEach(row => { row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none'; });
@@ -12029,6 +12051,9 @@
                 .map(v => ({ ...v, daysAway: v.day - m.todayAge, importance: v.day - m.todayAge <= 1 ? 'عاجل' : (v.day - m.todayAge <= 3 ? 'قريب' : 'مجدول') }));
         }
         // ============ 7) مقارنة يومية بين العنابر النشطة عند نفس العمر تقريبًا ============
+        // 🔧 إصلاح: كانت الدالة دي محسوبة بس من غير استخدام — وقسم "نظرة عامة على كل الدفعات" فى لوحة التحكم
+        // كان بيعيد نفس الحساب (devPct) يدويًا من غير ترتيب. اتوسّعت هنا بحقول liveCount/liveCountPct/fcr
+        // عشان تغطي كل احتياج قسم العرض، وبقى هو مصدر البيانات الوحيد (وبيرتّب تلقائيًا: الأضعف أداءً يظهر الأول).
         function computeActiveHousesComparison(b) {
             const active = state.batches.filter(x => x.status !== 'مؤرشفة');
             if (active.length < 2) return null;
@@ -12036,7 +12061,8 @@
                 const xm = computeMetrics(x);
                 const stdW = getRefValue(x, 'weight', xm.todayAge) || 0;
                 const devPct = stdW > 0 ? ((xm.avgWeightG - stdW) / stdW) * 100 : null;
-                return { id: x.id, name: x.name, location: x.location, age: xm.todayAge, mortRate: xm.mortRate, devPct, isActive: x.id === state.activeId };
+                return { id: x.id, name: x.name, location: x.location, age: xm.todayAge, mortRate: xm.mortRate, devPct,
+                    liveCount: xm.liveCount, liveCountPct: xm.liveCountPct, fcr: xm.fcr, isActive: x.id === state.activeId };
             }).sort((a, c) => (c.devPct || -999) - (a.devPct || -999));
         }
         // ============ 8) مؤشر ثقة البيانات (فجوات تسجيل حديثة تحديدًا فى الوزن/العلف) ============
@@ -15515,8 +15541,8 @@
                 <div class="day">${upcomingVacc.map(v => `<span style="color:${v.importance==='عاجل'?'var(--red)':v.importance==='قريب'?'var(--warning-text)':'var(--muted)'};font-weight:700;">${v.importance}</span> — ${esc(v.name)} (يوم ${v.day}، بعد ${v.daysAway} يوم)`).join('<br>')}</div>
                 ${insightActions('upcomingVacc', '💉 تسجيل تحصين/علاج', 'openVaccineModal()')}
             </div></div>`;
-            // ===== 7) مقارنة العنابر النشطة — مدموجة بالفعل فى قسم "نظرة عامة على كل الدفعات/العنابر النشطة" بالأسفل، بدون تكرار هنا =====
-            // ===== 8) مؤشر ثقة البيانات — مدموج بالفعل فى بطاقة "تغطية التسجيل" أعلى لوحة التحكم، بدون تكرار هنا =====
+            // ===== 7) مقارنة العنابر النشطة — تُعرض فعليًا فى قسم "نظرة عامة على كل الدفعات/العنابر النشطة" بالأسفل عبر computeActiveHousesComparison(b)، بدون تكرار هنا =====
+            // ===== 8) مؤشر ثقة البيانات — يُعرض فعليًا فى كارت "موثوقية بيانات الدورة" (dataConfidenceHtml) جوه مجموعة "يحتاج متابعتك"، بدون تكرار هنا =====
             // ===== 9) (أُزيل: عائد التبريد/التهوية كان معتمدًا على ساعات تشغيل المعدات المُزالة) =====
             // ===== 10) خطر الأمراض التنفسية =====
             const respRisk = computeRespiratoryRisk(b, m);
@@ -15547,8 +15573,27 @@
                     ${isHigh ? insightActions('waterFeedRatio', '🌡️ تسجيل قراءة بيئية', "openDailyModal('day')") : ''}
                 </div></div>`;
             })();
+            // ============ 🔧 إصلاح: كارت "موثوقية بيانات الدورة" — دمج 3 دوال كانت جاهزة ومحسوبة بس من غير أي واجهة تعرضها:
+            // computeDataConfidence (فجوات تسجيل حديثة)، computeRecordingCompleteness (نسبة التغطية)، computeLoggingStreak
+            // (سلسلة الانتظام). بدل ما نبني 3 كروت منفصلة، اتحسّنوا فى كارت واحد بيظهر فى مجموعة "يحتاج متابعتك"
+            // فقط لما يبقى فيه فعلًا نقص تسجيل يستحق تنبيه — تمامًا زي فكرة الدمج المطلوبة بدل الأنظمة المبعثرة. ============
+            const dataConfidenceHtml = (() => {
+                const dc = computeDataConfidence(b, m);
+                if (!dc) return ''; // لا فجوات حديثة فى التسجيل — مفيش داعي نزعج المستخدم بكارت زيادة
+                const rc = computeRecordingCompleteness(b, m);
+                const streak = computeLoggingStreak(b);
+                const missingParts = [];
+                if (dc.missingWeight) missingParts.push(`الوزن (${dc.missingWeight} يوم)`);
+                if (dc.missingFeed) missingParts.push(`العلف (${dc.missingFeed} يوم)`);
+                return `<div class="check-row"><div class="txt">
+                    <div>📊 فجوة فى تسجيل ${missingParts.join(' و')} — آخر ${dc.ofDays} أيام</div>
+                    <div class="day">نسبة تغطية السجل الكلية: ${fmt(rc.pct,0)}% (${rc.actualDays}/${rc.expectedDays} يوم) · سلسلة تسجيل متواصلة: ${streak} يوم</div>
+                    <div class="day" style="color:var(--muted);margin-top:2px;">التحليلات والتوقعات فى هذه الصفحة بتعتمد على انتظام السجل اليومي — كل ما سجّلت بانتظام كل ما بقيت أدق</div>
+                    ${insightActions('dataConfidence', '📝 سجل بيانات اليوم', "openDailyModal('day')")}
+                </div></div>`;
+            })();
             // ============ تجميع التحليلات فى 4 مجموعات مصنّفة بدل عرضها كلها فى كومة واحدة غير منظمة ============
-            const groupAttentionArr = [respRiskHtml, devOnsetHtml, riskIndexHtml, upcomingVaccHtml, weeklyStressHtml, weightZHtml, stressHtml, waterFeedRatioHtml, waterQualityCorrHtml].filter(Boolean);
+            const groupAttentionArr = [respRiskHtml, devOnsetHtml, riskIndexHtml, upcomingVaccHtml, weeklyStressHtml, weightZHtml, stressHtml, waterFeedRatioHtml, waterQualityCorrHtml, dataConfidenceHtml].filter(Boolean);
             const groupForecastArr = [epefProjHtml, saleHtml, devHtml, predHtml, fcrPredHtml, feedForecastHtml, weekOverWeekHtml].filter(Boolean);
             const groupPerformanceArr = [effScoreHtml, mortCostHtml, additiveHtml, treatmentHtml, vaccineImpactHtml, uniformityHtml, waterQualityHtml, causeHtml, lotHtml, narrativeHtml, feedCorrHtml].filter(Boolean);
             const groupBenchmarkArr = [seasonalHtml, globalBenchHtml, blendedCurveHtml, farmBenchHtml, bestCyclesHtml].filter(Boolean);
@@ -15583,19 +15628,17 @@
                 </div>
                 <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
             </div>`;
-            const others = activeBatches();
-            const multiHouseSection = others.length > 1 ? `
+            // 🔧 إصلاح: بيستخدم دلوقتي computeActiveHousesComparison (كانت موجودة وشغالة بدون استخدام) بدل إعادة
+            // حساب devPct يدويًا هنا — نفس البيانات بالظبط، بالإضافة إن الترتيب بقى تلقائيًا (الأضعف أداءً أولًا).
+            const housesComparison = computeActiveHousesComparison(b);
+            const multiHouseSection = housesComparison ? `
             <div class="section" style="margin-top:0;"><div class="section-head"><h2>🏘️ نظرة عامة على كل الدفعات/العنابر النشطة</h2></div>
                 <div class="card" style="padding:0;">
-                    ${others.map(x => {
-                        const xm = computeMetrics(x);
-                        const isActive = x.id === state.activeId;
-                        const stdW = getRefValue(x, 'weight', xm.todayAge) || 0;
-                        const devPct = stdW > 0 ? ((xm.avgWeightG - stdW) / stdW) * 100 : null;
-                        return `<div class="check-row" style="${isActive?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}cursor:pointer;" onclick="selectBatch('${x.id}')">
+                    ${housesComparison.map(x => {
+                        return `<div class="check-row" style="${x.isActive?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}cursor:pointer;" onclick="selectBatch('${x.id}')">
                             <div class="txt">
-                                <div style="font-weight:800;">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''} ${isActive?'<span class="pill ok" style="font-size:10px;">الحالية</span>':''}</div>
-                                <div class="day">يوم ${xm.todayAge} · ${fmt(xm.liveCount,0)} طائر (${fmt(xm.liveCountPct,1)}%) · نفوق ${fmt(xm.mortRate,2)}% · FCR ${xm.fcr?fmt(xm.fcr,2):'—'}${devPct!=null?` · ${devPct>=0?'+':''}${fmt(devPct,1)}% عن المعياري`:''}</div>
+                                <div style="font-weight:800;">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''} ${x.isActive?'<span class="pill ok" style="font-size:10px;">الحالية</span>':''}</div>
+                                <div class="day">يوم ${x.age} · ${fmt(x.liveCount,0)} طائر (${fmt(x.liveCountPct,1)}%) · نفوق ${fmt(x.mortRate,2)}% · FCR ${x.fcr?fmt(x.fcr,2):'—'}${x.devPct!=null?` · ${x.devPct>=0?'+':''}${fmt(x.devPct,1)}% عن المعياري`:''}</div>
                             </div>
                         </div>`;
                     }).join('')}
@@ -17250,15 +17293,9 @@
             return { finalFund: fund, minFundBalance, milestonesAchievedCount: achievedRounds.length, achievedRounds, breachedSafety: minFundBalance < 0 };
         }
 
-        // ============ مخاطر تقلب سعر العلف — اختبار ضغط: لو سعر العلف زاد X%، إزاي ده بيأثر على ربح الطائر وتوقيت الأهداف ============
-        function computeFeedPriceStressRisk(plan, inputs) {
-            const feedStressPct = inputs.feedPriceStressPct != null ? inputs.feedPriceStressPct : 15;
-            const avgFeedCostPerBird = plan.hist.avgFeedPerBird || 0;
-            const extraCostPerBird = avgFeedCostPerBird * (feedStressPct / 100);
-            const stressedProfit = plan.profitPerBird - extraCostPerBird;
-            const stressCase = simulateExpansionFund(inputs, plan.milestones, stressedProfit, plan.safetyMin);
-            return { feedStressPct, avgFeedCostPerBird, extraCostPerBird, stressedProfit, stressCase };
-        }
+        // ============ 🔧 تنظيف كود ميت: computeFeedPriceStressRisk (اختبار ضغط سعر العلف لوحده) اتشالت —
+        // اتستبدلت فعليًا بـ computeExpansionSensitivityScenarios اللي بتغطي نفس الفكرة وأشمل (علف + سعر بيع مع بعض
+        // فى نفس السيناريو مش متغير واحد منعزل). كانت محسوبة بدون أي استدعاء فى كل الكود. ============
 
         // ============ 🎯 سيناريوهات حساسية — بدل اختبار ضغط واحد بس (سعر علف)، متفائل ومتشائم مع بعض
         // (تقلب سعر العلف + تقلب سعر البيع مع بعض فى نفس السيناريو، مش كل واحد لوحده) — عشان تشوف
@@ -18296,10 +18333,16 @@
                 stockActionHtml = `<span class="pill info">يكفي ~${fmt(chosen.daysLeft,0)} يوم${chosen.forecastNote}</span>`;
             }
 
+            // 🔧 إصلاح: صورة مرجعية للصنف (triggerItemPhotoUpload/removeItemPhoto) كانت شغالة بالكامل من غير
+            // أي زرار أو عرض فى الواجهة — مضافة هنا جوه نفس صف إجراءات الصنف الظاهر حاليًا.
+            const itemPhotoHtml = chosen.it.photo
+                ? `<div style="text-align:center;"><img src="${chosen.it.photo}" style="max-width:70px;max-height:70px;border-radius:8px;border:1px solid var(--line);object-fit:cover;" onclick="triggerItemPhotoUpload('${chosen.it.id}')" title="اضغط لتغيير الصورة"><div><button class="btn ghost xs" style="margin-top:2px;color:var(--red);" onclick="removeItemPhoto('${chosen.it.id}')">🗑️ حذف الصورة</button></div></div>`
+                : '';
             // زرارا تعديل/حذف للصنف الظاهر حاليًا — بيظهروا لما يدوس المستخدم على الدائرة نفسها
             const actionsRowHtml = dashInvActionsOpen ? `
                 <div class="row-actions" style="margin-top:10px;">
                     <button class="btn ghost" style="flex:1;" onclick="quickStock('${chosen.it.id}','adjust')" title="تعديل/تصحيح رصيد الصنف (تلف، جرد، خطأ إدخال)">✏️ تعديل الرصيد</button>
+                    <button class="btn ghost" style="flex:1;" onclick="triggerItemPhotoUpload('${chosen.it.id}')" title="حفظ صورة مرجعية لشكل المنتج">📷 ${chosen.it.photo ? 'تغيير الصورة' : 'إضافة صورة'}</button>
                     <button class="btn ghost owner-only" style="flex:1;color:var(--red);" onclick="deleteInventoryItem('${chosen.it.id}')" title="⚠️ حذف الصنف نهائيًا من المخزن مع كل حركاته">🗑️ حذف الصنف</button>
                 </div>` : '';
 
@@ -18312,6 +18355,7 @@
                         <button class="btn ghost" style="flex:0.6;" onclick="showTransactionsLedger()" title="عرض/تعديل/حذف عمليات سابقة">🧾 السجل</button>
                     </div>
                     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                        ${itemPhotoHtml}
                         <div onclick="toggleDashInvActions()" title="اضغط لتعديل أو حذف هذا الصنف" style="cursor:pointer;">${ringHtml}</div>
                         <div style="flex:1;min-width:130px;">
                             <select onchange="setDashInvItem(this.value)" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;margin-bottom:6px;">${itemPickerOptions}</select>
@@ -18479,7 +18523,7 @@
                 ${statLine(`مستحق من العملاء (آجل)`, `${money(fin.totalReceivable)}`, {vStyle:`color:var(--wheat);`})}
                 ${statLine(`صافي الموقف النقدي الفعلي`, `${money(fin.netCashPosition)}`, {lineStyle:`border-top:1.5px solid var(--line);padding-top:8px;`, kStyle:`font-weight:900;`, vStyle:`font-weight:900;color:${fin.netCashPosition>=0?'var(--green)':'var(--red)'};`})}
                 <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 صافي الموقف النقدي = صافي الربح الدفتري − المستحق من العملاء + المستحق للموردين (يعكس النقد الفعلي المتاح لو حصّلت والتزمت بكل المستحقات الآن).</p>` : ''}
-                <button class="btn ghost block" style="margin-top:10px;" onclick="showTransactionsLedger()">🧾 عرض/تعديل/حذف كل عمليات الشراء والبيع</button>
+                <button class="btn ghost block" style="margin-top:10px;" onclick="showTransactionsLedger()">🧾 عرض/تعديل/حذف كل عمليات الشراء والبيع وحركات المخزون</button>
             </div></div>
 
             <!-- قسم الأداء الإنتاجي (أهم ملخص فى هذا التبويب، يفضل مفتوح افتراضيًا) -->
