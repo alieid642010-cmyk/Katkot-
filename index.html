@@ -1248,10 +1248,23 @@
             cursor: pointer;
             position: relative;
             min-width: 0;
+            transition: color .2s ease, background-color .2s ease, transform .2s ease;
         }
-        .bt-tab .bt-ic { font-size: 19px; line-height: 1; }
+        .bt-tab .bt-ic { font-size: 19px; line-height: 1; transition: transform .2s ease; }
         .bt-tab .bt-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .bt-tab.active { color: var(--barn); }
+        .bt-tab.active {
+            color: var(--barn);
+            background: color-mix(in srgb, var(--barn) 13%, transparent);
+        }
+        .bt-tab.active .bt-ic { transform: translateY(-1px) scale(1.12); }
+        .bt-tab.active::before {
+            content: "";
+            position: absolute;
+            top: -6px; left: 50%; transform: translateX(-50%);
+            width: 18px; height: 3px;
+            border-radius: 999px;
+            background: var(--barn);
+        }
         .bt-tab .badge {
             position: absolute; top: 0; left: 50%; transform: translateX(6px);
             background: var(--red); color: #fff; font-size: var(--fs-2xs);
@@ -15049,15 +15062,6 @@
                     <div class="foot-note">💡 النسبة بجانب كل مؤشر فوق = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ده ترتيب نسبي مقابل نفسك بس، مش مقياس عالمي مطلق (استخدم المرجع المطلق تحت لده).</div>
                 </div>`;
             })();
-            // ============ مؤشر كثافة التسجيل: تحذير أعلى التحليلات لو التغطية اليومية ضعيفة، عشان يعرف المستخدم أن دقة كل التحليلات التالية محدودة بجودة تسجيله ============
-            const recComp = computeRecordingCompleteness(b, m);
-            const dataConf = computeDataConfidence(b, m);
-            const recCompHtml = (recComp.expectedDays >= 5 && recComp.pct < 70) || dataConf ? `
-                <div class="card data-quality-warning">
-                    ${(recComp.expectedDays >= 5 && recComp.pct < 70) ? `<div class="line">⚠️ تغطية تسجيل منخفضة: ${fmt(recComp.pct,0)}% فقط من أيام الدورة (${recComp.actualDays} من ${recComp.expectedDays} يوم) مُسجَّلة فعليًا</div>` : ''}
-                    ${dataConf ? `<div class="line" style="${(recComp.expectedDays >= 5 && recComp.pct < 70) ? 'margin-top:6px;' : ''}">⚠️ فاتك تسجيل الوزن ${dataConf.missingWeight} من آخر ${dataConf.ofDays} أيام${dataConf.missingFeed?' والعلف '+dataConf.missingFeed+' يوم':''}</div>` : ''}
-                    <div class="hint">التحليلات والتنبؤات بالأسفل أقل دقة مع تسجيل متقطع — سجّل يوميًا لأفضل النتائج</div>
-                </div>` : '';
             // ============ (جديد) شفافية مصدر المرجع المعياري المستخدم فى المقارنة — عشان المستخدم يعرف بيتقارن بإيه بالظبط ============
             const refBreedKey = detectBreedKey(b.breed);
             const refSourceNote = refBreedKey ? `🧬 المرجع المستخدم: منحنى ${GLOBAL_BREED_BENCHMARKS[refBreedKey].label} (تلقائي حسب اسم السلالة "${esc(b.breed)}")` : '';
@@ -15643,15 +15647,6 @@
                     value="${getLatestMarketPrice(b) != null ? getLatestMarketPrice(b) : ''}" style="flex:1;min-width:90px;">
                 <button class="btn gold sm owner-only" onclick="updateMarketPriceFromDashboard('${b.id}')">💾 حفظ</button>
             </div>`;
-            // ============ سلسلة أيام التسجيل المتتالية + تذكير ذكي لو فات وقت التسجيل المعتاد ولسه محدش سجّل اليوم ============
-            const streak = computeLoggingStreak(b);
-            const hasTodayRecord = b.records.some(r => r.date === todayStr());
-            const nowHour = new Date().getHours();
-            const streakHtml = !b.archivedDate ? `
-            <div class="card" style="margin-bottom:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-                <span class="streak-pill">🔥 ${streak > 0 ? `${streak} يوم متتالي بتسجل بيانات دفعتك` : 'ابدأ سلسلة التسجيل اليومي'}</span>
-                ${(!hasTodayRecord && nowHour >= 19) ? `<span style="font-size:11.5px;font-weight:700;color:var(--red);">⏰ لسه ما سجّلتش سجل اليوم</span>` : ''}
-            </div>` : '';
             const healthScoreCardHtml = `
             <div class="health-score-card" style="border-color:${hs.color};">
                 <div class="caption">🩺 حالة الدفعة الشاملة (آنية + مقارنة + استباقية)${glossHtml('healthScore')}</div>
@@ -15724,11 +15719,9 @@
                 </div>
             </div>`;
             return `
-            ${streakHtml}
             ${renderDashboardWeatherCard(b, m)}
             ${multiHouseSection}
             ${housesSection}
-            ${recCompHtml}
             ${quickMarketPriceSection}
             ${prioritiesSection}
             ${healthScoreCardHtml}
@@ -16784,12 +16777,10 @@
             currentChickPrice: null, henAnnualFeedCost: null, henCost: null,
             // الطاقة المخططة للمجزر ومصنع العلف الخاصين بهذا النوع
             plannedSlaughterKgPerDay: null, plannedFeedMillTonsPerDay: null, capacitySafetyMarginPct: 20,
-            // اختبار ضغط تقلب سعر العلف والبيع (سيناريوهات متفائل/متشائم)
-            feedPriceStressPct: 15, salePriceStressPct: 10,
+            // اختبار ضغط تقلب سعر العلف والبيع (سيناريوهات متفائل/متشائم) + عدد جولات دراسة الجدوى الشاملة التفاعلية
+            feedPriceStressPct: 15, salePriceStressPct: 10, feasStudyRounds: 8,
             // مقارنة مسار الأجل بمسار الكاش (بديل بدون تمويل خارجي) + رفع القيمة من بيع مجزّر بدل حي
             cashOnlyStartHouseCount: 1, houseCountCap: null, liveToProcessedUpliftPerBird: null,
-            // مرحلة العلف الافتراضية لهذا النوع (بادئ/نامي) — مرجع تخطيط لهذا النوع، "ناهي" = باقي الدورة تلقائيًا
-            feedStageStarterKg: null, feedStageGrowerKg: null,
             // بيانات أداء احتياطية يدوية — تُستخدم بس لو لسه معندكش دورة مؤرشفة واحدة من هذا النوع، عشان تقدر تخطط له من الأول
             manualAvgProfitPerBird: null, manualSdProfitPerBird: null, manualAvgCycleDays: null,
             manualAvgFeedKgPerBird: null, manualAvgFinalWeightKg: null, manualSuccessRatePct: null,
@@ -16870,7 +16861,6 @@
             if (out.sdProfitPerBird == null && inputs.manualSdProfitPerBird != null) { out.sdProfitPerBird = inputs.manualSdProfitPerBird; usedFallback.sd = true; }
             if (out.avgCycleDays == null && inputs.manualAvgCycleDays != null) { out.avgCycleDays = inputs.manualAvgCycleDays; usedFallback.cycle = true; }
             if (out.avgFeedKgPerBird == null && inputs.manualAvgFeedKgPerBird != null) { out.avgFeedKgPerBird = inputs.manualAvgFeedKgPerBird; usedFallback.feed = true; }
-            else if (out.avgFeedKgPerBird == null && (inputs.feedStageStarterKg != null || inputs.feedStageGrowerKg != null)) { out.avgFeedKgPerBird = (inputs.feedStageStarterKg || 0) + (inputs.feedStageGrowerKg || 0); usedFallback.feed = true; }
             if (out.avgFinalWeightKg == null && inputs.manualAvgFinalWeightKg != null) { out.avgFinalWeightKg = inputs.manualAvgFinalWeightKg; usedFallback.weight = true; }
             if (out.successRate == null && inputs.manualSuccessRatePct != null) { out.successRate = inputs.manualSuccessRatePct / 100; usedFallback.success = true; }
             out.isFallback = Object.keys(usedFallback).length > 0;
@@ -17257,6 +17247,335 @@
             };
         }
 
+        // ============ 🧮 دراسة الجدوى الشاملة التفاعلية لخطة التوسع — نظرة عامة على الخطة كلها + تفصيل كل جولة فيها ============
+        // بتاخد سيناريو سعر علف/بيع معيّن وتحاكي نفس منطق كرة الثلج الأساسي (computeExpansionPlan)، لكن بتتبّع
+        // الإيراد والتكلفة والربح لكل جولة على حدة (مش الربح بس زي المحاكاة المبسّطة الأصلية)، عشان تقدر توريك:
+        // (1) نظرة شاملة: إجمالي الاستثمار + إجمالي الإيراد/التكلفة/الربح على مدى الخطة + العائد الكلي + جولة استرداد رأس المال.
+        // (2) تفصيل كل جولة: عدد العنابر/السعة/الإيراد/التكلفة/الربح/الربح التراكمي/رصيد الصندوق فى كل جولة على حدة.
+        // ============ اقتصاديات الطائر الواحد لسيناريو معيّن (تكلفة/إيراد/ربح) — مُستخرجة لوحدها عشان تتشارك بين ============
+        // ============ محاكاة جولات الخطة الكاملة والإسقاط السنوي (عنبر واحد) من غير تكرار نفس المعادلة مرتين ============
+        function computeExpansionScenarioUnitEconomics(plan, inputs, feedMult, revMult) {
+            const hist = plan.hist;
+            const avgTotalCostPerBird = hist.avgTotalCostPerBird;
+            const avgRevenuePerBird = (hist.avgTotalCostPerBird != null && hist.avgProfitPerBird != null) ? hist.avgTotalCostPerBird + hist.avgProfitPerBird : null;
+            if (avgTotalCostPerBird == null || avgRevenuePerBird == null) return null;
+
+            const avgFeedCostPerBird = hist.avgFeedPerBird || 0;
+            const creditMarkup = inputs.feedCreditMarkupPerBird || 0;
+            const feedDelta = avgFeedCostPerBird * (feedMult - 1); // أثر تغيّر سعر العلف بس على تكلفة الطائر الكاملة
+            const costPerBird = avgTotalCostPerBird + feedDelta + creditMarkup;
+            const revenuePerBird = avgRevenuePerBird * revMult;
+            const profitPerBird = revenuePerBird - costPerBird;
+            return { costPerBird, revenuePerBird, profitPerBird };
+        }
+
+        // ⏳ مدة الدورة الكاملة (نمو + راحة/تنظيف/تعقيم بين الدورات) — نفس الافتراض المستخدم فى دراسة جدوى العنبر الواحد
+        function getExpansionCycleTotalDays(hist) {
+            const cycleDays = (hist && hist.avgCycleDays > 0) ? hist.avgCycleDays : 35;
+            const restDays = AS().restDaysBetweenCycles || 15;
+            return { cycleDays, restDays, totalCycleDays: cycleDays + restDays };
+        }
+
+        function computeExpansionFeasibilityScenario(plan, inputs, feedMult, revMult, rounds) {
+            const hist = plan.hist;
+            const unit = computeExpansionScenarioUnitEconomics(plan, inputs, feedMult, revMult);
+            if (!unit) return null;
+            const { costPerBird, revenuePerBird, profitPerBird } = unit;
+
+            const minCap = inputs.minHouseCapacity || 10000;
+            const baseHouseCount = inputs.targetHouseCount || 10;
+            const multiplier = inputs.capacityMultiplier || 2;
+            const costPerBirdOpenHouse = inputs.costPerBirdOpenHouse || 0;
+            const safetyMin = plan.safetyMin;
+            const milestones = plan.milestones;
+
+            let houses = Array.from({ length: baseHouseCount }, () => ({ capacity: minCap, cyclesCompleted: 0 }));
+            const initialInvestment = baseHouseCount * minCap * costPerBirdOpenHouse;
+            let fund = 0, milestoneIdx = 0, minFundBalance = 0, paybackRound = null;
+            let cumRevenue = 0, cumCost = initialInvestment, cumProfit = -initialInvestment;
+            const rows = [{
+                round: 0, houseCount: houses.length, totalCapacity: houses.length * minCap,
+                revenue: 0, cost: initialInvestment, profit: -initialInvestment, cumProfit,
+                fundBalance: 0, note: `🏗️ الاستثمار الأولي: ${houses.length} عنبر × ${fmt(minCap, 0)} طائر`,
+            }];
+
+            const maxRounds = Math.max(1, Math.min(rounds || 8, 30));
+            for (let round = 1; round <= maxRounds; round++) {
+                const newHouses = [];
+                let fundAdded = 0, opened = 0, roundRevenue = 0, roundCost = 0;
+                houses.forEach(h => {
+                    h.cyclesCompleted++;
+                    roundRevenue += h.capacity * revenuePerBird;
+                    roundCost += h.capacity * costPerBird;
+                    const cycleProfit = h.capacity * profitPerBird;
+                    if (h.cyclesCompleted === 1) { newHouses.push({ capacity: h.capacity * multiplier, cyclesCompleted: 0 }); opened++; }
+                    else fundAdded += cycleProfit;
+                });
+                fund += fundAdded;
+                houses = houses.concat(newHouses);
+                minFundBalance = Math.min(minFundBalance, fund);
+                let note = opened > 0 ? `🆕 ${opened} عنبر جديد من ربح دورته الأولى` : '➖ مفيش عنابر جديدة الجولة دي';
+                while (milestoneIdx < milestones.length && (fund - safetyMin) >= milestones[milestoneIdx].capex) {
+                    fund -= milestones[milestoneIdx].capex;
+                    note += ` + 🎯 اتحقق: ${milestones[milestoneIdx].label}`;
+                    milestoneIdx++;
+                }
+                cumRevenue += roundRevenue; cumCost += roundCost; cumProfit += (roundRevenue - roundCost);
+                if (paybackRound == null && cumProfit >= 0) paybackRound = round;
+                const totalCapacity = houses.reduce((s, h) => s + h.capacity, 0);
+                rows.push({ round, houseCount: houses.length, totalCapacity, revenue: roundRevenue, cost: roundCost,
+                    profit: roundRevenue - roundCost, cumProfit, fundBalance: fund, note });
+            }
+            const roi = cumCost > 0 ? (cumProfit / cumCost) * 100 : null;
+            return { rows, initialInvestment, totalRevenue: cumRevenue, totalCost: cumCost, totalProfit: cumProfit, roi,
+                paybackRound, finalFundBalance: fund, minFundBalance, breachedSafety: minFundBalance < 0,
+                milestonesAchieved: milestoneIdx, totalMilestones: milestones.length, profitPerBird, revenuePerBird, costPerBird };
+        }
+
+        // بيحسب 3 سيناريوهات مع بعض (الوضع الحالي / متفائل / متشائم) بنفس منطق ونسب الحساسية المستخدمة فى باقي
+        // خطة التوسع، وبيرجّع كل واحد منهم بتفصيل جولاته الكامل — عشان المستخدم يقدر يقارن بينهم لحظيًا وهو بيغيّر
+        // نسب الضغط أو عدد الجولات، من غير ما يحتاج يحفظ أو يعيد تحميل الصفحة.
+        function computeExpansionFeasibilityStudy(plan, inputs) {
+            if (!plan || plan.insufficientData) return null;
+            const feedStressPct = inputs.feedPriceStressPct != null ? inputs.feedPriceStressPct : 15;
+            const saleStressPct = inputs.salePriceStressPct != null ? inputs.salePriceStressPct : 10;
+            const rounds = inputs.feasStudyRounds || 8;
+            const current = computeExpansionFeasibilityScenario(plan, inputs, 1, 1, rounds);
+            if (!current) return null;
+            const optimistic = computeExpansionFeasibilityScenario(plan, inputs, 1 - feedStressPct / 100, 1 + saleStressPct / 100, rounds);
+            const pessimistic = computeExpansionFeasibilityScenario(plan, inputs, 1 + feedStressPct / 100, 1 - saleStressPct / 100, rounds);
+            return { feedStressPct, saleStressPct, rounds, current, optimistic, pessimistic };
+        }
+
+        // ============ 📅 إسقاط سنوي — عنبر واحد بالسعة الدنيا (minHouseCapacity)، 3 سيناريوهات ============
+        // ده منفصل عن "خطة التوسع كلها" اللي بتكبّر عدد العنابر — هنا بس بنجاوب على سؤال: "عنبر واحد بسعته
+        // الحالية، لو شغّلته طول السنة (بعدد الدورات اللي بتدخل فى السنة)، هيجيب قد إيه إيراد/تكلفة/ربح سنويًا؟"
+        function computeSingleHouseAnnualProjection(plan, inputs) {
+            if (!plan || plan.insufficientData) return null;
+            const { cycleDays, restDays, totalCycleDays } = getExpansionCycleTotalDays(plan.hist);
+            const cyclesPerYear = totalCycleDays > 0 ? 365 / totalCycleDays : 0;
+            const capacity = inputs.minHouseCapacity || 10000;
+            const feedStressPct = inputs.feedPriceStressPct != null ? inputs.feedPriceStressPct : 15;
+            const saleStressPct = inputs.salePriceStressPct != null ? inputs.salePriceStressPct : 10;
+
+            function scenario(feedMult, revMult) {
+                const unit = computeExpansionScenarioUnitEconomics(plan, inputs, feedMult, revMult);
+                if (!unit) return null;
+                const annualRevenue = capacity * unit.revenuePerBird * cyclesPerYear;
+                const annualCost = capacity * unit.costPerBird * cyclesPerYear;
+                const annualProfit = capacity * unit.profitPerBird * cyclesPerYear;
+                const roi = annualCost > 0 ? (annualProfit / annualCost) * 100 : null;
+                return { ...unit, annualRevenue, annualCost, annualProfit, roi };
+            }
+            const current = scenario(1, 1);
+            if (!current) return null;
+            const optimistic = scenario(1 - feedStressPct / 100, 1 + saleStressPct / 100);
+            const pessimistic = scenario(1 + feedStressPct / 100, 1 - saleStressPct / 100);
+            return { capacity, cycleDays, restDays, totalCycleDays, cyclesPerYear, feedStressPct, saleStressPct, current, optimistic, pessimistic };
+        }
+
+        function renderSingleHouseAnnualCards(annualProj) {
+            const cards = [
+                { label: '⚖️ الوضع الحالي', d: annualProj.current },
+                { label: `😀 متفائل (علف -${fmt(annualProj.feedStressPct,0)}% / بيع +${fmt(annualProj.saleStressPct,0)}%)`, d: annualProj.optimistic },
+                { label: `😟 متشائم (علف +${fmt(annualProj.feedStressPct,0)}% / بيع -${fmt(annualProj.saleStressPct,0)}%)`, d: annualProj.pessimistic },
+            ];
+            return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
+                ${cards.map(c => {
+                    const d = c.d;
+                    const roiColor = d.roi == null ? 'var(--muted)' : (d.roi >= 0 ? 'var(--green)' : 'var(--red)');
+                    return `<div class="feas-sub-card" style="margin:0;">
+                        <h4 style="margin-bottom:6px;">${c.label}</h4>
+                        ${statLine('إيراد سنوي', money(d.annualRevenue), {vStyle:'color:var(--green);'})}
+                        ${statLine('تكلفة سنوية', money(d.annualCost), {vStyle:'color:var(--red);'})}
+                        ${statLine('صافي ربح سنوي', money(d.annualProfit), {kStyle:'font-weight:900;', vStyle:`font-weight:900;color:${d.annualProfit>=0?'var(--green)':'var(--red)'};`})}
+                        ${statLine('العائد السنوي على التكلفة', d.roi!=null?fmt(d.roi,1)+'%':'—', {vStyle:`font-weight:900;color:${roiColor};`})}
+                        ${statLine('ربح الطائر / الدورة', money(d.profitPerBird))}
+                    </div>`;
+                }).join('')}
+            </div>`;
+        }
+
+        // ============ 📅 إسقاط سنوي لخطة التوسع كلها — بيجمع جولات المحاكاة (كل جولة ≈ مدة دورة كاملة) فى سنوات تقويمية ============
+        function computeExpansionPlanAnnualTable(scenarioData, totalCycleDays) {
+            if (!scenarioData || !scenarioData.rows || !scenarioData.rows.length) return [];
+            const initRow = scenarioData.rows[0]; // round 0 = الاستثمار الأولي، بيتحسب فى السنة الأولى
+            const cycleRows = scenarioData.rows.slice(1);
+            const years = [];
+            cycleRows.forEach(r => {
+                const elapsedDaysAtStart = (r.round - 1) * totalCycleDays;
+                const yearIdx = Math.floor(elapsedDaysAtStart / 365);
+                if (!years[yearIdx]) {
+                    years[yearIdx] = { year: yearIdx + 1, revenue: 0, cost: 0, profit: 0, houseCount: 0, totalCapacity: 0, fundBalance: 0, cumProfit: 0, lastRound: 0 };
+                }
+                const y = years[yearIdx];
+                y.revenue += r.revenue; y.cost += r.cost; y.profit += r.profit;
+                y.houseCount = r.houseCount; y.totalCapacity = r.totalCapacity; y.fundBalance = r.fundBalance; y.cumProfit = r.cumProfit; y.lastRound = r.round;
+            });
+            if (years[0]) { years[0].cost += initRow.cost; years[0].profit -= initRow.cost; }
+            return years.filter(Boolean);
+        }
+
+        function renderExpansionPlanAnnualTable(study, scenarioKey, totalCycleDays) {
+            const d = study[scenarioKey] || study.current;
+            const years = computeExpansionPlanAnnualTable(d, totalCycleDays);
+            if (!years.length) return `<p style="font-size:11px;color:var(--muted);">مفيش بيانات كفاية لعرض إسقاط سنوي للخطة.</p>`;
+            return `<div class="scroll-x">
+                <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                    <thead><tr style="border-bottom:2px solid var(--line);">
+                        <th style="padding:5px;">السنة</th><th style="padding:5px;">عنابر (آخر السنة)</th><th style="padding:5px;">السعة الكلية (آخر السنة)</th>
+                        <th style="padding:5px;">الإيراد السنوي</th><th style="padding:5px;">التكلفة السنوية</th><th style="padding:5px;">صافي ربح السنة</th>
+                        <th style="padding:5px;">الربح التراكمي</th><th style="padding:5px;">رصيد الصندوق (آخر السنة)</th>
+                    </tr></thead>
+                    <tbody>${years.map(y => `<tr style="border-bottom:1px solid var(--line);">
+                        <td style="padding:5px;text-align:center;font-weight:800;">سنة ${y.year}</td>
+                        <td style="padding:5px;text-align:center;">${fmt(y.houseCount,0)}</td>
+                        <td style="padding:5px;text-align:center;">${fmt(y.totalCapacity,0)}</td>
+                        <td style="padding:5px;text-align:center;color:var(--green);">${money(y.revenue)}</td>
+                        <td style="padding:5px;text-align:center;color:var(--red);">${money(y.cost)}</td>
+                        <td style="padding:5px;text-align:center;font-weight:800;color:${y.profit>=0?'var(--green)':'var(--red)'};">${money(y.profit)}</td>
+                        <td style="padding:5px;text-align:center;font-weight:800;color:${y.cumProfit>=0?'var(--green)':'var(--red)'};">${money(y.cumProfit)}</td>
+                        <td style="padding:5px;text-align:center;${y.fundBalance<0?'color:var(--red);font-weight:800;':''}">${money(y.fundBalance)}</td>
+                    </tr>`).join('')}</tbody>
+                </table>
+            </div>
+            <p style="font-size:10px;color:var(--muted);margin:6px 2px 0;">💡 كل سنة = تقريبًا ${fmt(365/totalCycleDays,1)} دورة (${fmt(totalCycleDays,0)} يوم/دورة شامل الراحة بين الدورات). آخر سنة ممكن تكون جزء من دورة كاملة لو الجولات المعروضة خِلصت فى نصّها.</p>`;
+        }
+
+        // ============ نظرة عامة: 3 كروت مقارنة (الوضع الحالي / متفائل / متشائم) على مستوى الخطة كلها ============
+        function renderExpansionFeasibilitySummaryCards(study) {
+            const cards = [
+                { key: 'current', label: '⚖️ الوضع الحالي', data: study.current },
+                { key: 'optimistic', label: `😀 متفائل (علف -${fmt(study.feedStressPct,0)}% / بيع +${fmt(study.saleStressPct,0)}%)`, data: study.optimistic },
+                { key: 'pessimistic', label: `😟 متشائم (علف +${fmt(study.feedStressPct,0)}% / بيع -${fmt(study.saleStressPct,0)}%)`, data: study.pessimistic },
+            ];
+            return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                ${cards.map(c => {
+                    const d = c.data;
+                    const roiColor = d.roi == null ? 'var(--muted)' : (d.roi >= 0 ? 'var(--green)' : 'var(--red)');
+                    return `<div class="feas-sub-card" style="margin:0;">
+                        <h4 style="margin-bottom:6px;">${c.label}</h4>
+                        ${statLine('الاستثمار الأولي', money(d.initialInvestment))}
+                        ${statLine(`إجمالي الإيراد (${study.rounds} جولة)`, money(d.totalRevenue), {vStyle:'color:var(--green);'})}
+                        ${statLine('إجمالي التكلفة', money(d.totalCost), {vStyle:'color:var(--red);'})}
+                        ${statLine('صافي الربح الإجمالي', money(d.totalProfit), {kStyle:'font-weight:900;', vStyle:`font-weight:900;color:${d.totalProfit>=0?'var(--green)':'var(--red)'};`})}
+                        ${statLine('العائد على الاستثمار الكلي', d.roi!=null?fmt(d.roi,1)+'%':'—', {vStyle:`font-weight:900;color:${roiColor};`})}
+                        ${statLine('جولة استرداد رأس المال', d.paybackRound!=null?`جولة ${d.paybackRound}`:`لسه فوق ${study.rounds} جولة`, {vStyle: d.paybackRound!=null?'color:var(--green);font-weight:800;':'color:var(--red);'})}
+                        ${statLine('أهداف تكامل رأسي اتحققت', `${d.milestonesAchieved} من ${d.totalMilestones}`)}
+                        <div style="font-size:10px;margin-top:4px;color:${d.breachedSafety?'var(--red)':'var(--muted)'};font-weight:${d.breachedSafety?'800':'400'};">${d.breachedSafety ? '⚠️ الصندوق بيكسر الحد الأدنى الآمن فى مرحلة ما من هذا السيناريو' : '✅ الصندوق فاضل فوق الحد الأدنى الآمن طول الخطة'}</div>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        }
+
+        // ============ تفصيل: جدول جولة بجولة لسيناريو مختار — عنابر/سعة/إيراد/تكلفة/ربح/ربح تراكمي/رصيد الصندوق ============
+        function renderExpansionFeasibilityDetailTable(study, scenarioKey) {
+            const d = study[scenarioKey] || study.current;
+            return `<div class="scroll-x">
+                <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                    <thead><tr style="border-bottom:2px solid var(--line);">
+                        <th style="padding:5px;">الجولة</th><th style="padding:5px;">عنابر</th><th style="padding:5px;">السعة الكلية</th>
+                        <th style="padding:5px;">الإيراد</th><th style="padding:5px;">التكلفة</th><th style="padding:5px;">صافي ربح الجولة</th>
+                        <th style="padding:5px;">الربح التراكمي</th><th style="padding:5px;">رصيد الصندوق</th><th style="padding:5px;">ملاحظة</th>
+                    </tr></thead>
+                    <tbody>${d.rows.map(r => `<tr style="border-bottom:1px solid var(--line);">
+                        <td style="padding:5px;text-align:center;">${r.round}</td>
+                        <td style="padding:5px;text-align:center;">${fmt(r.houseCount,0)}</td>
+                        <td style="padding:5px;text-align:center;">${fmt(r.totalCapacity,0)}</td>
+                        <td style="padding:5px;text-align:center;color:var(--green);">${money(r.revenue)}</td>
+                        <td style="padding:5px;text-align:center;color:var(--red);">${money(r.cost)}</td>
+                        <td style="padding:5px;text-align:center;font-weight:800;color:${r.profit>=0?'var(--green)':'var(--red)'};">${money(r.profit)}</td>
+                        <td style="padding:5px;text-align:center;font-weight:800;color:${r.cumProfit>=0?'var(--green)':'var(--red)'};">${money(r.cumProfit)}</td>
+                        <td style="padding:5px;text-align:center;${r.fundBalance<0?'color:var(--red);font-weight:800;':''}">${money(r.fundBalance)}</td>
+                        <td style="padding:5px;font-size:10px;">${esc(r.note)}</td>
+                    </tr>`).join('')}</tbody>
+                </table>
+            </div>`;
+        }
+
+        // ============ القسم الكامل: مدخلات تفاعلية (بتتحدث لحظيًا مع الكتابة) + نظرة عامة + تفصيل كل جولة ============
+        let _expFeasCtx = null; // سياق آخر خطة/مدخلات اتعرضت — تُستخدم فى إعادة الحساب اللحظي من غير أي إعادة تصيير للصفحة كلها
+        function renderExpansionFeasibilitySection(plan, inputs) {
+            if (!plan || plan.insufficientData) return '';
+            const study = computeExpansionFeasibilityStudy(plan, inputs);
+            if (!study) return '';
+            const annualProj = computeSingleHouseAnnualProjection(plan, inputs);
+            const { totalCycleDays } = getExpansionCycleTotalDays(plan.hist);
+            _expFeasCtx = { plan, inputs };
+            return `
+            <div class="section">
+                <div class="section-head"><h2>🧮 دراسة الجدوى الشاملة التفاعلية لخطة التوسع</h2></div>
+                <div class="card" style="display:grid;gap:12px;">
+                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">دراسة جدوى تفاعلية كاملة — تغطّي العنبر الواحد بإسقاط سنوي، وخطة التوسع كلها بإسقاط سنوي وجولة بجولة، بـ3 سيناريوهات (حالي/متفائل/متشائم). غيّر أي رقم تحت وهتلاقي كل الكروت والجداول بتتحدث فورًا بدون حفظ. اضغط "💾 احفظ" بس لو عايز تثبّت الأرقام دي كافتراض للمرة الجاية.</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
+                        <div class="field"><label>نسبة ضغط سعر العلف %</label><input type="number" step="1" id="exp_feedPriceStressPct" value="${inputs.feedPriceStressPct ?? 15}" oninput="recalcExpansionFeasibilityStudy()"></div>
+                        <div class="field"><label>نسبة ضغط سعر البيع %</label><input type="number" step="1" id="exp_salePriceStressPct" value="${inputs.salePriceStressPct ?? 10}" oninput="recalcExpansionFeasibilityStudy()"></div>
+                        <div class="field"><label>عدد الجولات للعرض</label><input type="number" step="1" min="1" max="30" id="exp_feasStudyRounds" value="${inputs.feasStudyRounds ?? 8}" oninput="recalcExpansionFeasibilityStudy()"></div>
+                    </div>
+                    <button class="btn gold block" onclick="saveExpansionInputs()">💾 احفظ الأرقام دي كافتراض</button>
+
+                    ${annualProj ? `<div style="border-top:1px solid var(--line);padding-top:10px;">
+                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📅 الإسقاط السنوي — عنبر واحد (${fmt(annualProj.capacity,0)} طائر، ~${fmt(annualProj.cyclesPerYear,1)} دورة/سنة)</h4>
+                        <div id="expFeasAnnualHouseCards">${renderSingleHouseAnnualCards(annualProj)}</div>
+                    </div>` : ''}
+
+                    <div style="border-top:1px solid var(--line);padding-top:10px;">
+                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📊 نظرة شاملة على الخطة كلها (${study.rounds} جولة)</h4>
+                        <div id="expFeasSummaryCards">${renderExpansionFeasibilitySummaryCards(study)}</div>
+                    </div>
+
+                    <div style="border-top:1px solid var(--line);padding-top:10px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                            <h4 style="margin:0;font-size:13px;font-weight:900;color:var(--barn-dark);">📅 الإسقاط السنوي — خطة التوسع كلها</h4>
+                            <select id="expFeasScenarioSelect" onchange="recalcExpansionFeasibilityStudy()" style="max-width:220px;">
+                                <option value="current">⚖️ الوضع الحالي</option>
+                                <option value="optimistic">😀 متفائل</option>
+                                <option value="pessimistic">😟 متشائم</option>
+                            </select>
+                        </div>
+                        <div id="expFeasAnnualPlanTable">${renderExpansionPlanAnnualTable(study, 'current', totalCycleDays)}</div>
+                    </div>
+
+                    <div style="border-top:1px solid var(--line);padding-top:10px;">
+                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📋 تفصيل كل جولة (نفس السيناريو المختار فوق)</h4>
+                        <div id="expFeasDetailTable">${renderExpansionFeasibilityDetailTable(study, 'current')}</div>
+                    </div>
+                    <p style="font-size:10px;color:var(--muted);margin:0;line-height:1.6;">💡 "الاستثمار الأولي" = تكلفة فتح القاعدة الأفقية بالكامل (${inputs.targetHouseCount ?? 10} عنبر × ${fmt(inputs.minHouseCapacity ?? 10000,0)} طائر) بسعر فتح العنبر اللي دخّلته فى "الأساسيات" فوق. لو الرقم صفر يبقى معناه إنك مدخلتش "تكلفة فتح عنبر جديد للطائر" هناك بعد.</p>
+                </div>
+            </div>`;
+        }
+
+        // إعادة حساب لحظية بدون حفظ ولا إعادة تصيير للصفحة — بتقرأ القيم اللي المستخدم بيكتبها دلوقتي وتحدّث كل الكروت والجداول فورًا
+        function recalcExpansionFeasibilityStudy() {
+            if (!_expFeasCtx) return;
+            const feedEl = document.getElementById('exp_feedPriceStressPct');
+            const saleEl = document.getElementById('exp_salePriceStressPct');
+            const roundsEl = document.getElementById('exp_feasStudyRounds');
+            const scenarioEl = document.getElementById('expFeasScenarioSelect');
+            const liveInputs = { ..._expFeasCtx.inputs,
+                feedPriceStressPct: feedEl ? (parseFloat(feedEl.value) || 0) : _expFeasCtx.inputs.feedPriceStressPct,
+                salePriceStressPct: saleEl ? (parseFloat(saleEl.value) || 0) : _expFeasCtx.inputs.salePriceStressPct,
+                feasStudyRounds: roundsEl ? (parseInt(roundsEl.value) || 8) : (_expFeasCtx.inputs.feasStudyRounds || 8),
+            };
+            const study = computeExpansionFeasibilityStudy(_expFeasCtx.plan, liveInputs);
+            if (!study) return;
+            const scenarioKey = scenarioEl ? scenarioEl.value : 'current';
+            const { totalCycleDays } = getExpansionCycleTotalDays(_expFeasCtx.plan.hist);
+
+            const annualProj = computeSingleHouseAnnualProjection(_expFeasCtx.plan, liveInputs);
+            const annualHouseEl = document.getElementById('expFeasAnnualHouseCards');
+            if (annualHouseEl && annualProj) annualHouseEl.innerHTML = renderSingleHouseAnnualCards(annualProj);
+
+            const cardsEl = document.getElementById('expFeasSummaryCards');
+            if (cardsEl) cardsEl.innerHTML = renderExpansionFeasibilitySummaryCards(study);
+
+            const annualPlanEl = document.getElementById('expFeasAnnualPlanTable');
+            if (annualPlanEl) annualPlanEl.innerHTML = renderExpansionPlanAnnualTable(study, scenarioKey, totalCycleDays);
+
+            const tableEl = document.getElementById('expFeasDetailTable');
+            if (tableEl) tableEl.innerHTML = renderExpansionFeasibilityDetailTable(study, scenarioKey);
+        }
+
         // ============ 💳 امتى نعتمد على الأجل، وامتى بقى الأجل ضرر — نقطة التعادل مع التكامل الرأسي ============
         // السؤال اللي الميزة دي بتجاوبه بالظبط: "امتى نعتمد على الأجل وامتى نقدر ندير المنظومة بنفس القدرة
         // (نفس سرعة التوسع) من غيره؟". الإجابة مبنية على منطق "فترة استرداد رأس المال" (payback period) بسيط:
@@ -17517,25 +17836,9 @@
             </div>
             </div>
             <div class="section">
-                <div class="section-head"><h2>📊 حاسبات ${expansionSpeciesLabel(species)}: مرحلة العلف + الأمهات + المصنع + المجزر</h2></div>
+                <div class="section-head"><h2>📊 حاسبات ${expansionSpeciesLabel(species)}: الأمهات + المصنع + المجزر</h2></div>
                 <div class="card" style="display:grid;gap:14px;">
                     <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">كل حاسبات النوع المختار مجمّعة هنا فى قسم واحد قابل للطي — منفصل تمامًا عن برنامج إضافات العلف (اللي فاضل زي ما هو فى تبويب "الإنتاج").</p>
-
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <label style="font-weight:800;display:block;margin-bottom:8px;">🌾 مرحلة العلف الافتراضية لهذا النوع (بادئ / نامي / ناهي)</label>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                            <div class="field"><label>إجمالي علف بادئ لكل طائر (كجم)</label><input type="number" step="0.05" id="exp_feedStageStarterKg" value="${inputs.feedStageStarterKg ?? ''}"></div>
-                            <div class="field"><label>إجمالي علف نامي لكل طائر (كجم)</label><input type="number" step="0.05" id="exp_feedStageGrowerKg" value="${inputs.feedStageGrowerKg ?? ''}"></div>
-                        </div>
-                        <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 مرحلة "ناهي" = باقي الدورة تلقائيًا. دي قيم مرجعية للتخطيط الخاصة بهذا النوع، بتغذّي تقدير إجمالي العلف/الطائر فى حاسبات السعة تحت لو لسه معندكش دورة مؤرشفة من هذا النوع.</p>
-                    </div>
-
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <label style="font-weight:800;display:block;margin-bottom:8px;">🔄 برنامج التحويل بين الأعلاف</label>
-                        <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">
-                            إدارة جدول التحويل التدريجي بين نوعين علف (بادئ→نامي، نامي→ناهي، أو أي علف لآخر) اتنقلت لتبويب "🌾 الإنتاج" ← قسم "العلف" مباشرة، جنب باقي إعدادات برنامج العلف. من هناك تقدر تضيف/تعدّل جدول التحويل الخاص بالدفعة النشطة.
-                        </p>
-                    </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:12px;">
                         <label style="font-weight:800;display:block;margin-bottom:8px;">📥 بيانات أداء احتياطية (لو لسه معندكش دورة مؤرشفة من هذا النوع)</label>
@@ -17544,7 +17847,7 @@
                             <div class="field"><label>ربح متوقع للطائر (جنيه)</label><input type="number" step="0.01" id="exp_manualAvgProfitPerBird" value="${inputs.manualAvgProfitPerBird ?? ''}"></div>
                             <div class="field"><label>تذبذب الربح المتوقع ± (جنيه)</label><input type="number" step="0.01" id="exp_manualSdProfitPerBird" value="${inputs.manualSdProfitPerBird ?? ''}"></div>
                             <div class="field"><label>مدة الدورة المتوقعة (يوم)</label><input type="number" id="exp_manualAvgCycleDays" value="${inputs.manualAvgCycleDays ?? ''}"></div>
-                            <div class="field"><label>إجمالي علف متوقع/طائر (كجم)</label><input type="number" step="0.05" id="exp_manualAvgFeedKgPerBird" value="${inputs.manualAvgFeedKgPerBird ?? ''}" placeholder="لو فاضي، بيتحسب من بادئ+نامي فوق"></div>
+                            <div class="field"><label>إجمالي علف متوقع/طائر (كجم)</label><input type="number" step="0.05" id="exp_manualAvgFeedKgPerBird" value="${inputs.manualAvgFeedKgPerBird ?? ''}"></div>
                             <div class="field"><label>وزن التسويق المتوقع (كجم)</label><input type="number" step="0.05" id="exp_manualAvgFinalWeightKg" value="${inputs.manualAvgFinalWeightKg ?? ''}"></div>
                             <div class="field"><label>نسبة نجاح الدورة المتوقعة %</label><input type="number" step="1" id="exp_manualSuccessRatePct" value="${inputs.manualSuccessRatePct ?? ''}"></div>
                         </div>
@@ -17727,37 +18030,7 @@
                     <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.verticalPlanned > 0 && risk.otherSpeciesPlanned === 0 ? `⚠️ كل خطتك حاليًا فى ${expansionSpeciesLabel(species)} بس، من غير خطة فعلية لنوع تاني — لو حصلت أزمة سعرية أو مرضية خاصة بالنوع ده هتأثر على كل استثماراتك مع بعض. جرّب تدخل أرقام لنوع تاني من القائمة فوق للتنويع.` : (risk.otherSpeciesPlanned > 0 ? '✅ عندك خطط فعلية لأكتر من نوع، وده بيقلل اعتمادك الكامل على نوع واحد.' : '💡 دخّل رأس مال تقديري لأي هدف كبير عشان يظهر هنا تحليل التركّز.')}</p>
                 </div>
             </div>
-            <div class="section">
-                <div class="section-head"><h2>📈 مخاطر تقلب سعر العلف</h2></div>
-                <div class="card" style="display:grid;gap:10px;">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                        <div class="field"><label>نسبة اختبار الضغط لسعر العلف %</label><input type="number" step="1" id="exp_feedPriceStressPct" value="${inputs.feedPriceStressPct ?? 15}"></div>
-                        <div class="field full" style="grid-column:1/-1;"><button class="btn gold block" onclick="saveExpansionInputs()">💾 احفظ واحسب</button></div>
-                    </div>
-                    ${statLine(`تكلفة العلف الحالية للطائر`, `${money(risk.priceRisk.avgFeedCostPerBird)}`)}
-                    ${statLine(`تكلفة إضافية للطائر لو العلف زاد ${fmt(risk.priceRisk.feedStressPct,0)}%`, `+${money(risk.priceRisk.extraCostPerBird)}`, {vStyle:`font-weight:900;color:var(--red);`})}
-                    ${statLine(`ربح الطائر بعد الزيادة (علف بس)`, `${money(risk.priceRisk.stressedProfit)}`, {vStyle:`font-weight:900;color:${risk.priceRisk.stressedProfit >= 0 ? 'var(--green)' : 'var(--red)'};`})}
-                    ${statLine(`أدنى رصيد للصندوق تحت ضغط سعر العلف بس`, `${money(risk.priceRisk.stressCase.minFundBalance)}`, {vStyle:`font-weight:900;color:${risk.priceRisk.stressCase.breachedSafety ? 'var(--red)' : 'inherit'};`})}
-                    <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.priceRisk.stressCase.breachedSafety ? '⚠️ لو سعر العلف ارتفع ' + fmt(risk.priceRisk.feedStressPct,0) + '% بس، الصندوق بيكسر الحد الأدنى الآمن.' : '✅ الخطة قادرة تمتص زيادة ' + fmt(risk.priceRisk.feedStressPct,0) + '% فى سعر العلف لوحده من غير ما الصندوق يكسر الحد الأدنى الآمن.'}</p>
-                </div>
-            </div>
-            <div class="section">
-                <div class="section-head"><h2>📊 تحليل الحساسية المُعمَّق (مدموج مع دراسة الجدوى) — سيناريوهات علف + بيع معًا</h2></div>
-                <div class="card" style="display:grid;gap:8px;">
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">نفس منطق وتسمية سيناريوهات "الوضع الحالي / متفائل / متشائم" الموجودة فى دراسة الجدوى لدفعتك الحالية، لكن مطبّقة هنا على مسار الصندوق وتوقيت الأهداف الكبرى بالكامل عبر خطة التوسع — مش بس ربح دورة واحدة.</p>
-                    <div class="field"><label>نسبة اختبار ضغط سعر البيع %</label><input type="number" id="exp_salePriceStressPct" value="${inputs.salePriceStressPct ?? 10}" onchange="saveExpansionInputs()"></div>
-                    <div class="scroll-x">
-                        <table><thead><tr><th>السيناريو</th><th>ربح الطائر</th><th>أدنى رصيد صندوق</th><th>الحالة</th></tr></thead>
-                        <tbody>${risk.priceRisk.scenarios.map(s => `
-                            <tr><td>${s.label}</td>
-                            <td style="color:${s.profitPerBird>=0?'var(--green)':'var(--red)'};font-weight:800;">${money(s.profitPerBird)}</td>
-                            <td>${money(s.fundSim.minFundBalance)}</td>
-                            <td>${s.fundSim.breachedSafety ? '⚠️ يكسر الحد الآمن' : '✅ آمن'}</td></tr>`).join('')}
-                        </tbody></table>
-                    </div>
-                    <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.priceRisk.scenarios[2].fundSim.breachedSafety ? '⚠️ فى السيناريو المتشائم المزدوج (علف أعلى + بيع أقل معًا)، صندوق التوسع بيكسر الحد الأدنى الآمن فعليًا — ده أشد اختبار واقعي من اختبار العلف لوحده فوق، لازم تاخده فى الاعتبار قبل أي التزام برأس مال هدف كبير قريب.' : '✅ حتى فى السيناريو المتشائم المزدوج، الصندوق بيفضل فوق الحد الأدنى الآمن.'}</p>
-                </div>
-            </div>
+            ${renderExpansionFeasibilitySection(plan, inputs)}
             <div class="section">
                 <div class="section-head"><h2>💳 الاعتماد على الأجل — امتى بيبقى ضرر بدل ميزة؟</h2></div>
                 <div class="card" style="display:grid;gap:8px;">
