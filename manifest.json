@@ -1,39 +1,30 @@
-{
-  "name": "كتكوت برو — إدارة مزرعة الدواجن",
-  "short_name": "كتكوت برو",
-  "description": "نظام إدارة مزرعة دواجن شامل: سجل يومي، تحليلات إنتاجية، مخزون، مالية، وتنبيهات ذكية — يعمل بدون إنترنت.",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait",
-  "dir": "rtl",
-  "lang": "ar",
-  "background_color": "#FAF7EE",
-  "theme_color": "#1F2F26",
-  "icons": [
-    {
-      "src": "./icon-192x192-any.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./icon-512x512-any.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./icon-192x192-maskable.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "./icon-512x512-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ]
-}
+[
+  "00-reference-data-and-benchmarks.js",
+  "01-state-storage.js",
+  "02-auth-roles.js",
+  "03-modals.js",
+  "04-heating-estimation.js",
+  "05-feed-formulation-calculator.js",
+  "06-batch-crud.js",
+  "07-inventory-helpers.js",
+  "08-daily-record-crud.js",
+  "09-purchases-crud.js",
+  "10-sales-crud.js",
+  "11-custom-items-crud.js",
+  "12-operations-biosecurity-crud.js",
+  "13-stock-manual-movement.js",
+  "14-reminders-vaccines-treatments-additives.js",
+  "15-core-production-calculations.js",
+  "16-feasibility-study.js",
+  "17-alerts-engine.js",
+  "18-render-router.js",
+  "19-dashboard.js",
+  "20-daily-tab.js",
+  "21-inventory-purchases-sales.js",
+  "22-operations-biosecurity-tab.js",
+  "23-alerts-tab.js",
+  "24-finance-tab.js",
+  "25-compare-tab.js",
+  "26-charts.js",
+  "27-export-pdf-print.js"
+]

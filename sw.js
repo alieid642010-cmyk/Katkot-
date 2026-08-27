@@ -1,4 +1,4 @@
-var CACHE_NAME = 'katkot-shell-v2'; // ⚠️ لازم يتزامن يدويًا مع sw.js — الاتنين نسخة واحدة من نفس الكود، ده بس خط دفاع تاني لو الملف الحقيقي فشل يتحمّل (404/مشكلة نشر)
+var CACHE_NAME = 'katkot-shell-v3'; // ⚠️ لازم يتزامن يدويًا مع sw.js — الاتنين نسخة واحدة من نفس الكود، ده بس خط دفاع تاني لو الملف الحقيقي فشل يتحمّل (404/مشكلة نشر)
 // ============ 🔒 (إصلاح) هنا كانت النسخة القديمة (v1) اللي ملهاش تخزين لسكريبتات Firebase —
 // لو ./sw.js الحقيقي فشل يتسجّل لأي سبب (404، مشكلة نشر على GitHub Pages)، التطبيق كان بيرجع
 // بصمت للنسخة القديمة دي وبيفقد كل فايدة تخزين Firebase من غير ما حد يلاحظ. دلوقتي الاتنين
@@ -8,6 +8,40 @@ var FIREBASE_URLS = [
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'
 ];
+
+// ============ (جديد) Firebase Cloud Messaging — استقبال إشعارات فورية حتى لو التطبيق مقفول تمامًا ============
+// نفس الـ service worker المسؤول عن التخزين المؤقت هو اللي بيستقبل رسائل الـ push، عشان
+// المتصفح ميدّيش أكتر من SW فعّال بيستحوذ على نفس الـ scope فى نفس الوقت.
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+try {
+    firebase.initializeApp({
+        apiKey: "AIzaSyAvQkPnrzxuMJbqDiXxhHctxjhiM-LFG0M",
+        authDomain: "katkot-pro.firebaseapp.com",
+        projectId: "katkot-pro",
+        storageBucket: "katkot-pro.firebasestorage.app",
+        messagingSenderId: "364078349089",
+        appId: "1:364078349089:web:e1d2222a22251f859b9c60"
+    });
+    var messaging = firebase.messaging();
+    messaging.onBackgroundMessage(function (payload) {
+        var title = (payload.notification && payload.notification.title) || '🐣 كتكوت برو';
+        var body = (payload.notification && payload.notification.body) || '';
+        self.registration.showNotification(title, {
+            body: body, dir: 'rtl', lang: 'ar',
+            icon: './icon-192x192-any.png', badge: './icon-192x192-any.png',
+            data: payload.data || {}
+        });
+    });
+} catch (e) { /* لو فشلت تهيئة Firebase جوه الـ SW (مثلاً فى وضع أوفلاين وقت أول تسجيل) نتجاهل بهدوء — باقي وظائف الـ SW (التخزين المؤقت) لازم تفضل شغالة عادي */ }
+self.addEventListener('notificationclick', function (event) {
+    event.notification.close();
+    event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+        for (var i = 0; i < list.length; i++) { if ('focus' in list[i]) return list[i].focus(); }
+        if (clients.openWindow) return clients.openWindow('./');
+    }));
+});
+
 self.addEventListener('install', function(e){
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(function(cache){
