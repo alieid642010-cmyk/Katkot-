@@ -8315,20 +8315,9 @@
             document.getElementById('treatModalOverlay').classList.add('show'); }
         let stockMode = 'in';
 
-        function openStockModal(mode) {
-            if (!getActiveBatch()) { showToast('أضف دفعة أولاً'); return; }
-            editingMovementId = null;
-            stockMode = mode;
-            document.getElementById('stockModalTitle').textContent = mode === 'in' ? 'إضافة كمية للمخزن' :
-                mode === 'adjust' ? '🗑️ حذف / تسوية كمية من المخزن (لا تُحسب كاستهلاك)' : 'تسجيل استهلاك من المخزن';
-            document.getElementById('stockModalBtn').textContent = mode === 'in' ? 'إضافة للمخزن' :
-                mode === 'adjust' ? 'حذف من المخزن' : 'تسجيل الاستهلاك';
-            ['st_name', 'st_qty', 'st_note'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('st_category').selectedIndex = 0;
-            document.getElementById('st_unit').selectedIndex = 0;
-            document.getElementById('st_date').value = todayStr(); document.getElementById('st_date').max = todayStr();
-            document.getElementById('stockModalOverlay').classList.add('show');
-        }
+        // ============ 🗑️ حذف: openStockModal(mode) كانت مُستبدَلة بالكامل ولا يوجد أي نداء ليها فى الكود كله —
+        // النقطة الفعلية الوحيدة لفتح مودال المخزون دلوقتي هي quickStock(itemId, mode) تحت (مربوطة بصنف
+        // محدد من كارت المخزون فى الداشبورد)، وهي بتغطي نفس الوظيفة بجودة أعلى (بتعرف الصنف من الأول). ============
 
         // لو الاسم المكتوب يطابق عنصر موجود بالفعل فى المخزن، نطابق التصنيف والوحدة تلقائيًا
         // حتى لا تُنشأ نسخة مكررة من نفس الصنف بتصنيف مختلف ويظل الرصيد الأصلي بدون تحديث
@@ -13942,7 +13931,10 @@
             const expiryRows = computeExpiryAlerts(b);
             expiryRows.slice(0, 3).forEach(r => {
                 alerts.push({ level: r.level === 'expired' ? 'danger' : 'warn',
-                    actionLabel: '📦 راجع المخزون', actionOnclick: "goToManagementSub('inventory')",
+                    // 🔧 إصلاح: كانت بتنادي goToManagementSub('inventory')، لكن المخزون بقى كارت فى الداشبورد
+                    // مش تبويب إدارة (شوف renderManagementTab اللي بيحوّل 'inventory' لـ'finance' تلقائيًا) —
+                    // يعني الزرار كان بيوصّل المستخدم لتقرير مالي بدل المخزون فعليًا. دلوقتي بيروح للداشبورد صح.
+                    actionLabel: '📦 راجع المخزون', actionOnclick: "setTab('dashboard')",
                     text: r.level === 'expired' ? `⏳ صنف منتهي الصلاحية فى المخزون: ${r.name} (منذ ${Math.abs(r.daysLeft)} يوم) — لا تستخدمه` : `⏳ صنف قرب انتهاء الصلاحية: ${r.name} (متبقٍ ${r.daysLeft} يوم) — استخدمه أو استبدله قريبًا` });
             });
             // ===== موجة حر/برد متوقعة خلال 3 أيام قادمة (من آخر تحقق طقس محفوظ، لو لسه حديث خلال آخر 18 ساعة) =====
@@ -13980,7 +13972,7 @@
                 const feedFromPurchases = b.purchases.filter(p => p.type === 'علف').reduce((s, p) => s + p.total, 0);
                 const feedEstimate = (m.cumFeed || 0) * (b.feedprice || 0);
                 if (feedFromPurchases > 0 && feedEstimate > 0 && feedFromPurchases < feedEstimate * 0.5) {
-                    alerts.push({ level: 'warn', actionLabel: '🧾 سجل المشتريات', actionOnclick: "goToManagementSub('inventory')",
+                    alerts.push({ level: 'warn', actionLabel: '🧾 سجل المشتريات', actionOnclick: "goToManagementSub('finance');showTransactionsLedger()", // 🔧 ربط مباشر بسجل المشتريات التفاعلي بدل ما تهبط عام على تبويب المالية وتدوّر بنفسك
                         text: `💰 قيمة مشتريات العلف المسجّلة (${money(feedFromPurchases)}) أقل من نص التقدير القياسي (${money(feedEstimate)}) بناءً على الكمية المستهلكة فعليًا — الأرجح إن فيه شحنات علف اتستخدمت لكن ما اتسجّلتش كمشترى، فالربح الظاهر فى تبويب المالية ممكن يكون متضخّم وهمي. راجع سجل المشتريات.` });
                 }
             })();
@@ -14340,12 +14332,12 @@
                 const overdueSal = (b.sales || []).filter(s => s.paid === false && s.dueDate && s.dueDate < todayStr());
                 if (overduePur.length) {
                     const sum = overduePur.reduce((s, p) => s + p.total, 0);
-                    alerts.push({ level: 'warn', actionLabel: '💳 سجل المشتريات', actionOnclick: "goToManagementSub('inventory')",
+                    alerts.push({ level: 'warn', actionLabel: '💳 سجل المشتريات', actionOnclick: "goToManagementSub('finance');showTransactionsLedger()", // 🔧 ربط مباشر بالسجل التفاعلي — تقدر تسجّل السداد من نفس الشاشة فورًا
                         text: `💳 لديك ${overduePur.length} مستحق سداد متأخر لموردين بإجمالي ${money(sum)} — راجع سجل المشتريات` });
                 }
                 if (overdueSal.length) {
                     const sum = overdueSal.reduce((s, x) => s + x.total, 0);
-                    alerts.push({ level: 'warn', actionLabel: '💳 سجل المبيعات', actionOnclick: "goToManagementSub('inventory')",
+                    alerts.push({ level: 'warn', actionLabel: '💳 سجل المبيعات', actionOnclick: "goToManagementSub('finance');showTransactionsLedger()", // 🔧 ربط مباشر بالسجل التفاعلي — تقدر تسجّل التحصيل من نفس الشاشة فورًا
                         text: `💳 لديك ${overdueSal.length} مستحق تحصيل متأخر من عملاء بإجمالي ${money(sum)} — راجع سجل المبيعات` });
                 }
             }
@@ -15811,15 +15803,19 @@
                 </div>
             </div>`;
             return `
+            ${prioritiesSection}
+            ${unifiedAttentionSection}
+            <!-- 🔧 إصلاح ترتيب عرض: الكارتين فوق كانوا بعد كارت الطقس/العنابر/سعر البورصة رغم إن كارت
+            "أهم فعل" نفسه فيه جملة صريحة "راجعها أول حاجة كل يوم" — يعني التطبيق كان بيقول للمستخدم
+            "شوف ده الأول" وهو مش موجود فعليًا فى الأول. دلوقتي بقوا فعلًا أول حاجة تظهر، والباقي
+            (طقس/عنابر متعددة/سعر بورصة) بيانات سياقية ثانوية اتنقلت تحتهم. -->
             ${renderDashboardWeatherCard(b, m)}
             ${multiHouseSection}
             ${housesSection}
             ${quickMarketPriceSection}
-            ${prioritiesSection}
             ${healthScoreCardHtml}
             ${renderInventoryDashboardCard(b, fin, m)}
             ${saleDecisionCardHtml}
-            ${unifiedAttentionSection}
             <div class="kpi-grid">
                 <div class="kpi"><div class="lbl">📅 عمر القطيع</div><div class="val">${m.todayAge} <small>يوم</small></div></div>
                 <div class="kpi ${m.liveCountPct < 95 ? 'warn' : 'good'}"><div class="lbl">🐔 الأعداد الحية</div><div class="val">${fmt(m.liveCount, 0)} <small>(${fmt(m.liveCountPct, 1)}%)</small></div></div>
@@ -15883,6 +15879,11 @@
         function setDailyEventsSubTab(id) { dailyEventsSubTab = id; render(); }
         // فتح قسم "سجلات وأحداث إضافية" على تبويب فرعي مُحدَّد من زرار إجراء سريع — لازم كمان نجبر القسم يكون مفتوح
         // (مش بس نبدّل التبويب الداخلي) لأن قسم الأحداث ثاني قسم فى الصفحة وبيتقفل تلقائيًا افتراضيًا لو المستخدم لسه ماخصصش حاجة
+        // ⚠️ ملحوظة (يحتاج قرارك): الدالة دى كاملة وشغالة، لكن مفيش أي زرار أو تنبيه فى الكود كله بينادي
+        // عليها فعليًا حاليًا (zero callers). حسب الكومنت الأصلي كانت مبنية عشان "زرار إجراء سريع" يوديك
+        // مباشرة لتبويب الإضافات أو الحوادث جوه السجل اليومي، لكن الزرار ده مش موجود. سيبتها زي ما هي من
+        // غير حذف أو ربط تخميني (تجنبًا لتغيير منطق التنبيهات/الأولويات من غير علمك) — لو تحب تحدد فين
+        // بالظبط عايز الزرار ده يظهر (مثلاً جنب عداد الإضافات/الحوادث فى مكان تاني)، قوللي وأربطه فورًا.
         function openDailyEventsSubTab(id) {
             dailyEventsSubTab = id;
             toggleSectionOpen('daily', DAILY_EVENTS_SECTION_KEY, true, 'السجل اليومي (نهار / ليل)');
@@ -15939,8 +15940,12 @@
                     <input type="text" placeholder="🔍 بحث بالتاريخ أو الملاحظات أو التحليل..." oninput="liveFilterTable(this,'dailyRecordsBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
                     <span id="dailyRecordsBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
                 </div>
-                <div class="card scroll-x"><table><thead><tr><th>العمر</th><th>التاريخ</th><th>نفوق ☀️/🌙</th><th>المتبقي</th><th>علف ☀️/🌙</th><th>ماء ☀️/🌙</th><th>وزن</th><th>FCR</th><th>حرارة ☀️/🌙</th><th>رطوبة ☀️/🌙</th><th>صحة</th><th>إضاءة</th><th>تحليل تلقائي</th><th>ملاحظات</th><th></th></tr></thead>
-                <tbody id="dailyRecordsBody">${rows}</tbody></table></div>
+                ${renderTableOrEmpty(true, '<th>العمر</th><th>التاريخ</th><th>نفوق ☀️/🌙</th><th>المتبقي</th><th>علف ☀️/🌙</th><th>ماء ☀️/🌙</th><th>وزن</th><th>FCR</th><th>حرارة ☀️/🌙</th><th>رطوبة ☀️/🌙</th><th>صحة</th><th>إضاءة</th><th>تحليل تلقائي</th><th>ملاحظات</th><th></th>', rows, '', '', 'dailyRecordsBody')}
+                <!-- 🔧 دمج: كان الجدول ده متكرر يدويًا زي ما وصفه كومنت renderTableOrEmpty نفسه، بدّلناه بنداء
+                للدالة (نفس الناتج بالظبط). باقي 3 أماكن مشابهة (مقارنة الدورات، مصفوفة الارتباط، الأمان الحيوي)
+                فيها محتوى إضافي متشابك جوه نفس الكارت (ملاحظات/شروحات قبل أو بعد الجدول مباشرة بنفس الـdiv)،
+                فدمجها كان محتاج تعديل توقيع الدالة نفسها (باراميتر style/class إضافي) — سيبتها زي ما هي
+                تفاديًا لأي فرق شكلي، وده قرار محتاج تأكيدك لو حابب أكمله. -->
                 <details style="margin-top:8px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;font-size:12.5px;">ℹ️ الصيغ وطريقة التسجيل</summary>
                 <div class="formula-box">
                     FCR = إجمالي العلف ÷ (الكتلة الحيوية الحالية − الكتلة الحيوية الابتدائية)<br>
@@ -18374,7 +18379,11 @@
                         <button class="btn ghost sm no-print" style="flex:1;" onclick="printInventoryReport()">🖨️ طباعة كشف الجرد</button>
                     </div>
                 </div>
-            </div>`;
+            </div>
+            ${renderExpirySection(b)}`;
+            // 🔧 وصل ميزة كانت كاملة وشغالة بدون أي واجهة: renderExpirySection() بيبني قسم كامل بكل الأصناف
+            // القريبة من/منتهية الصلاحية (مش أول 3 بس زي كارت "يحتاج متابعتك الآن"). كانت موجودة فى الكود
+            // بالكامل من غير أي نداء ليها خالص. بترجع '' لو مفيش أصناف قريبة من الصلاحية فمتضيفش حاجة فاضية.
         }
 
         // حذف صنف من المخزن نهائيًا (يختلف عن "حذف/تسوية" التي تُصفّر الرصيد فقط وتُبقي الصنف موجودًا).
@@ -21564,7 +21573,7 @@
 
         function _chartSig(...parts) { try { return JSON.stringify(parts); } catch (e) { return String(Math.random()); } }
         function _easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-        function _easeOutBack(t) { const c = 1.7; return 1 + c * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
+        // 🗑️ حذف: _easeOutBack كانت معرّفة ومش مستخدمة خالص فى أي مكان — كل الحركات فعليًا بتستخدم _easeOutCubic فوق.
 
         // يشغّل حركة رسم تدريجية لكانفاس معيّن، أو يرسم فورًا (بدون حركة) لو نفس البيانات بالظبط
         // اتّرسمت قبل كده (بيمنع "وميض" الحركة المزعج لو التطبيق عمل إعادة رسم عامة مش متعلقة بيانات الرسمة دي)
@@ -23573,8 +23582,11 @@
         // ---------- 5) تخصيص ترتيب لوحة التحكم ----------
         // نعمل على مستوى DOM بعد الرسم (بدون لمس منطق التحليلات نفسه) — كل عنصر .section مباشر
         // داخل لوحة التحكم بيتاخد مفتاحه من نص عنوانه (h2)، ونعيد ترتيبه/إخفاءه حسب تفضيل المستخدم.
-        function getDashboardSectionKeys() {
-            const main = document.getElementById('mainContent');
+        // 🔧 دمج: كانت مربوطة بـ#mainContent بس، فمالهاش أي نداء فعلي (renderDashboardOrderSettings تحت كانت
+        // بتكرر نفس منطق الاستخراج بالظبط يدويًا فى عنصر مؤقت منفصل بدل ما تنادي الدالة دي). دلوقتي بتاخد
+        // أي container اختياري، والاتنين بيستخدموها فعليًا.
+        function getDashboardSectionKeys(container) {
+            const main = container || document.getElementById('mainContent');
             if (!main) return [];
             return [...main.querySelectorAll(':scope > .section')].map(el => {
                 const h2 = el.querySelector('.section-head h2');
@@ -23609,10 +23621,7 @@
                 tmp.style.display = 'none';
                 tmp.innerHTML = renderDashboard(b, m, fin, alerts);
                 document.body.appendChild(tmp);
-                keys = [...tmp.querySelectorAll(':scope > .section')].map(el => {
-                    const h2 = el.querySelector('.section-head h2');
-                    return h2 ? h2.textContent.trim() : null;
-                }).filter(Boolean);
+                keys = getDashboardSectionKeys(tmp); // 🔧 دمج: بدل تكرار نفس منطق الاستخراج يدويًا هنا
                 document.body.removeChild(tmp);
             }
             if (!keys.length) return '<div class="empty" style="padding:14px;">أنشئ دفعة نشطة أولًا لتخصيص ترتيب أقسام لوحة التحكم الخاصة بها.</div>';
