@@ -10583,6 +10583,22 @@
             return `يوم ${a.from} → ${a.to}`;
         }
 
+        // دالة موحّدة لحساب كمية إضافة علف/ماء من قيمة الجرعة (dose) ووحدة القياس (per) — مستخدمة فى مكانين:
+        // 1) الاستهلاك الفعلى ليوم واحد (calcAdditiveQtyToday) — consumptionAmount = كجم/لتر ليوم واحد، occurrences = 1
+        // 2) قائمة المشتريات لكامل الدورة (computeBatchPurchaseList) — consumptionAmount = إجمالى مجمّع لعدة أيام، occurrences = عدد الأيام السارية
+        // كانت الشرطية دى مكررة حرفيًا فى المكانين قبل كده — لو اتضاف نوع "per" جديد لازم يتحدّث هنا بس.
+        function computeAdditiveDoseQty(type, dose, per, consumptionAmount, occurrences) {
+            if (type === 'feed') {
+                if (per === 'طن علف') return dose * (consumptionAmount / 1000);
+                if (per === 'كجم علف يومياً') return dose * occurrences;
+                return dose * consumptionAmount; // كجم علف
+            } else {
+                if (per === '1000 لتر ماء') return dose * (consumptionAmount / 1000);
+                if (per === 'يومياً للقطيع') return dose * occurrences;
+                return dose * consumptionAmount; // لتر ماء
+            }
+        }
+
         // ============ (جديد) توصية #1: عدّاد "أيام بدون مضاد حيوي" فى الدورة — نستخدم "فترة السحب > 0" كمؤشر إن الصنف دواء/مضاد وليس مكمّل غذائي (بروبيوتك/فيتامين...) ============
         function computeAntibioticStats(b, m) {
             const totalDays = Math.max(0, (b.status === 'مؤرشفة' ? (m.age || 0) : (m.todayAge || 0)));
@@ -10677,20 +10693,14 @@
 
             const feedAdditives = (b.feedAdditives || []).map(a => {
                 const { totalConsumption, activeDays } = additiveConsumptionOverCycle(b, a, 'feed', cycleLen, count);
-                let qty;
-                if (a.per === 'طن علف') qty = a.dose * (totalConsumption / 1000);
-                else if (a.per === 'كجم علف يومياً') qty = a.dose * activeDays;
-                else qty = a.dose * totalConsumption; // كجم علف
+                const qty = computeAdditiveDoseQty('feed', a.dose, a.per, totalConsumption, activeDays);
                 const norm = normalizePurchaseUnit(qty * PURCHASE_LIST_SAFETY_MARGIN, a.unit);
                 return { name: a.name, dayLabel: additiveDayLabel(a), qty: norm.qty, unit: norm.unit };
             });
 
             const waterAdditives = (b.waterAdditives || []).map(a => {
                 const { totalConsumption, activeDays } = additiveConsumptionOverCycle(b, a, 'water', cycleLen, count);
-                let qty;
-                if (a.per === '1000 لتر ماء') qty = a.dose * (totalConsumption / 1000);
-                else if (a.per === 'يومياً للقطيع') qty = a.dose * activeDays;
-                else qty = a.dose * totalConsumption; // لتر ماء
+                const qty = computeAdditiveDoseQty('water', a.dose, a.per, totalConsumption, activeDays);
                 const norm = normalizePurchaseUnit(qty * PURCHASE_LIST_SAFETY_MARGIN, a.unit);
                 return { name: a.name, dayLabel: additiveDayLabel(a), qty: norm.qty, unit: norm.unit };
             });
@@ -11347,15 +11357,8 @@
             if (type === 'water' && period === 'day' && fw.waterDay != null) waterL = fw.waterDay;
             else if (type === 'water' && period === 'night' && fw.waterNight != null) waterL = fw.waterNight;
             let qty = 0;
-            if (type === 'feed') {
-                if (a.per === 'طن علف') qty = a.dose * (feedKg / 1000);
-                else if (a.per === 'كجم علف يومياً') qty = a.dose;
-                else qty = a.dose * feedKg; // كجم علف
-            } else {
-                if (a.per === '1000 لتر ماء') qty = a.dose * (waterL / 1000);
-                else if (a.per === 'يومياً للقطيع') qty = a.dose;
-                else qty = a.dose * waterL; // لتر ماء
-            }
+            if (type === 'feed') qty = computeAdditiveDoseQty('feed', a.dose, a.per, feedKg, 1);
+            else qty = computeAdditiveDoseQty('water', a.dose, a.per, waterL, 1);
             return Math.round(qty * 1000) / 1000;
         }
 
@@ -11557,6 +11560,21 @@
                 for (const s of meatSalesSorted) { if (s.date <= dateStr) sum += s.count; else break; }
                 return sum;
             };
+            // ============ 🆕 معامل التحويل الموزون عبر الدورة (تخفيف/تفريغ جزئي) ============
+            // المشكلة: gainKg تحت كانت بتتحسب بس من الكتلة الحيوية للطيور الباقية فى العنبر (liveCount × وزنها
+            // الحالي) ناقص وزن بدايتها. أي طائر اتباع فى تخفيف جزئي أثناء الدورة كان بيختفي تمامًا من حساب
+            // "الزيادة فى الوزن" (gain) رغم إنه أكل علف وكسب وزن حقيقي قبل ما يتباع — فيديك FCR مضلل (أسوأ من
+            // الحقيقي، لأن العلف اللي اتاكل موجود فى cumFeed لكن الوزن اللي انتج بيه راح مع الطيور المباعة).
+            // الحل: نضيف "كسب الطيور المباعة" (وزن البيع الفعلي المسجَّل - نصيبها من وزن البداية) كرصيد تراكمي
+            // منفصل، ونجمعه مع كسب الطيور الباقية عشان نوصل لمعامل تحويل موزون يعكس الدورة كلها مش بس اللحظة الحالية.
+            const soldGainKgAsOf = (dateStr) => {
+                let sum = 0;
+                for (const s of meatSalesSorted) {
+                    if (s.date > dateStr) break;
+                    sum += Math.max((s.weight || 0) - (s.count || 0) * startWeightKg, 0);
+                }
+                return sum;
+            };
             let cumMort = 0, cumCull = 0, cumFeed = 0, cumWater = 0;
             const series = recs.map(r => {
                 cumMort += (r.mort || 0);
@@ -11564,6 +11582,7 @@
                 cumFeed += (r.feed || 0);   // تراكمي بالكجم
                 cumWater += (r.water || 0); // تراكمي باللتر
                 const cumSold = soldCountAsOf(r.date);
+                const cumSoldGainKg = soldGainKgAsOf(r.date);
                 const liveCount = Math.max(b.startCount - cumMort - cumCull - cumSold, 0);
                 const weightIsEstimated = r.weight == null;
                 const effWeight = weightIsEstimated ? estimateWeight(r.age) : r.weight;
@@ -11571,10 +11590,12 @@
                 // FCR = إجمالي العلف (كجم) ÷ (الكتلة الحيوية الحالية - وزن البداية الكلي)
                 // وزن البداية الكلي = عدد الطيور الحية × وزن البداية بالكجم
                 const initialBiomassAtDay = liveCount * startWeightKg;
-                const gainKg = Math.max(biomassKg - initialBiomassAtDay, 0);
+                const gainKgLiveOnly = Math.max(biomassKg - initialBiomassAtDay, 0);
+                // معامل التحويل الموزون: كسب الطيور الباقية + كسب الطيور المباعة سابقًا فى نفس الدورة
+                const gainKg = gainKgLiveOnly + cumSoldGainKg;
                 const fcr = (gainKg > 0 && cumFeed > 0) ? cumFeed / gainKg : null;
                 const stdW = getRefValue(b, 'weight', r.age) || 0;
-                return { ...r, cumMort, cumCull, cumSold, cumFeed, cumWater, liveCount, biomassKg, gainKg, fcr, stdW, effWeight, weightIsEstimated };
+                return { ...r, cumMort, cumCull, cumSold, cumSoldGainKg, cumFeed, cumWater, liveCount, biomassKg, gainKg, gainKgLiveOnly, fcr, stdW, effWeight, weightIsEstimated };
             });
 
             // نقطة البداية
@@ -11604,8 +11625,12 @@
             const biomassKg = (liveCount * avgWeightG) / 1000;
 
             // FCR النهائي = إجمالي العلف ÷ (الكتلة الحيوية الحالية - وزن البداية للأعداد الحية)
+            // + كسب الطيور اللي اتباعت جزئيًا (تخفيف) أثناء الدورة (نفس منطق gainKg داخل السلسلة أعلاه) —
+            // عشان الـFCR الظاهر فى كل الداشبورد/الأرشفة يبقى موزون على الدورة كاملة مش بس المتبقي فى العنبر.
             const initialBiomassFinal = liveCount * startWeightKg;
-            const gainKg = Math.max(biomassKg - initialBiomassFinal, 0);
+            const cumSoldGainKgFinal = last ? (last.cumSoldGainKg || 0) : 0;
+            const gainKgLiveOnly = Math.max(biomassKg - initialBiomassFinal, 0);
+            const gainKg = gainKgLiveOnly + cumSoldGainKgFinal;
             const fcr = (gainKg > 0 && cumFeed > 0) ? (cumFeed / gainKg) : null;
 
             // EPEF = (نسبة النجاة% × وزن الطائر بالكجم) ÷ (FCR × عمر القطيع) × 100
@@ -11639,7 +11664,8 @@
 
             return {
                 series, cumMort, cumCull, cumFeed, cumWater, liveCount, liveCountPct, mortRate,
-                avgWeightG, avgWeightKg, avgWeightIsEstimated, lastWeighed, biomassKg, gainKg, fcr, age, todayAge, adg, epef, stdWeight,
+                avgWeightG, avgWeightKg, avgWeightIsEstimated, lastWeighed, biomassKg, gainKg, gainKgLiveOnly, cumSoldGainKg: cumSoldGainKgFinal,
+                fcr, age, todayAge, adg, epef, stdWeight,
                 weightDiffPct, waterFeedRatio, density, lastEnv, mortCauseTotals, mortCauseClassifiedTotal, dominantCause, causeLabels
             };
         }
@@ -13423,6 +13449,41 @@
             }
             return { osd, trend, latestPrice, priceForCalc, nextRow, advice, adviceColor, adviceIcon, log };
         }
+
+        // ============ 🆕 نصيحة التخفيف الجزئي (Thinning) مقابل بيع الدفعة كلها دفعة واحدة ============
+        // بتتفعّل بس لما سبب البيع المبكر هو الكثافة (limitingFactor === 'density')، يعني القطيع لسه فى نطاق
+        // ربحي اقتصاديًا (marginalProfit موجب) لغاية يوم economicOptimalDay، لكن العنبر هيبقى مزدحم قبل كده.
+        // بدل التوصية الافتراضية "بيع الدفعة كلها دلوقتي"، بنحسب: لو خفّفت بس العدد الكافي عشان الكثافة
+        // ترجع آمنة وسيبت الباقي يكمل للعمر الاقتصادي الأمثل، هتكسب كام إضافي مقارنة ببيع الكل دلوقتي؟
+        // (تقدير تقريبي: بيفترض إن الربح الحدي اليومي للقطيع بيتناسب خطيًا مع عدد الطيور — تبسيط معقول
+        // لأن استهلاك العلف والنمو للطائر الواحد ما بيتغيرش بتخفيف عدد الطيور المجاورة له.)
+        function computeThinningAdvice(b, m, fin, saleAdv) {
+            const osd = saleAdv && saleAdv.osd;
+            if (!osd || osd.limitingFactor !== 'density') return null;
+            if (!(m.liveCount > 0) || !(m.avgWeightKg > 0) || !(saleAdv.priceForCalc > 0)) return null;
+            const effArea = getEffectiveFloorArea(b);
+            const maxDensity = osd.maxDensity;
+            if (!(effArea > 0) || !(maxDensity > 0)) return null;
+            // هدف كثافة آمن بهامش أمان (مش الحد الأقصى بالظبط) عشان يفضل فيه متّسع لنمو الأيام الجاية
+            const safeTargetDensity = maxDensity * 0.85;
+            const targetBiomassKg = safeTargetDensity * effArea;
+            const excessBiomassKg = Math.max(m.biomassKg - targetBiomassKg, 0);
+            if (excessBiomassKg <= 0) return null; // مفيش داعي لتخفيف فعليًا دلوقتي
+            const thinCount = Math.min(Math.ceil(excessBiomassKg / m.avgWeightKg), Math.max(m.liveCount - 1, 0));
+            if (thinCount <= 0) return null;
+            const remainingBirds = m.liveCount - thinCount;
+            const thinRevenueNow = thinCount * m.avgWeightKg * saleAdv.priceForCalc;
+            // إجمالي الربح الحدي المتوقع من استمرار القطيع (بحجمه الحالي) من بكرة لغاية يوم الجدوى الاقتصادية
+            const growthRows = (osd.rows || []).filter(r => r.day > (m.todayAge || m.age) && r.day <= osd.economicOptimalDay);
+            const totalFlockExtraProfit = growthRows.reduce((s, r) => s + (r.marginalProfit || 0), 0);
+            const profitFactor = m.liveCount > 0 ? (remainingBirds / m.liveCount) : 0;
+            const extendedProfit = totalFlockExtraProfit * profitFactor;
+            return {
+                thinCount, remainingBirds, thinRevenueNow, extendedProfit,
+                economicOptimalDay: osd.economicOptimalDay, safeTargetDensity, maxDensity,
+                currentDensity: m.density
+            };
+        }
         // يتنفّذ من زرار "حفظ السعر" بجوار حقل إدخال البورصة داخل بطاقة نقطة البيع المثلى
         function updateMarketPrice(batchId) {
             if (!requirePermission('production')) return; // 🔒 Red Team fix (جولة 3): تسجيل يومي روتيني
@@ -15157,6 +15218,7 @@
         function renderDashboard(b, m, fin, alerts) {
             const ins = computeInsights(b, m);
             const saleAdv = computeMarketSaleAdvice(b, m, fin);
+            const thinAdv = computeThinningAdvice(b, m, fin, saleAdv);
             // ============ كارت "مؤشر أداء الدورة" الموحّد — رقم واحد (0-100) + ترتيب (Rank) بين كل دوراتك المؤرشفة لنفس النوع ============
             const perfRank = computeFarmPerformanceRank(b, m, fin);
             const perfScoreCardHtml = (() => {
@@ -15246,6 +15308,7 @@
                 </div>
                 ${saleAdv.osd.limitingFactor==='density'?'<div class="warn-line">⚠️ بسبب الكثافة/المساحة، قبل الحد الاقتصادي</div>':''}
                 <div class="advice-line">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
+                ${thinAdv ? `<div class="advice-line" style="margin-top:6px;">🔀 بدل ما تبيع الدفعة كلها: خفّف <b>${fmt(thinAdv.thinCount,0)}</b> طائر دلوقتي (${money(thinAdv.thinRevenueNow)}) وسيب الباقي (${fmt(thinAdv.remainingBirds,0)} طائر) يكمل لغاية يوم ${thinAdv.economicOptimalDay} — أرباح إضافية تقديرية ~<b style="color:var(--green);">${money(thinAdv.extendedProfit)}</b> مقارنة ببيع القطيع بالكامل دلوقتي</div>` : ''}
                 ${heroProfitLineHtml}
                 <div class="meta-line">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم${saleAdv.osd.priceSource==='market'?' (مُدخَل يدويًا)':' (من متوسط مبيعات سابقة)'} · ${saleAdv.osd.weightDataPoints} وزنة فعلية ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
             </div>`;
@@ -15256,6 +15319,7 @@
                 </div></div>` : `<div class="check-row"><div class="txt">
                     <div>🎯 قرار البيع: أفضل يوم مُوصى به <b style="color:var(--green);">يوم ${saleAdv.osd.optimalDay}</b>${saleAdv.osd.limitingFactor==='density'?' <span style="color:var(--red);font-weight:700;">(بسبب الكثافة/المساحة، قبل الحد الاقتصادي)</span>':''} ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
                     <div class="day" style="color:${saleAdv.adviceColor};font-weight:700;">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
+                    ${thinAdv ? `<div class="day" style="margin-top:4px;">🔀 بديل التخفيف الجزئي: بيع <b>${fmt(thinAdv.thinCount,0)}</b> طائر دلوقتي (${money(thinAdv.thinRevenueNow)}) + استمرار الباقي (${fmt(thinAdv.remainingBirds,0)} طائر) لغاية يوم ${thinAdv.economicOptimalDay} ≈ <b style="color:var(--green);">${money(thinAdv.extendedProfit)}</b> ربح إضافي عن بيع الكل دلوقتي (تقديري، بيفترض توزيع خطي للربح الحدي على عدد الطيور)</div>` : ''}
                     ${liveProfit ? `<div class="day" style="margin-top:4px;">💹 لو استمرت الدورة على نفس المنوال ${liveProfit.daysRemaining} يوم كمان لحد يوم ${liveProfit.targetDay}: ربح متوقع <b style="font-size:14px;color:${liveProfit.projectedProfit>=0?'var(--green)':'var(--red)'};">${money(liveProfit.projectedProfit)}</b> إجمالي الدورة، أو <b>${money(liveProfit.projectedProfitPerBird)}</b> لكل طائر</div>
                     <div class="day">الإيراد المتوقع ${money(liveProfit.projectedRevenue)} (${fmt(liveProfit.liveProjAtTarget,0)} طائر × ${fmt(liveProfit.projWeightG/1000,2)} كجم × ${fmt(liveProfit.salePrice,2)} ج) − إجمالي التكلفة المتوقعة ${money(liveProfit.projectedTotalCost)}</div>` : ''}
                     <div class="day" style="margin-top:2px;">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم (${saleAdv.osd.priceSource==='market'?'مُدخَل يدويًا':'من متوسط مبيعات سابقة'}) — حدّثه من تبويب "💰 الإدارة والتخطيط" ← دراسة الجدوى</div>
