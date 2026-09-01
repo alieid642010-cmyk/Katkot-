@@ -1725,7 +1725,37 @@
         body.role-owner .owner-only { display: inline-flex; }
         body.role-owner .actions.owner-only { display: flex; }
         body.role-owner .block-owner-btn.owner-only { display: block; }
-    </style>
+    
+/* ==== auto-generated utility classes (inline-style dedup) ==== */
+.u-01{padding:6px 4px;}
+.u-02{font-weight:800;}
+.u-03{padding:6px;}
+.u-04{margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);}
+.u-05{padding:6px;text-align:center;}
+.u-06{background:#2F4538;color:white;}
+.u-07{padding:5px;}
+.u-08{font-size:10.5px;}
+.u-09{border-top:1px solid var(--line);padding-top:12px;}
+.u-10{overflow-x:auto;border:1px solid #ddd;border-radius:6px;}
+.u-11{font-size:10.5px;color:var(--muted);margin:6px 2px 0;}
+.u-12{padding:5px;text-align:center;}
+.u-13{color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;}
+.u-14{font-size:10.5px;color:var(--muted);margin:4px 2px 0;}
+.u-15{font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;}
+.u-16{font-weight:bold;}
+.u-17{font-size:10.5px;color:var(--muted);}
+.u-18{font-size:9px;}
+.u-19{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.u-20{font-size:11px;color:var(--muted);margin:0;line-height:1.6;}
+.u-21{color:#2F4538;font-size:13px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;}
+.u-22{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;}
+.u-23{font-weight:700;font-size:12.5px;margin-bottom:6px;}
+.u-24{font-size:11px;white-space:nowrap;}
+.u-25{font-size:10.5px;color:var(--muted);margin:8px 2px 0;}
+.u-26{width:100%;border-collapse:collapse;font-size:11.5px;}
+.u-27{border-bottom:2px solid var(--line);}
+.u-28{font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;}
+</style>
 </head>
 <body>
     <script>
@@ -1796,9 +1826,9 @@
                 <label style="font-size:12px;font-weight:800;color:var(--barn-dark);">📊 تقييم وحوافز العمال (آخر 30 يوم)</label>
                 <p style="font-size:11px;color:var(--muted);margin:4px 0 8px;line-height:1.6;">مبني على جلسات دخولهم الفعلية (بكلمة المرور أو البصمة) + انتظامهم فى تسجيل السجل اليومي لدفعتهم. عدّل ميعاد الحضور المتوقع وقيمة النقطة عشان الحساب يبقى دقيق لظروف مزرعتك.</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-                    <div class="field"><label style="font-size:10.5px;">ميعاد الحضور المتوقع</label><input type="time" id="wperf_checkinTime" onchange="saveWorkerPerfSettings()"></div>
-                    <div class="field"><label style="font-size:10.5px;">هامش السماح (دقيقة)</label><input type="number" id="wperf_window" onchange="saveWorkerPerfSettings()"></div>
-                    <div class="field" style="grid-column:1/-1;"><label style="font-size:10.5px;">قيمة النقطة الواحدة (جنيه) — اختياري لحساب مكافأة مقترحة</label><input type="number" step="0.01" id="wperf_pointValue" placeholder="اتركها فاضية لو مش عايز تظهر مكافأة" onchange="saveWorkerPerfSettings()"></div>
+                    <div class="field"><label class="u-08">ميعاد الحضور المتوقع</label><input type="time" id="wperf_checkinTime" onchange="saveWorkerPerfSettings()"></div>
+                    <div class="field"><label class="u-08">هامش السماح (دقيقة)</label><input type="number" id="wperf_window" onchange="saveWorkerPerfSettings()"></div>
+                    <div class="field" style="grid-column:1/-1;"><label class="u-08">قيمة النقطة الواحدة (جنيه) — اختياري لحساب مكافأة مقترحة</label><input type="number" step="0.01" id="wperf_pointValue" placeholder="اتركها فاضية لو مش عايز تظهر مكافأة" onchange="saveWorkerPerfSettings()"></div>
                 </div>
                 <div id="workerPerfWrap"></div>
             </div>
@@ -2020,7 +2050,7 @@
             <div class="field full" id="b_cloneWrap" style="background:#fffdf7;border:1px solid var(--wheat);border-radius:10px;padding:8px 10px;">
                 <label>🧬 استنساخ إعدادات دفعة سابقة (اختياري)</label>
                 <select id="b_cloneSelect" onchange="cloneBatchIntoForm(this.value)">${batchTemplateOptionsHtml()}</select>
-                <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">هيتم نسخ المساحة ونظام التهوية والتدفئة والأسعار وباقي الإعدادات — وتفضل تكتب الاسم والتاريخ والعدد بنفسك.</p>
+                <p class="u-14">هيتم نسخ المساحة ونظام التهوية والتدفئة والأسعار وباقي الإعدادات — وتفضل تكتب الاسم والتاريخ والعدد بنفسك.</p>
             </div>
             <div class="form-grid">
                 <div class="field full"><label>اسم الدفعة / العنبر</label><input id="b_name" placeholder="مثال: عنبر 1 - دفعة يونيو"></div>
@@ -2048,17 +2078,17 @@
                 <div class="field"><label>العمر المستهدف للبيع (يوم)</label><input id="b_targetage" type="number" inputmode="decimal" placeholder="مثال: 35" min="0"></div>
                 <div class="field"><label>الوزن المستهدف (جم)</label><input id="b_targetweight" type="number" inputmode="decimal" placeholder="مثال: 2200" oninput="updateDensitySuggestion()" min="0"></div>
                 <div class="field full" style="background:#faf8f2;border:1px solid var(--wheat);border-radius:10px;padding:8px 10px;">
-                    <label style="font-weight:800;">🌾 برنامج مراحل العلف لهذه الدفعة (بادئ / نامي / ناهي)</label>
+                    <label class="u-02">🌾 برنامج مراحل العلف لهذه الدفعة (بادئ / نامي / ناهي)</label>
                     <div class="form-grid" style="margin-top:6px;">
                         <div class="field"><label>إجمالي علف بادئ لكل طائر (كجم)</label><input id="b_feedStarterKg" type="number" inputmode="decimal" step="0.05" min="0"></div>
                         <div class="field"><label>إجمالي علف نامي لكل طائر (كجم)</label><input id="b_feedGrowerKg" type="number" inputmode="decimal" step="0.05" min="0"></div>
                     </div>
-                    <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 مرحلة "ناهي" = باقي الدورة تلقائيًا. القيم اتعبّت من إعداداتك الافتراضية — عدّلها لو خطة العلف مختلفة لهذه الدفعة تحديدًا.</p>
+                    <p class="u-14">💡 مرحلة "ناهي" = باقي الدورة تلقائيًا. القيم اتعبّت من إعداداتك الافتراضية — عدّلها لو خطة العلف مختلفة لهذه الدفعة تحديدًا.</p>
                 </div>
                 <div class="field full" style="background:#faf8f2;border:1px solid var(--wheat);border-radius:10px;padding:8px 10px;">
-                    <label style="font-weight:800;">🧬 تطبيق بروتوكول محفوظ (اختياري)</label>
+                    <label class="u-02">🧬 تطبيق بروتوكول محفوظ (اختياري)</label>
                     <select id="b_applyProtocol"><option value="">بدون — أضف الإضافات والمعاملات يدويًا بعدين</option></select>
-                    <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">هيتم تحميل برنامج إضافات العلف/الماء ومعاملات الفرشة من البروتوكول المختار تلقائيًا فور إنشاء الدفعة.</p>
+                    <p class="u-14">هيتم تحميل برنامج إضافات العلف/الماء ومعاملات الفرشة من البروتوكول المختار تلقائيًا فور إنشاء الدفعة.</p>
                 </div>
                 <div class="field"><label>نوع التدفئة</label>
                     <select id="b_heattype" onchange="onHeatTypeChange()"><option value="gas">غاز (أنبوبة بوتاجاز)</option><option value="solar">سولار / ديزل (لتر)</option><option value="electric">كهرباء</option><option value="none">بدون تدفئة</option></select>
@@ -2188,23 +2218,23 @@
                      زي ما هي بالظبط، بس مكانهم فى الفورم بقى واحد بدل اتنين متكررين شكليًا -->
                 <div class="field full" style="background:#fdf0ef;border:1px solid #f0c9c5;border-radius:10px;padding:8px 10px;">
                     <label style="margin-bottom:6px;">🔍 تصنيف سبب النفوق (اختياري لكن مهم لمعرفة السبب الأساسي)</label>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div class="u-19">
                         <div>
                             <div style="font-size:11px;font-weight:800;color:#6B4226;margin-bottom:4px;">☀️ نهارًا</div>
                             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;">
-                                <div><label style="font-size:10.5px;">🌡️ حراري</label>
+                                <div><label class="u-08">🌡️ حراري</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_day',-1,0)">−</button><input id="d_mc_heat_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_day',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">🦠 مرض</label>
+                                <div><label class="u-08">🦠 مرض</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_day',-1,0)">−</button><input id="d_mc_disease_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_day',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">🐾 دهس</label>
+                                <div><label class="u-08">🐾 دهس</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_day',-1,0)">−</button><input id="d_mc_trample_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_day',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">🧬 تشوه</label>
+                                <div><label class="u-08">🧬 تشوه</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_day',-1,0)">−</button><input id="d_mc_deform_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_day',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">❓ أخرى</label>
+                                <div><label class="u-08">❓ أخرى</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_day',-1,0)">−</button><input id="d_mc_other_day" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_day',1,0)">+</button></div>
                                 </div>
                             </div>
@@ -2213,19 +2243,19 @@
                         <div>
                             <div style="font-size:11px;font-weight:800;color:#2F4538;margin-bottom:4px;">🌙 ليلًا</div>
                             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;">
-                                <div><label style="font-size:10.5px;">🌡️ حراري</label>
+                                <div><label class="u-08">🌡️ حراري</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_night',-1,0)">−</button><input id="d_mc_heat_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_heat_night',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">🦠 مرض</label>
+                                <div><label class="u-08">🦠 مرض</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_night',-1,0)">−</button><input id="d_mc_disease_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_disease_night',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">🐾 دهس</label>
+                                <div><label class="u-08">🐾 دهس</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_night',-1,0)">−</button><input id="d_mc_trample_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_trample_night',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">🧬 تشوه</label>
+                                <div><label class="u-08">🧬 تشوه</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_night',-1,0)">−</button><input id="d_mc_deform_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_deform_night',1,0)">+</button></div>
                                 </div>
-                                <div><label style="font-size:10.5px;">❓ أخرى</label>
+                                <div><label class="u-08">❓ أخرى</label>
                                     <div class="stepper sm"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_night',-1,0)">−</button><input id="d_mc_other_night" type="number" inputmode="decimal" value="0" min="0" oninput="updateMortTotalPreview()"><button type="button" class="stepper-btn" onclick="stepInput('d_mc_other_night',1,0)">+</button></div>
                                 </div>
                             </div>
@@ -2462,7 +2492,7 @@
                     <div class="field"><label>متوسط وزن الطائر الحالي (جم)</label><input id="wc_bwWeight" type="number" inputmode="decimal" step="1" oninput="computeWaterDilution()" min="0"></div>
                     <div class="field"><label>استهلاك الماء المتوقع اليوم (لتر)</label><input id="wc_bwWater" type="number" inputmode="decimal" step="0.5" oninput="computeWaterDilution()" min="0"></div>
                 </div>
-                <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 اتعبّت تلقائيًا من بيانات دفعتك النشطة (آخر عدد/وزن مسجَّل، وتقدير الاستهلاك من آخر سجل ماء) — عدّلها لو عندك رقم أدق.</p>
+                <p class="u-14">💡 اتعبّت تلقائيًا من بيانات دفعتك النشطة (آخر عدد/وزن مسجَّل، وتقدير الاستهلاك من آخر سجل ماء) — عدّلها لو عندك رقم أدق.</p>
             </div>
 
             <div id="waterCalcResult" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px;font-size:13px;"></div>
@@ -2885,15 +2915,15 @@
             <div class="row-actions" style="margin-top:8px;">
                 <button class="btn gold block owner-only" onclick="buildRefinedProtocol()">🧠 توليد بروتوكول محسّن من أفضل دورة مؤرشفة</button>
             </div>
-            <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">🧠 بيدوّر على أفضل دورة مؤرشفة (أعلى EPEF) لنفس نوع الطائر، وياخد بنودها اللى فعلًا اتنفذت، ويستبعد تلقائيًا أي بند أثبت أثرًا سلبيًا أو بدون فائدة واضحة عبر باقي دوراتك — بروتوكول مُنقَّح جاهز للتحميل على دورة جديدة.</p>
+            <p class="u-11">🧠 بيدوّر على أفضل دورة مؤرشفة (أعلى EPEF) لنفس نوع الطائر، وياخد بنودها اللى فعلًا اتنفذت، ويستبعد تلقائيًا أي بند أثبت أثرًا سلبيًا أو بدون فائدة واضحة عبر باقي دوراتك — بروتوكول مُنقَّح جاهز للتحميل على دورة جديدة.</p>
             <div class="row-actions" style="margin-top:8px;">
                 <button class="btn gold block owner-only" onclick="buildBestOfBreedProtocol()">🏆 توليد بروتوكول "الأفضل من كل دورة"</button>
             </div>
-            <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">🏆 مختلف عن اللي فوق: ده مش مبني على دورة واحدة "الأفضل" — لكن بيجمع كل بند (إضافة علف/ماء/معاملة فرشة) أثبت إنه دايمًا بيحسّن الأداء عبر دوراتك المؤرشفة، حتى لو كل بند جه من دورة مختلفة، ويجمعهم كلهم فى بروتوكول واحد جديد مش موجود فعليًا فى أي دورة سابقة بالظبط. محتاج دورتين مؤرشفتين على الأقل من نفس النوع.</p>
+            <p class="u-11">🏆 مختلف عن اللي فوق: ده مش مبني على دورة واحدة "الأفضل" — لكن بيجمع كل بند (إضافة علف/ماء/معاملة فرشة) أثبت إنه دايمًا بيحسّن الأداء عبر دوراتك المؤرشفة، حتى لو كل بند جه من دورة مختلفة، ويجمعهم كلهم فى بروتوكول واحد جديد مش موجود فعليًا فى أي دورة سابقة بالظبط. محتاج دورتين مؤرشفتين على الأقل من نفس النوع.</p>
             <div class="row-actions" style="margin-top:8px;">
                 <button class="btn ghost block" onclick="showBatchPurchaseList()">🛒 قائمة مشتريات الدفعة الحالية (تحصينات + إضافات)</button>
             </div>
-            <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">🛒 يحسب الكمية الإجمالية المطلوب شراؤها من كل تحصين/إضافة علف/إضافة مائية فى برنامج الدفعة النشطة حاليًا (سواء جه من بروتوكول مُطبَّق أو افتراضي النوع)، بناءً على عدد طيورها وتوقع استهلاك العلف/الماء لكامل الدورة.</p>
+            <p class="u-11">🛒 يحسب الكمية الإجمالية المطلوب شراؤها من كل تحصين/إضافة علف/إضافة مائية فى برنامج الدفعة النشطة حاليًا (سواء جه من بروتوكول مُطبَّق أو افتراضي النوع)، بناءً على عدد طيورها وتوقع استهلاك العلف/الماء لكامل الدورة.</p>
             <h3 style="margin-top:16px;font-size:14px;">📂 البروتوكولات المحفوظة</h3>
             <div id="protocolListBox" class="card" style="padding:0;"></div>
         </div>
@@ -4267,7 +4297,7 @@
                 <div class="section">
                     <div class="section-head"><h2>📊 الأرقام القياسية والمرجعية (وزن/علف/بيئة)</h2></div>
                     <div class="card">
-                        <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                        <p class="u-22">
                             هنا تقدر تعدّل منحنى الأداء المرجعي (الوزن، العلف التراكمي، الحرارة، الرطوبة، سرعة الهواء، CO₂، NH₃) لكل نوع — <b>يوم 0 = يوم التسكين/الاستقبال</b>. أي تعديل هنا بيغيّر كل الحسابات والتنبيهات المبنية على هذا المرجع، لكل دفعاتك من هذا النوع.
                             ${isOverridden ? '<br><b style="color:#B8860B;">⚠️ الأرقام الحالية معدَّلة يدويًا — مش الافتراضي الأصلي.</b>' : ''}
                         </p>
@@ -4312,7 +4342,7 @@
                             ${isCustom ? '<br><b style="color:#B8860B;">⚠️ فيه معايير معدَّلة يدويًا حاليًا.</b>' : ''}
                         </p>
 
-                        <details open><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">🔥 التدفئة</summary>
+                        <details open><summary class="u-15">🔥 التدفئة</summary>
                         <div class="form-grid" style="margin-top:8px;">
                             ${asField('as_heatFuelSolarPerM2','معدل السولار (لتر/م²)','heatFuelSolarPerM2','0.001')}
                             ${asField('as_heatFuelGasPerM2','معدل الغاز (أنبوبة/م²)','heatFuelGasPerM2','0.0001')}
@@ -4329,7 +4359,7 @@
                             ${asField('as_seasonFactorAutumn','معامل الخريف','seasonFactorAutumn','0.05')}
                         </div></details>
 
-                        <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">🔔 حدود التنبيهات</summary>
+                        <details style="margin-top:10px;"><summary class="u-15">🔔 حدود التنبيهات</summary>
                         <div class="form-grid" style="margin-top:8px;">
                             ${asField('as_vaccGraceDays','أيام السماح قبل "فاتك تحصين" (يوم)','vaccGraceDays','1')}
                             ${asField('as_vaccAdvanceDays','التنبيه المسبق بتحصين قادم (يوم)','vaccAdvanceDays','1')}
@@ -4342,20 +4372,20 @@
                             ${asField('as_mortCompareLowMult','معامل اعتبار النفوق "منخفض"','mortCompareLowMult','0.1')}
                         </div></details>
 
-                        <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">🎯 ألوان تقييم الأداء</summary>
+                        <details style="margin-top:10px;"><summary class="u-15">🎯 ألوان تقييم الأداء</summary>
                         <div class="form-grid" style="margin-top:8px;">
                             ${asField('as_fcrGoodMax','حد FCR الأخضر (أقل من)','fcrGoodMax','0.05')}
                             ${asField('as_fcrOkMax','حد FCR الأصفر (أقل من)','fcrOkMax','0.05')}
                             ${asField('as_weightDiffGoodMin','أقل انحراف وزن مقبول (%)','weightDiffGoodMin','0.5')}
                         </div></details>
 
-                        <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">📈 دراسة الجدوى وقيم عامة</summary>
+                        <details style="margin-top:10px;"><summary class="u-15">📈 دراسة الجدوى وقيم عامة</summary>
                         <div class="form-grid" style="margin-top:8px;">
                             ${asField('as_restDaysBetweenCycles','أيام الراحة بين الدورات (يوم)','restDaysBetweenCycles','1')}
                             ${asField('as_defaultStartWeightG','وزن الكتكوت الافتراضي (جم)','defaultStartWeightG','1')}
                         </div></details>
 
-                        <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">🌾 برنامج مراحل العلف الافتراضي (بادئ / نامي / ناهي)</summary>
+                        <details style="margin-top:10px;"><summary class="u-15">🌾 برنامج مراحل العلف الافتراضي (بادئ / نامي / ناهي)</summary>
                         <div class="form-grid" style="margin-top:8px;">
                             ${asField('as_feedStageStarterKg','إجمالي علف بادئ لكل طائر (كجم)','feedStageStarterKg','0.05')}
                             ${asField('as_feedStageGrowerKg','إجمالي علف نامي لكل طائر (كجم)','feedStageGrowerKg','0.05')}
@@ -5600,7 +5630,7 @@
                     ${accessRequestsCache.length ? accessRequestsCache.map(r => `
                         <div class="check-row" style="flex-wrap:wrap;">
                             <div class="txt">
-                                <div style="font-weight:800;">${esc(r.name || '—')} ${statusPill(r.status)}</div>
+                                <div class="u-02">${esc(r.name || '—')} ${statusPill(r.status)}</div>
                                 <div class="day">📞 ${esc(r.phone || '—')}${r.requestedAt ? ' · ' + formatFsDate(r.requestedAt) : ''}</div>
                                 ${r.status === 'approved' ? `<div class="day">${r.accessLevel === 'full' ? '👑 صلاحية كاملة' : '🧩 صلاحية جزئية: ' + (permsSummary(r.permissions) || 'لا يوجد أقسام محددة')}</div>` : ''}
                             </div>
@@ -6187,7 +6217,7 @@
                 const batchLabel = b ? esc(b.name) : 'غير مرتبط بدفعة';
                 return `<div class="check-row">
                     <div class="txt">
-                        <div style="font-weight:800;">${esc(w.name)} <span style="font-weight:500;color:var(--muted);font-size:11.5px;">(${esc(w.username)})</span></div>
+                        <div class="u-02">${esc(w.name)} <span style="font-weight:500;color:var(--muted);font-size:11.5px;">(${esc(w.username)})</span></div>
                         <div class="day">🐔 ${batchLabel}</div>
                         <div class="day" style="color:var(--muted);">🔐 ${permsSummary(w.permissions)}</div>
                     </div>
@@ -6394,7 +6424,7 @@
                 const history = (state.workerPointsLedger || []).filter(e => e.workerId === w.id).slice(0, 5);
                 return `<div class="check-row" style="align-items:flex-start;">
                     <div class="txt">
-                        <div style="font-weight:800;">${esc(w.name)} — ${p.tier}${p.openNow ? ' <span style="color:var(--green);font-size:10.5px;">● أونلاين دلوقتي</span>' : ''}</div>
+                        <div class="u-02">${esc(w.name)} — ${p.tier}${p.openNow ? ' <span style="color:var(--green);font-size:10.5px;">● أونلاين دلوقتي</span>' : ''}</div>
                         <div class="day">📅 حضور ${p.attendanceDays} يوم من آخر 30 | ⏱️ متوسط الجلسة ${p.avgSessionMin != null ? fmt(p.avgSessionMin,0) + ' دقيقة' : '—'} | ⏰ التزام بالميعاد ${p.onTimeRate != null ? fmt(p.onTimeRate*100,0)+'%' : '—'}</div>
                         <div class="day">📝 انتظام السجل اليومي ${p.recordCompletionRate != null ? fmt(p.recordCompletionRate*100,0)+'%' : '—'} | 🔥 أطول سلسلة متواصلة ${p.longestStreak} يوم</div>
                         <div class="day" style="font-weight:800;color:var(--barn-dark);">⭐ ${fmt(p.points,0)} نقطة حضور${p.suggestedReward != null ? ` — 🎁 مكافأة مقترحة: ${money(p.suggestedReward)}` : ''}</div>
@@ -7656,7 +7686,7 @@
             const activeWaterDay = activeWaterAll.filter(a => a.period !== 'night');
             const activeWaterNight = activeWaterAll.filter(a => a.period === 'night' || a.period === 'both');
 
-            const lockNote = isFuture ? '<span style="font-size:10.5px;color:var(--muted);">🔒 لا يمكن التنفيذ لتاريخ مستقبلي</span>' : '';
+            const lockNote = isFuture ? '<span class="u-17">🔒 لا يمكن التنفيذ لتاريخ مستقبلي</span>' : '';
             const groupHtml = (title, rowsHtml) => rowsHtml ? `
                 <div style="font-weight:800;color:var(--barn);font-size:12px;margin:8px 0 3px;">${title}</div>
                 ${rowsHtml}` : '';
@@ -7673,7 +7703,7 @@
                 const action = isFuture ? lockNote : done
                     ? '<span class="pill ok" style="font-size:10px;">✅ نُفّذ</span>'
                     : `<button class="btn gold sm" onclick="dailyApplyAdditive('feed','${a.id}')">✅ تنفيذ</button>`;
-                return `<div class="check-row"><div class="txt"><div>🌾 ${esc(a.name)} <span style="font-size:10.5px;color:var(--muted);">(${additivePeriodLabel(a)})${timeLabel(a.time)}</span></div>
+                return `<div class="check-row"><div class="txt"><div>🌾 ${esc(a.name)} <span class="u-17">(${additivePeriodLabel(a)})${timeLabel(a.time)}</span></div>
                     <div class="day">الجرعة: ${a.dose} ${a.unit}/${a.per}</div></div>
                     ${action}
                 </div>`;
@@ -7683,7 +7713,7 @@
                 const action = isFuture ? lockNote : done
                     ? '<span class="pill info" style="font-size:10px;">✅ نُفّذ</span>'
                     : `<button class="btn gold sm" onclick="dailyApplyAdditive('water','${a.id}')">✅ تنفيذ</button>`;
-                return `<div class="check-row"><div class="txt"><div>💧 ${esc(a.name)} <span style="font-size:10.5px;color:var(--muted);">(${additivePeriodLabel(a)})${timeLabel(a.time)}</span></div>
+                return `<div class="check-row"><div class="txt"><div>💧 ${esc(a.name)} <span class="u-17">(${additivePeriodLabel(a)})${timeLabel(a.time)}</span></div>
                     <div class="day">الجرعة: ${a.dose} ${a.unit}/${a.per}</div></div>
                     ${action}
                 </div>`;
@@ -7876,7 +7906,7 @@
             if (!box) return;
             box.innerHTML = dailyPhotoDataArr.length
                 ? dailyPhotoDataArr.map((src, i) => `<div style="position:relative;display:inline-block;margin:0 6px 6px 0;"><img src="${src}" style="max-width:110px;max-height:110px;border-radius:8px;border:1px solid var(--line);"><button type="button" class="btn danger xs" style="position:absolute;top:-8px;left:-8px;" onclick="removeDailyPhoto(${i})">🗑️</button></div>`).join('')
-                    + (dailyPhotoDataArr.length < MAX_DAILY_PHOTOS ? `<div style="font-size:10.5px;color:var(--muted);">يمكن إضافة ${MAX_DAILY_PHOTOS - dailyPhotoDataArr.length} صورة أخرى</div>` : '')
+                    + (dailyPhotoDataArr.length < MAX_DAILY_PHOTOS ? `<div class="u-17">يمكن إضافة ${MAX_DAILY_PHOTOS - dailyPhotoDataArr.length} صورة أخرى</div>` : '')
                 : '';
         }
         function removeDailyPhoto(i) { dailyPhotoDataArr.splice(i, 1); renderPhotoPreview(); document.getElementById('d_photo_input').value = ''; }
@@ -9624,13 +9654,13 @@
                 </div>`).join('');
             const html = `
                 <input id="ledgerSearchInput" type="text" placeholder="ابحث بالمورد/المشترى/الصنف/الوصف..." style="width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;margin-bottom:8px;" oninput="filterTransactionsLedger(this.value)">
-                <details open><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">🛒 المشتريات (${purchasesSorted.length})</summary>
+                <details open><summary class="u-15">🛒 المشتريات (${purchasesSorted.length})</summary>
                     <div id="ledgerPurList">${purRows || '<div class="empty" style="padding:14px;">لا توجد عمليات شراء بعد</div>'}</div>
                 </details>
-                <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">💰 المبيعات (${salesSorted.length})</summary>
+                <details style="margin-top:10px;"><summary class="u-15">💰 المبيعات (${salesSorted.length})</summary>
                     <div id="ledgerSalList">${salRows || '<div class="empty" style="padding:14px;">لا توجد عمليات بيع بعد</div>'}</div>
                 </details>
-                <details style="margin-top:10px;"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;">📦 حركات المخزون (${movementsSorted.length})</summary>
+                <details style="margin-top:10px;"><summary class="u-15">📦 حركات المخزون (${movementsSorted.length})</summary>
                     <div id="ledgerMovList">${movRows || '<div class="empty" style="padding:14px;">لا توجد حركات مخزون مسجّلة بعد</div>'}</div>
                 </details>`;
             openGenericModal('🧾 سجل المشتريات والمبيعات وحركات المخزون', html);
@@ -10721,7 +10751,7 @@
             }
             if (list.vaccines.length) {
                 html += `<h4 style="margin:12px 0 4px;">💉 تحصينات وأدوية</h4><ul style="margin:0;padding-right:18px;">` +
-                    list.vaccines.map(v => `<li>يوم ${v.day} — ${esc(v.name)}: <b>${fmt(v.qty, 2)} ${esc(v.unit)}</b><br><span style="font-size:10.5px;color:var(--muted);">${esc(v.note)}</span></li>`).join('') +
+                    list.vaccines.map(v => `<li>يوم ${v.day} — ${esc(v.name)}: <b>${fmt(v.qty, 2)} ${esc(v.unit)}</b><br><span class="u-17">${esc(v.note)}</span></li>`).join('') +
                     `</ul>`;
             }
             if (list.feedAdditives.length) {
@@ -11048,7 +11078,7 @@
             box.innerHTML = [...list].reverse().map(p => `
                 <div class="check-row">
                     <div class="txt">
-                        <div style="font-weight:800;">${esc(p.name)} ${p.autoGenerated ? '<span class="pill info" style="font-size:10px;">🧠 مُولَّد آليًا</span>' : ''}</div>
+                        <div class="u-02">${esc(p.name)} ${p.autoGenerated ? '<span class="pill info" style="font-size:10px;">🧠 مُولَّد آليًا</span>' : ''}</div>
                         <div class="day">🌾 ${p.feedAdditives.length} علف · 💧 ${p.waterAdditives.length} ماء · 🪣 ${p.treatments.length} فرشة · حُفظ ${p.savedAt}${p.sourceBatchName ? ` · مصدره: ${esc(p.sourceBatchName)}` : ''}</div>
                     </div>
                     <button class="btn gold sm" onclick="applyProtocol('${p.id}')">📥 تطبيق على الدفعة الحالية</button>
@@ -13962,7 +13992,7 @@
             return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>⏳ صلاحية اللقاحات/الأدوية</h2></div>
                 <div class="card" style="padding:0;">
                     ${rows.map(r => `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">${esc(r.name)}</div>
+                        <div class="u-02">${esc(r.name)}</div>
                         <div class="day">الرصيد: ${fmt(r.balance,1)} ${r.unit} · صلاحية حتى ${r.expiryDate}</div>
                     </div>
                     <span class="pill ${r.level==='expired'?'bad':'warn'}" style="font-size:11px;">${r.level==='expired' ? `منتهي منذ ${Math.abs(r.daysLeft)} يوم` : `متبقٍ ${r.daysLeft} يوم`}</span></div>`).join('')}
@@ -15753,7 +15783,7 @@
                     ${insightGroup('performance', 'أداء وكفاءة', '📊', 'تحليل وصفي لأداء الدورة الحالية (تكلفة، تجانس، أثر الإضافات)', groupPerformanceArr, false)}
                     ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
                 </div>
-                <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
+                <p class="u-11">💡 هذه التحليلات إحصائية مبنية على بيانات هذه الدورة فقط، وتُستخدم كمؤشر إضافي للمتابعة وليست بديلاً عن التقييم البيطري المباشر. المقارنة بالمعايير العالمية تقريبية وقد تختلف عن أحدث دليل أداء رسمي.</p>
             </div>`;
             // 🔧 إصلاح: بيستخدم دلوقتي computeActiveHousesComparison (كانت موجودة وشغالة بدون استخدام) بدل إعادة
             // حساب devPct يدويًا هنا — نفس البيانات بالظبط، بالإضافة إن الترتيب بقى تلقائيًا (الأضعف أداءً أولًا).
@@ -15764,7 +15794,7 @@
                     ${housesComparison.map(x => {
                         return `<div class="check-row" style="${x.isActive?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}cursor:pointer;" onclick="selectBatch('${x.id}')">
                             <div class="txt">
-                                <div style="font-weight:800;">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''} ${x.isActive?'<span class="pill ok" style="font-size:10px;">الحالية</span>':''}</div>
+                                <div class="u-02">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''} ${x.isActive?'<span class="pill ok" style="font-size:10px;">الحالية</span>':''}</div>
                                 <div class="day">يوم ${x.age} · ${fmt(x.liveCount,0)} طائر (${fmt(x.liveCountPct,1)}%) · نفوق ${fmt(x.mortRate,2)}% · FCR ${x.fcr?fmt(x.fcr,2):'—'}${x.devPct!=null?` · ${x.devPct>=0?'+':''}${fmt(x.devPct,1)}% عن المعياري`:''}</div>
                             </div>
                         </div>`;
@@ -15787,7 +15817,7 @@
                 }).join('');
                 return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>🏠 تفصيل أداء العنابر (تقديري بالتناسب)</h2></div>
                     <div class="card" style="padding:0;">${rows}</div>
-                    <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 السجل اليومي مُسجَّل على مستوى الدفعة كاملة؛ الأرقام هنا تقديرية بالتناسب مع عدد/مساحة كل عنبر، مفيدة لمقارنة الكثافة بين العنابر وليست قياسًا فعليًا منفصلًا لكل عنبر.</p>
+                    <p class="u-11">💡 السجل اليومي مُسجَّل على مستوى الدفعة كاملة؛ الأرقام هنا تقديرية بالتناسب مع عدد/مساحة كل عنبر، مفيدة لمقارنة الكثافة بين العنابر وليست قياسًا فعليًا منفصلًا لكل عنبر.</p>
                 </div>`;
             })() : '';
             const ops = computeOpsRisk(b, m);
@@ -15985,27 +16015,27 @@
                     <summary style="padding:10px 12px;cursor:pointer;background:#faf8f2;font-weight:800;font-size:13px;">📊 اضغط لعرض منحنيات النمو والنفوق والتجانس والأسعار والعلف</summary>
                     <div style="padding:10px 12px;">
                         <div style="margin-bottom:14px;">
-                            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px;">📈 منحنى نمو الوزن (فعلي مقابل المعياري)</div>
+                            <div class="u-23">📈 منحنى نمو الوزن (فعلي مقابل المعياري)</div>
                             <canvas id="chartWeight" height="200"></canvas>
                             <div class="legend-row"><span><span class="dot" style="background:#D9A544"></span>الوزن الفعلي</span><span><span class="dot" style="background:#6B4226;opacity:.6"></span>الوزن المعياري</span></div>
                         </div>
                         <div style="margin-bottom:14px;">
-                            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px;">💀 النفوق التراكمي</div>
+                            <div class="u-23">💀 النفوق التراكمي</div>
                             <canvas id="chartMort" height="170"></canvas>
                         </div>
                         ${(b.records || []).filter(r => Array.isArray(r.weightSample) && r.weightSample.length >= 3).length >= 2 ? `
                         <div style="margin-bottom:14px;">
-                            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px;">📏 تجانس القطيع عبر الأسابيع (CV%)${glossHtml('cv')}</div>
+                            <div class="u-23">📏 تجانس القطيع عبر الأسابيع (CV%)${glossHtml('cv')}</div>
                             <canvas id="chartUniformity" height="170"></canvas>
                             <p style="font-size:11px;color:var(--muted);margin:6px 2px 0;">كل ما قلّ الخط كل ما القطيع أكثر تجانسًا. الهدف الصناعي المعتاد: أقل من 8% (خط استرشادي منقّط).</p>
                         </div>` : ''}
                         <div style="margin-bottom:14px;">
-                            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px;">📊 اتجاه سعر بورصة الدواجن (ج/كجم حي)</div>
+                            <div class="u-23">📊 اتجاه سعر بورصة الدواجن (ج/كجم حي)</div>
                             <canvas id="chartMarketPrice" height="170"></canvas>
                             ${getBatchMarketPriceLog(b).length ? '<div class="legend-row"><span><span class="dot" style="background:#B45A2E"></span>سعر البورصة المُسجَّل يوميًا</span></div>' : '<p style="font-size:11px;color:var(--muted);margin:6px 2px 0;">سجّل سعر البورصة من الحقل السريع أعلى الصفحة أو من تبويب "💰 الإدارة والتخطيط" ← دراسة الجدوى، ليظهر اتجاهه هنا يومًا بعد يوم.</p>'}
                         </div>
                         <div>
-                            <div style="font-weight:700;font-size:12.5px;margin-bottom:6px;">🌾 استهلاك العلف اليومي ومعامل التحويل</div>
+                            <div class="u-23">🌾 استهلاك العلف اليومي ومعامل التحويل</div>
                             <canvas id="chartFeed" height="200"></canvas>
                             <div class="legend-row"><span><span class="dot" style="background:#2F4538"></span>علف يومي (كجم)</span><span><span class="dot" style="background:#C1443C"></span>FCR التراكمي</span></div>
                         </div>
@@ -16065,12 +16095,12 @@
             const dn = (d, n, unit) => (d == null && n == null) ? '—' : `☀️${d != null ? fmt(d,1) : '—'} / 🌙${n != null ? fmt(n,1) : '—'}${unit ? ' ' + unit : ''}`;
             const dnInt = (d, n) => (d == null && n == null) ? '—' : `☀️${d ?? 0} / 🌙${n ?? 0}`;
             const rows = [...m.series].filter(r => realDates.has(r.date)).reverse().map(r => `
-                <tr><td>${r.age}</td><td>${r.date}</td><td style="font-size:11px;white-space:nowrap;">${r.mort + r.cull}<br><span style="color:var(--muted);">${dnInt(r.mortDay, r.mortNight)}</span></td><td>${r.liveCount.toLocaleString('ar-EG')}</td>
-                <td style="font-size:11px;white-space:nowrap;">${dn(r.feedDay, r.feedNight)}</td>
-                <td style="font-size:11px;white-space:nowrap;">${dn(r.waterDay, r.waterNight)}</td>
+                <tr><td>${r.age}</td><td>${r.date}</td><td class="u-24">${r.mort + r.cull}<br><span style="color:var(--muted);">${dnInt(r.mortDay, r.mortNight)}</span></td><td>${r.liveCount.toLocaleString('ar-EG')}</td>
+                <td class="u-24">${dn(r.feedDay, r.feedNight)}</td>
+                <td class="u-24">${dn(r.waterDay, r.waterNight)}</td>
                 <td>${r.weight ? fmt(r.weight, 0) : '—'}</td><td>${r.fcr ? (r.weightIsEstimated ? '~' : '') + fmt(r.fcr, 2) : '—'}</td>
-                <td style="font-size:11px;white-space:nowrap;">${dn(r.tempDay, r.tempNight)}</td>
-                <td style="font-size:11px;white-space:nowrap;">${dn(r.humidityDay, r.humidityNight)}</td>
+                <td class="u-24">${dn(r.tempDay, r.tempNight)}</td>
+                <td class="u-24">${dn(r.humidityDay, r.humidityNight)}</td>
                 <td>${r.health != null ? r.health + '/10' : '—'}${r.clinicalSigns ? ' 🩺' : ''}</td><td>${r.light != null ? fmt(r.light, 1) : '—'}</td>
                 <td style="font-size:11px;">${r.analysis ? `<div class="cell-clip" style="width:120px;" onclick="showRecordDetail('${r.date}')">📊 ${esc(r.analysis.split(' | ')[0])}${r.analysis.includes(' | ')?' …':''}</div>` : '—'}</td>
                 <td style="font-size:11px;">${(r.notesDay||r.notesNight||r.notes) ? `<div class="cell-clip" style="width:110px;" onclick="showRecordDetail('${r.date}')">📝 ${esc(r.notesDay||r.notesNight||r.notes)}</div>` : '—'}</td>
@@ -16111,7 +16141,7 @@
             if (dailyEventsSubTab === 'additives') {
                 const list = [...(b.quickInterventions || [])].sort((a, c) => c.dateTime.localeCompare(a.dateTime)).slice(0, 20);
                 const rows = list.map(it => `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">${it.type === 'feed' ? '🌾' : '💧'} ${esc(it.name || '')} — ${fmt(it.qty,2)} ${it.unit}</div>
+                        <div class="u-02">${it.type === 'feed' ? '🌾' : '💧'} ${esc(it.name || '')} — ${fmt(it.qty,2)} ${it.unit}</div>
                         <div class="day">${it.dateTime.replace('T',' الساعة ')} · ${esc(it.reason || '')}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
                         ${it.note ? `<div style="font-size:11px;color:var(--muted);">${esc(it.note)}</div>` : ''}
                     </div>
@@ -16123,7 +16153,7 @@
             } else if (dailyEventsSubTab === 'incidents') {
                 const list = [...(b.incidents || [])].sort((a, c) => c.date.localeCompare(a.date)).slice(0, 15);
                 const rows = list.map(it => `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">${INCIDENT_SEVERITY_LABEL[it.severity] || ''} ${esc(it.category)} — ${esc(it.title)}</div>
+                        <div class="u-02">${INCIDENT_SEVERITY_LABEL[it.severity] || ''} ${esc(it.category)} — ${esc(it.title)}</div>
                         <div class="day">يوم ${it.age} (${it.date})${it.solution ? ' · الحل: ' + esc(it.solution) : ''} · ${INCIDENT_OUTCOME_LABEL[it.outcome] || ''}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
                         ${it.notes ? `<div style="font-size:11px;color:var(--muted);">${esc(it.notes)}</div>` : ''}
                     </div>
@@ -16240,7 +16270,7 @@
                             <tbody>${t.days.map((d,i)=>`
                                 <tr><td>${i+1}</td><td>يوم ${t.startAge+i}</td>
                                 <td><input type="number" min="0" max="100" value="${d.fromPct}" style="width:64px;padding:6px;border:1.5px solid var(--line);border-radius:8px;" onchange="updateTransitionDayPct('${t.id}',${i},this.value)"></td>
-                                <td style="font-weight:800;">${100-d.fromPct}%</td>
+                                <td class="u-02">${100-d.fromPct}%</td>
                                 <td><button class="btn ghost sm" onclick="removeTransitionDay('${t.id}',${i})">🗑️</button></td></tr>`).join('')}</tbody></table>
                         </div>
                         <button class="btn ghost sm" style="margin-top:6px;" onclick="addTransitionDay('${t.id}')">+ إضافة يوم للجدول</button>
@@ -16251,7 +16281,7 @@
                         <div class="field"><label>عمر بداية التحويل (يوم)</label><input id="ft_startAge" type="number" inputmode="decimal" min="0" placeholder="مثال: 10"></div>
                     </div>
                     <button class="btn gold block" style="margin-top:6px;" onclick="addFeedTransition()">+ إضافة جدول تحويل جديد</button>
-                    <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 بيبدأ افتراضيًا بيومين (65%/35%) — عدّل النسب وأضف/احذف أيام حسب برنامجك بالظبط (مثال: يوم 1: 65%/35%، يوم 2: 50%/50%، يوم 3: 35%/65%...).</p>
+                    <p class="u-25">💡 بيبدأ افتراضيًا بيومين (65%/35%) — عدّل النسب وأضف/احذف أيام حسب برنامجك بالظبط (مثال: يوم 1: 65%/35%، يوم 2: 50%/50%، يوم 3: 35%/65%...).</p>
                     `}
                 </div>
             </div>`;
@@ -16301,7 +16331,7 @@
                         <div class="field"><label>إجمالي علف بادئ لكل طائر (كجم)</label><input id="fs_starterKg" type="number" inputmode="decimal" step="0.05" min="0" value="${curStages[0].targetKg ?? ''}"></div>
                         <div class="field"><label>إجمالي علف نامي لكل طائر (كجم)</label><input id="fs_growerKg" type="number" inputmode="decimal" step="0.05" min="0" value="${curStages[1].targetKg ?? ''}"></div>
                     </div>
-                    <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 مرحلة "ناهي" = باقي الدورة تلقائيًا. القيم دي خاصة بدفعة "${esc(b.name)}" بس — تقدر تظبطها مختلفة عن باقي دفعاتك.</p>
+                    <p class="u-11">💡 مرحلة "ناهي" = باقي الدورة تلقائيًا. القيم دي خاصة بدفعة "${esc(b.name)}" بس — تقدر تظبطها مختلفة عن باقي دفعاتك.</p>
                     <button class="btn gold sm" style="margin-top:6px;" onclick="saveFeedStageForBatch()">💾 حفظ لهذه الدفعة</button>
                 </div>`;
             const feedStageCard = `<div class="section" style="margin-top:0;"><div class="section-head"><h2>🌾 مرحلة العلف الحالية</h2></div>
@@ -16401,7 +16431,7 @@
             </div>
             ${forecastGroup ? `<div class="section"><div class="section-head"><h2>🔮 توقعات وتتبع العلف</h2></div><div class="card" style="padding:0;">${forecastGroup}</div></div>` : ''}
             ${feedStockSection}
-            <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 التسجيل اليومي لكميات العلف (نهار/ليل) لسه فى تبويب "📅 السجل اليومي" زي ما هو — التبويب ده لإدارة البرنامج والمتابعة فقط.</p>`;
+            <p class="u-14">💡 التسجيل اليومي لكميات العلف (نهار/ليل) لسه فى تبويب "📅 السجل اليومي" زي ما هو — التبويب ده لإدارة البرنامج والمتابعة فقط.</p>`;
         }
 
         // ============ Environment Tab (مجمّع): طقس + تهوية + فرشة/سبلة + معدات وأعطال — كل حاجة خاصة بالبيئة مكان واحد ============
@@ -16471,16 +16501,16 @@
                 const isCurrent = age > prevMax && age <= r.maxAge;
                 prevMax = r.maxAge;
                 return `<tr style="border-bottom:1px solid var(--line);${isCurrent ? 'background:rgba(46,110,142,.08);font-weight:800;' : ''}">
-                    <td style="padding:6px;">${r.stageLabel}${isCurrent ? ' 👈' : ''}</td>
-                    <td style="padding:6px;text-align:center;">${r.winter[0]}-${r.winter[1]}%</td>
-                    <td style="padding:6px;text-align:center;">${r.mild[0]}-${r.mild[1]}%</td>
-                    <td style="padding:6px;text-align:center;">${r.summer[0]}-${r.summer[1]}${r.summer[1]===100?'% (شبه مستمر)':'%'}</td>
+                    <td class="u-03">${r.stageLabel}${isCurrent ? ' 👈' : ''}</td>
+                    <td class="u-05">${r.winter[0]}-${r.winter[1]}%</td>
+                    <td class="u-05">${r.mild[0]}-${r.mild[1]}%</td>
+                    <td class="u-05">${r.summer[0]}-${r.summer[1]}${r.summer[1]===100?'% (شبه مستمر)':'%'}</td>
                 </tr>`;
             }).join('');
             const nightTableHtml = `
                 <p style="font-size:10.5px;color:var(--muted);margin:0 0 6px;">💡 مفيش داعي تفتح الجدول ده كل يوم — توصية الليلة النهاردة بالظبط (حسب عمر وموسم دفعتك الحالية، ومُعدَّلة تلقائيًا لو الأمونيا مرتفعة) بتظهر تلقائيًا فوق فى قسم "🌬️ بروتوكول توصيات التهوية اليوم". الجدول ده للرجوع السريع بس لو حابب تشوف الصورة الكاملة لكل الأعمار مرة واحدة.</p>
                 <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+                <table class="u-26">
                 <thead><tr style="background:#faf8f2;">
                     <th style="padding:6px;text-align:right;border-bottom:1px solid var(--line);">العمر</th>
                     <th style="padding:6px;text-align:center;border-bottom:1px solid var(--line);">❄️ شتاء</th>
@@ -16489,7 +16519,7 @@
                 </tr></thead>
                 <tbody>${nightRowsHtml}</tbody></table>
                 </div>
-                <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">النسبة = دقائق تشغيل من كل دورة 5 دقائق (مثلاً 20% ≈ دقيقة تشغيل / 4 دقائق وقف). الصف المظلّل 👈 هو مرحلة دفعتك الحالية. دي نقطة انطلاق عملية وليست رقمًا نهائيًا ثابتًا — اضبطها فعليًا حسب قراءات الأمونيا/CO2/الرطوبة الفعلية المسجّلة يوميًا.</p>`;
+                <p class="u-11">النسبة = دقائق تشغيل من كل دورة 5 دقائق (مثلاً 20% ≈ دقيقة تشغيل / 4 دقائق وقف). الصف المظلّل 👈 هو مرحلة دفعتك الحالية. دي نقطة انطلاق عملية وليست رقمًا نهائيًا ثابتًا — اضبطها فعليًا حسب قراءات الأمونيا/CO2/الرطوبة الفعلية المسجّلة يوميًا.</p>`;
 
             // ===== 3) سرعة الهواء والضغط الساكن =====
             let airCalc = `<div class="empty" style="padding:10px;">أدخل عدد وقدرة الشفاطات فى بيانات الدفعة لحساب سرعة الهواء ومساحة الفتحات المطلوبة.</div>`;
@@ -16627,7 +16657,7 @@
             </div>
 
             ${renderOutageSection(b, m)}
-            <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 التسجيل اليومي لدرجة الحرارة والرطوبة لسه فى تبويب "📅 السجل اليومي" زي ما هو — التبويب ده لإدارة البرنامج والمتابعة فقط.</p>`;
+            <p class="u-14">💡 التسجيل اليومي لدرجة الحرارة والرطوبة لسه فى تبويب "📅 السجل اليومي" زي ما هو — التبويب ده لإدارة البرنامج والمتابعة فقط.</p>`;
         }
 
         function renderWaterAdditiveListCard(b, m) {
@@ -16768,7 +16798,7 @@
                 <div class="card" id="waterAdditiveListBox" style="padding:0;">${waterAddRows||'<div class="empty" style="padding:14px;">لا توجد إضافات ماء.</div>'}</div>
             </div>
             ${(waterQualityHtml||waterFeedRatioHtml||waterWasteHtml) ? `<div class="section"><div class="section-head"><h2>📊 مؤشرات جودة واستهلاك المياه</h2></div><div class="card" style="padding:0;">${waterQualityHtml}${waterFeedRatioHtml}${waterWasteHtml}</div></div>` : ''}
-            <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 التسجيل اليومي لكميات الماء وقراءات جودته لسه فى تبويب "📅 السجل اليومي" زي ما هو.</p>`;
+            <p class="u-14">💡 التسجيل اليومي لكميات الماء وقراءات جودته لسه فى تبويب "📅 السجل اليومي" زي ما هو.</p>`;
         }
 
         // ============ Health Section (جزء من تبويب الإنتاج): تحصينات + بروتوكولات + تنبيهات مخصصة + سجل تنفيذ ============
@@ -16854,7 +16884,7 @@
                 <div style="padding:12px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                     <button class="btn ghost sm" onclick="navigateReminderCalendar(-1)">›</button>
-                    <div style="font-weight:800;">${AR_MONTH_NAMES[m]} ${y}</div>
+                    <div class="u-02">${AR_MONTH_NAMES[m]} ${y}</div>
                     <button class="btn ghost sm" onclick="navigateReminderCalendar(1)">‹</button>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px;">${weekdayHeaders}</div>
@@ -16995,11 +17025,11 @@
                         ? `الحل اللي نجح غالبًا: <b>${esc(e.bestSolution.name)}</b> (${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة)`
                         : 'لسه مفيش حل مُثبت مرتبط بهذا النمط';
                     return `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
+                        <div class="u-02">${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
                         <div class="day">تكرر فى ${e.cyclesAffected} من دوراتك المؤرشفة — ${solTxt}</div>
                     </div></div>`;
                 }).join('') + `</div>
-                <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 قبل ما تحجز عنبر/رأس مال إضافي لهذا النوع، جهّز خطة لمواجهة هذه الأنماط — التفاصيل الكاملة فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
+                <p class="u-11">💡 قبل ما تحجز عنبر/رأس مال إضافي لهذا النوع، جهّز خطة لمواجهة هذه الأنماط — التفاصيل الكاملة فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
             </div>`;
         }
 
@@ -17354,18 +17384,18 @@
                 return `<div class="section"><div class="card" style="text-align:center;padding:20px;color:var(--muted);">📊 محتاج بيانات كافية (دورة مؤرشفة واحدة على الأقل، أو "ربح متوقع للطائر" فى البيانات الاحتياطية) لنوع ${baseLabel} عشان أقدر أحسب الخطة الشاملة.</div></div>`;
             }
             const rows = plan.timeline.map(t => `<tr style="border-bottom:1px solid var(--line);">
-                <td style="padding:5px;text-align:center;">${t.round}</td>
-                <td style="padding:5px;text-align:center;">${fmt(t.houseCount, 0)}</td>
-                <td style="padding:5px;text-align:center;">${fmt(t.totalCapacity, 0)}</td>
-                <td style="padding:5px;text-align:center;">${money(t.fundBalance)}</td>
+                <td class="u-12">${t.round}</td>
+                <td class="u-12">${fmt(t.houseCount, 0)}</td>
+                <td class="u-12">${fmt(t.totalCapacity, 0)}</td>
+                <td class="u-12">${money(t.fundBalance)}</td>
                 <td style="padding:5px;font-size:10.5px;">${t.note || '—'}</td>
             </tr>`).join('');
             const achievedRows = plan.achieved.map(a => `<div class="check-row"><div class="txt">
-                <div style="font-weight:800;">${a.label}</div>
+                <div class="u-02">${a.label}</div>
                 <div class="day">اتمول فى الجولة ${a.round} — رأس مال ${money(a.capex)}</div>
             </div></div>`).join('');
             const remainingRows = plan.milestones.slice(plan.achieved.length).map(mm => `<div class="check-row" style="opacity:.6;"><div class="txt">
-                <div style="font-weight:800;">${mm.label}</div>
+                <div class="u-02">${mm.label}</div>
                 <div class="day">محتاج ${money(mm.capex)} — لسه معملش</div>
             </div></div>`).join('');
             const subPlansHtml = plan.seededSubPlans.map(sp => {
@@ -17390,8 +17420,8 @@
             <div class="section">
                 <div class="section-head"><h2>📅 مسار صندوق ${baseLabel} الرئيسي</h2></div>
                 <div class="card" style="padding:0;overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
-                        <thead><tr style="background:var(--cream);"><th style="padding:6px;">جولة</th><th>عنابر</th><th>سعة</th><th>رصيد الصندوق</th><th>ملاحظة</th></tr></thead>
+                    <table class="u-26">
+                        <thead><tr style="background:var(--cream);"><th class="u-03">جولة</th><th>عنابر</th><th>سعة</th><th>رصيد الصندوق</th><th>ملاحظة</th></tr></thead>
                         <tbody>${rows}</tbody>
                     </table>
                 </div>
@@ -17653,15 +17683,15 @@
             if (!years.length) return `<p style="font-size:11px;color:var(--muted);">مفيش بيانات كفاية لعرض إسقاط سنوي للخطة.</p>`;
             return `<div class="scroll-x">
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">
-                    <thead><tr style="border-bottom:2px solid var(--line);">
-                        <th style="padding:5px;">السنة</th><th style="padding:5px;">عنابر (آخر السنة)</th><th style="padding:5px;">السعة الكلية (آخر السنة)</th>
-                        <th style="padding:5px;">الإيراد السنوي</th><th style="padding:5px;">التكلفة السنوية</th><th style="padding:5px;">صافي ربح السنة</th>
-                        <th style="padding:5px;">الربح التراكمي</th><th style="padding:5px;">رصيد الصندوق (آخر السنة)</th>
+                    <thead><tr class="u-27">
+                        <th class="u-07">السنة</th><th class="u-07">عنابر (آخر السنة)</th><th class="u-07">السعة الكلية (آخر السنة)</th>
+                        <th class="u-07">الإيراد السنوي</th><th class="u-07">التكلفة السنوية</th><th class="u-07">صافي ربح السنة</th>
+                        <th class="u-07">الربح التراكمي</th><th class="u-07">رصيد الصندوق (آخر السنة)</th>
                     </tr></thead>
                     <tbody>${years.map(y => `<tr style="border-bottom:1px solid var(--line);">
                         <td style="padding:5px;text-align:center;font-weight:800;">سنة ${y.year}</td>
-                        <td style="padding:5px;text-align:center;">${fmt(y.houseCount,0)}</td>
-                        <td style="padding:5px;text-align:center;">${fmt(y.totalCapacity,0)}</td>
+                        <td class="u-12">${fmt(y.houseCount,0)}</td>
+                        <td class="u-12">${fmt(y.totalCapacity,0)}</td>
                         <td style="padding:5px;text-align:center;color:var(--green);">${money(y.revenue)}</td>
                         <td style="padding:5px;text-align:center;color:var(--red);">${money(y.cost)}</td>
                         <td style="padding:5px;text-align:center;font-weight:800;color:${y.profit>=0?'var(--green)':'var(--red)'};">${money(y.profit)}</td>
@@ -17704,15 +17734,15 @@
             const d = study[scenarioKey] || study.current;
             return `<div class="scroll-x">
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">
-                    <thead><tr style="border-bottom:2px solid var(--line);">
-                        <th style="padding:5px;">الجولة</th><th style="padding:5px;">عنابر</th><th style="padding:5px;">السعة الكلية</th>
-                        <th style="padding:5px;">الإيراد</th><th style="padding:5px;">التكلفة</th><th style="padding:5px;">صافي ربح الجولة</th>
-                        <th style="padding:5px;">الربح التراكمي</th><th style="padding:5px;">رصيد الصندوق</th><th style="padding:5px;">ملاحظة</th>
+                    <thead><tr class="u-27">
+                        <th class="u-07">الجولة</th><th class="u-07">عنابر</th><th class="u-07">السعة الكلية</th>
+                        <th class="u-07">الإيراد</th><th class="u-07">التكلفة</th><th class="u-07">صافي ربح الجولة</th>
+                        <th class="u-07">الربح التراكمي</th><th class="u-07">رصيد الصندوق</th><th class="u-07">ملاحظة</th>
                     </tr></thead>
                     <tbody>${d.rows.map(r => `<tr style="border-bottom:1px solid var(--line);">
-                        <td style="padding:5px;text-align:center;">${r.round}</td>
-                        <td style="padding:5px;text-align:center;">${fmt(r.houseCount,0)}</td>
-                        <td style="padding:5px;text-align:center;">${fmt(r.totalCapacity,0)}</td>
+                        <td class="u-12">${r.round}</td>
+                        <td class="u-12">${fmt(r.houseCount,0)}</td>
+                        <td class="u-12">${fmt(r.totalCapacity,0)}</td>
                         <td style="padding:5px;text-align:center;color:var(--green);">${money(r.revenue)}</td>
                         <td style="padding:5px;text-align:center;color:var(--red);">${money(r.cost)}</td>
                         <td style="padding:5px;text-align:center;font-weight:800;color:${r.profit>=0?'var(--green)':'var(--red)'};">${money(r.profit)}</td>
@@ -17746,12 +17776,12 @@
                     <button class="btn gold block" onclick="saveExpansionInputs()">💾 احفظ الأرقام دي كافتراض</button>
 
                     ${annualProj ? `<div style="border-top:1px solid var(--line);padding-top:10px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📅 الإسقاط السنوي — عنبر واحد (${fmt(annualProj.capacity,0)} طائر، ~${fmt(annualProj.cyclesPerYear,1)} دورة/سنة)</h4>
+                        <h4 class="u-04">📅 الإسقاط السنوي — عنبر واحد (${fmt(annualProj.capacity,0)} طائر، ~${fmt(annualProj.cyclesPerYear,1)} دورة/سنة)</h4>
                         <div id="expFeasAnnualHouseCards">${renderSingleHouseAnnualCards(annualProj)}</div>
                     </div>` : ''}
 
                     <div style="border-top:1px solid var(--line);padding-top:10px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📊 نظرة شاملة على الخطة كلها (${study.rounds} جولة)</h4>
+                        <h4 class="u-04">📊 نظرة شاملة على الخطة كلها (${study.rounds} جولة)</h4>
                         <div id="expFeasSummaryCards">${renderExpansionFeasibilitySummaryCards(study)}</div>
                     </div>
 
@@ -17768,7 +17798,7 @@
                     </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:10px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📋 تفصيل كل جولة (نفس السيناريو المختار فوق)</h4>
+                        <h4 class="u-04">📋 تفصيل كل جولة (نفس السيناريو المختار فوق)</h4>
                         <div id="expFeasDetailTable">${renderExpansionFeasibilityDetailTable(study, 'current')}</div>
                     </div>
                     <p style="font-size:10px;color:var(--muted);margin:0;line-height:1.6;">💡 "الاستثمار الأولي" = تكلفة فتح القاعدة الأفقية بالكامل (${inputs.targetHouseCount ?? 10} عنبر × ${fmt(inputs.minHouseCapacity ?? 10000,0)} طائر) بسعر فتح العنبر اللي دخّلته فى "الأساسيات" فوق. لو الرقم صفر يبقى معناه إنك مدخلتش "تكلفة فتح عنبر جديد للطائر" هناك بعد.</p>
@@ -18013,7 +18043,7 @@
             <div class="section">
                 <div class="section-head"><h2>🚀 خطة التوسع (كرة الثلج)</h2></div>
                 <div class="card" style="display:grid;gap:10px;">
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">كل عنبر فى أول دورة تسكين له، ربحها بالكامل بيفتح عنبر جديد ضعف سعته مباشرة. من الدورة التانية للعنبر فأكتر، ربحه بيروح لصندوق تنمية وطوارئ مشترك لكل عنابر النوع ده. لما الصندوق يكفي هدف كبير (مفرخة/مصنع علف/أمهات/مجزر)، بينفّذه وتتكرر الكرة بسيولة أكبر. <b>كل نوع طائر عنده هنا نفس الخطة كاملة بالظبط — اختر النوع تحت وهيتحسبلك تلقائيًا</b>.</p>
+                    <p class="u-20">كل عنبر فى أول دورة تسكين له، ربحها بالكامل بيفتح عنبر جديد ضعف سعته مباشرة. من الدورة التانية للعنبر فأكتر، ربحه بيروح لصندوق تنمية وطوارئ مشترك لكل عنابر النوع ده. لما الصندوق يكفي هدف كبير (مفرخة/مصنع علف/أمهات/مجزر)، بينفّذه وتتكرر الكرة بسيولة أكبر. <b>كل نوع طائر عنده هنا نفس الخطة كاملة بالظبط — اختر النوع تحت وهيتحسبلك تلقائيًا</b>.</p>
                     <div class="field">
                         <label>🐣 النوع المطلوب التخطيط له</label>
                         <select id="exp_speciesSelect" onchange="setExpansionSpecies(this.value)">
@@ -18032,11 +18062,11 @@
             <div class="section">
                 <div class="section-head"><h2>📥 المدخلات والبيانات — ${expansionSpeciesLabel(species)}</h2></div>
                 <div class="card" style="display:grid;gap:16px;">
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">كل الأرقام تحت بتتحفظ لهذا النوع لوحده — عدّل أي رقم وادّي "💾 احفظ" فى الآخر عشان قسمي "النتائج وخطة السير" و"النجاح والتأخير والمخاطر" تحت يتحدثوا تلقائيًا بالأرقام الجديدة.</p>
+                    <p class="u-20">كل الأرقام تحت بتتحفظ لهذا النوع لوحده — عدّل أي رقم وادّي "💾 احفظ" فى الآخر عشان قسمي "النتائج وخطة السير" و"النجاح والتأخير والمخاطر" تحت يتحدثوا تلقائيًا بالأرقام الجديدة.</p>
 
                     <div>
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📋 الأساسيات</h4>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <h4 class="u-04">📋 الأساسيات</h4>
+                        <div class="u-19">
                             <div class="field"><label>الحد الأدنى لسعة العنبر (طائر)</label><input type="number" id="exp_minHouseCapacity" value="${inputs.minHouseCapacity ?? 10000}"></div>
                             <div class="field"><label>عدد عنابر القاعدة الأفقية</label><input type="number" id="exp_targetHouseCount" value="${inputs.targetHouseCount ?? 10}"></div>
                             <div class="field"><label>الفارق بين تسكين وتسكين (يوم)</label><input type="number" id="exp_stockingIntervalDays" value="${inputs.stockingIntervalDays ?? 3}"></div>
@@ -18053,9 +18083,9 @@
                     </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:14px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🎯 الأهداف الكبرى (تكامل رأسي)</h4>
+                        <h4 class="u-04">🎯 الأهداف الكبرى (تكامل رأسي)</h4>
                         <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.7;">مش رأس مال تقديري — دخّل "تكلفة الوحدة" (سعر سوق حقيقي معروف عندك) والتطبيق بيضربها تلقائيًا فى احتياجك المستهدف الفعلي. قطيع الأمهات بيتحسب من حاسبة الأمهات تحت من غير أي مُدخل إضافي هنا.</p>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div class="u-19">
                             <div class="field"><label>🐣 تكلفة معمل تفريخ / 1000 كتكوت سعة سنوية</label><input type="number" id="exp_capexHatcheryPerThousandChicks" value="${inputs.capexHatcheryPerThousandChicks ?? ''}"></div>
                             <div class="field"><label>🏭 تكلفة مصنع علف / طن سعة يومية</label><input type="number" id="exp_capexFeedMillPerTonDay" value="${inputs.capexFeedMillPerTonDay ?? ''}"></div>
                             <div class="field"><label>🔪 تكلفة مجزر / طن سعة يومية</label><input type="number" id="exp_capexSlaughterhousePerTonDay" value="${inputs.capexSlaughterhousePerTonDay ?? ''}"></div>
@@ -18063,9 +18093,9 @@
                     </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:14px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📥 بيانات أداء احتياطية (لو لسه معندكش دورة مؤرشفة من هذا النوع)</h4>
+                        <h4 class="u-04">📥 بيانات أداء احتياطية (لو لسه معندكش دورة مؤرشفة من هذا النوع)</h4>
                         <p style="font-size:10.5px;color:var(--muted);margin:0 0 8px;line-height:1.6;">لو عندك دورة مؤرشفة واحدة على الأقل من هذا النوع، التطبيق بيتجاهل الأرقام دي تلقائيًا ويحسب من أدائك الفعلي.</p>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div class="u-19">
                             <div class="field"><label>ربح متوقع للطائر (جنيه)</label><input type="number" step="0.01" id="exp_manualAvgProfitPerBird" value="${inputs.manualAvgProfitPerBird ?? ''}"></div>
                             <div class="field"><label>تذبذب الربح المتوقع ± (جنيه)</label><input type="number" step="0.01" id="exp_manualSdProfitPerBird" value="${inputs.manualSdProfitPerBird ?? ''}"></div>
                             <div class="field"><label>مدة الدورة المتوقعة (يوم)</label><input type="number" id="exp_manualAvgCycleDays" value="${inputs.manualAvgCycleDays ?? ''}"></div>
@@ -18076,9 +18106,9 @@
                     </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:14px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🥚 حاسبة قطيع الأمهات (مدخلات)</h4>
+                        <h4 class="u-04">🥚 حاسبة قطيع الأمهات (مدخلات)</h4>
                         <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">💡 بيض/خصوبة/فقس اتملوا برقم مرجعي تقريبي شائع لـ${expansionSpeciesLabel(species)} (${getBreederFlockDefaults(species).henEggsPerYear} بيضة، خصوبة ${getBreederFlockDefaults(species).fertilityPct}%، فقس ${getBreederFlockDefaults(species).hatchPct}%) — عدّلها برقم مورّدك الفعلي وقت ما يتوفر.</p>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div class="u-19">
                             <div class="field"><label>عدد الدورات سنويًا لكل عنبر</label><input type="number" step="0.1" id="exp_cyclesPerYearPerHouse" value="${inputs.cyclesPerYearPerHouse ?? 6}"></div>
                             <div class="field"><label>بيض الأم الواحدة سنويًا</label><input type="number" id="exp_henEggsPerYear" value="${inputs.henEggsPerYear ?? getBreederFlockDefaults(species).henEggsPerYear}"></div>
                             <div class="field"><label>نسبة الخصوبة %</label><input type="number" step="0.1" id="exp_fertilityPct" value="${inputs.fertilityPct ?? getBreederFlockDefaults(species).fertilityPct}"></div>
@@ -18090,21 +18120,11 @@
                     </div>
 
                     <div style="border-top:1px solid var(--line);padding-top:14px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🏭🔪 طاقة المجزر ومصنع العلف (مدخلات)</h4>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <h4 class="u-04">🏭🔪 طاقة المجزر ومصنع العلف (مدخلات)</h4>
+                        <div class="u-19">
                             <div class="field"><label>هامش أمان الطاقة %</label><input type="number" step="1" id="exp_capacitySafetyMarginPct" value="${inputs.capacitySafetyMarginPct ?? 20}"></div>
                             <div class="field"><label>الطاقة المخططة للمجزر (كجم لحم حي/يوم)</label><input type="number" id="exp_plannedSlaughterKgPerDay" value="${inputs.plannedSlaughterKgPerDay ?? ''}"></div>
                             <div class="field"><label>الطاقة المخططة لمصنع العلف (طن/يوم)</label><input type="number" step="0.1" id="exp_plannedFeedMillTonsPerDay" value="${inputs.plannedFeedMillTonsPerDay ?? ''}"></div>
-                        </div>
-                    </div>
-
-                    <div style="border-top:1px solid var(--line);padding-top:14px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🧮 اختبار ضغط دراسة الجدوى (معاينة فورية)</h4>
-                        <p style="font-size:10.5px;color:var(--muted);margin:0 0 8px;">الأرقام دي بتحدّث نتائج "دراسة الجدوى الشاملة" فى قسم النتائج تحت فورًا وانت بتكتب — واحفظها هنا كمان لو عايزها تفضل ثابتة.</p>
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
-                            <div class="field"><label>نسبة ضغط سعر العلف %</label><input type="number" step="1" id="exp_feedPriceStressPct" value="${inputs.feedPriceStressPct ?? 15}" oninput="recalcExpansionFeasibilityStudy()"></div>
-                            <div class="field"><label>نسبة ضغط سعر البيع %</label><input type="number" step="1" id="exp_salePriceStressPct" value="${inputs.salePriceStressPct ?? 10}" oninput="recalcExpansionFeasibilityStudy()"></div>
-                            <div class="field"><label>عدد الجولات للعرض</label><input type="number" step="1" min="1" max="30" id="exp_feasStudyRounds" value="${inputs.feasStudyRounds ?? 8}" oninput="recalcExpansionFeasibilityStudy()"></div>
                         </div>
                     </div>
 
@@ -18126,7 +18146,7 @@
                 <div class="card" style="display:grid;gap:14px;">
 
                     <div>
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📈 أداء ${expansionSpeciesLabel(species)}${hist.n ? ` (من ${hist.n} دورة مؤرشفة)` : ' (بيانات مدخلة يدويًا)'}</h4>
+                        <h4 class="u-04">📈 أداء ${expansionSpeciesLabel(species)}${hist.n ? ` (من ${hist.n} دورة مؤرشفة)` : ' (بيانات مدخلة يدويًا)'}</h4>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                             ${hist.isFallback ? `<p style="grid-column:1/-1;font-size:10.5px;color:var(--muted);margin:0 0 4px;">💡 بعض الأرقام تحت من بياناتك الاحتياطية اليدوية لحد ما يتوفر أداء فعلي مؤرشف كفاية.</p>` : ''}
                             ${statLine(`متوسط الربح للطائر`, `${money(hist.avgProfitPerBird)}`, {vStyle:`font-weight:900;color:${hist.avgProfitPerBird >= 0 ? 'var(--green)' : 'var(--red)'};`})}
@@ -18138,8 +18158,8 @@
                         </div>
                     </div>
 
-                    ${plan.autoCapex ? `<div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🎯 الأهداف الكبرى — رأس المال المطلوب (محسوب تلقائيًا)</h4>
+                    ${plan.autoCapex ? `<div class="u-09">
+                        <h4 class="u-04">🎯 الأهداف الكبرى — رأس المال المطلوب (محسوب تلقائيًا)</h4>
                         <div style="display:grid;gap:4px;">
                             ${statLine('🐣 معمل تفريخ', plan.autoCapex.capexHatchery != null ? money(plan.autoCapex.capexHatchery) : '—')}
                             ${statLine('🏭 مصنع علف', plan.autoCapex.capexFeedMill != null ? money(plan.autoCapex.capexFeedMill) : '—')}
@@ -18148,33 +18168,33 @@
                         </div>
                     </div>` : ''}
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🥚 نتائج حاسبة قطيع الأمهات</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">🥚 نتائج حاسبة قطيع الأمهات</h4>
                         <div style="display:grid;gap:8px;">
                             ${statLine(`احتياجك السنوي من الصغار (${bp.houseCount} عنبر × ${fmt(bp.minCap,0)} × ${fmt(bp.cyclesPerYear,1)} دورة)`, `${fmt(bp.annualChicksNeeded, 0)}`, {vStyle:`font-weight:900;`})}
                             ${statLine(`إنتاج الأم الواحدة سنويًا`, `${fmt(bp.chicksPerHenYear, 1)}`)}
                             ${statLine(`عدد الأمهات المطلوب لتغطية إنتاجك بالكامل`, `${bp.hensNeeded != null ? fmt(bp.hensNeeded, 0) + ' أم' : '—'}`, {vStyle:`font-weight:900;color:var(--gold-dark, var(--barn-dark));`})}
                             ${bp.costPerChickOwn != null ? `${statLine(`تكلفة الكتكوت/الصغير لو أنتجته بنفسك`, `${money(bp.costPerChickOwn)}`, {vStyle:`font-weight:900;`})}` : ''}
                             ${bp.breakeven != null ? `${statLine(`الفرق لصالحك عن سعر الشراء الحالي`, `${money(bp.breakeven)} / رأس`, {vStyle:`font-weight:900;color:${bp.breakeven >= 0 ? 'var(--green)' : 'var(--red)'};`})}` : ''}
-                            ${bp.breakeven != null ? `<p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${bp.breakeven > 0 ? '✅ التربية الداخلية أرخص من الشراء دلوقتي — المشروع مجزي.' : '⏳ الشراء لسه أرخص من التربية الداخلية — راقب السعر، وقت ما يعدي تكلفتك يبقى وقت تنفيذ المشروع.'}</p>` : ''}
+                            ${bp.breakeven != null ? `<p class="u-28">${bp.breakeven > 0 ? '✅ التربية الداخلية أرخص من الشراء دلوقتي — المشروع مجزي.' : '⏳ الشراء لسه أرخص من التربية الداخلية — راقب السعر، وقت ما يعدي تكلفتك يبقى وقت تنفيذ المشروع.'}</p>` : ''}
                         </div>
                     </div>
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🏭🔪 جدول طاقة المجزر ومصنع العلف اللازمة جولة بجولة</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">🏭🔪 جدول طاقة المجزر ومصنع العلف اللازمة جولة بجولة</h4>
                         <div style="overflow-x:auto;">
-                            <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
-                                <thead><tr style="border-bottom:2px solid var(--line);">
-                                    <th style="padding:6px;text-align:right;">الدورة</th><th style="padding:6px;">السعة الكلية</th><th style="padding:6px;">تدفق/يوم</th><th style="padding:6px;">مجزر لازم (كجم/يوم)</th><th style="padding:6px;">مجزر موصى به</th><th style="padding:6px;">علف لازم (طن/يوم)</th><th style="padding:6px;">علف موصى به</th>
+                            <table class="u-26">
+                                <thead><tr class="u-27">
+                                    <th style="padding:6px;text-align:right;">الدورة</th><th class="u-03">السعة الكلية</th><th class="u-03">تدفق/يوم</th><th class="u-03">مجزر لازم (كجم/يوم)</th><th class="u-03">مجزر موصى به</th><th class="u-03">علف لازم (طن/يوم)</th><th class="u-03">علف موصى به</th>
                                 </tr></thead>
                                 <tbody>
                                     ${plan.timeline.map(t => `<tr style="border-bottom:1px solid var(--line);">
-                                        <td style="padding:6px;text-align:center;">${t.round}</td>
-                                        <td style="padding:6px;text-align:center;">${fmt(t.totalCapacity, 0)}</td>
-                                        <td style="padding:6px;text-align:center;">${t.birdsPerDay != null ? fmt(t.birdsPerDay, 0) : '—'}</td>
-                                        <td style="padding:6px;text-align:center;">${t.slaughterKgPerDay != null ? fmt(t.slaughterKgPerDay, 0) : '—'}</td>
+                                        <td class="u-05">${t.round}</td>
+                                        <td class="u-05">${fmt(t.totalCapacity, 0)}</td>
+                                        <td class="u-05">${t.birdsPerDay != null ? fmt(t.birdsPerDay, 0) : '—'}</td>
+                                        <td class="u-05">${t.slaughterKgPerDay != null ? fmt(t.slaughterKgPerDay, 0) : '—'}</td>
                                         <td style="padding:6px;text-align:center;${inputs.plannedSlaughterKgPerDay && t.slaughterKgPerDayRec != null && t.slaughterKgPerDayRec > inputs.plannedSlaughterKgPerDay ? 'color:var(--red);font-weight:900;' : ''}">${t.slaughterKgPerDayRec != null ? fmt(t.slaughterKgPerDayRec, 0) : '—'}</td>
-                                        <td style="padding:6px;text-align:center;">${t.feedMillTonsPerDay != null ? fmt(t.feedMillTonsPerDay, 1) : '—'}</td>
+                                        <td class="u-05">${t.feedMillTonsPerDay != null ? fmt(t.feedMillTonsPerDay, 1) : '—'}</td>
                                         <td style="padding:6px;text-align:center;${inputs.plannedFeedMillTonsPerDay && t.feedMillTonsPerDayRec != null && t.feedMillTonsPerDayRec > inputs.plannedFeedMillTonsPerDay ? 'color:var(--red);font-weight:900;' : ''}">${t.feedMillTonsPerDayRec != null ? fmt(t.feedMillTonsPerDayRec, 1) : '—'}</td>
                                     </tr>`).join('')}
                                 </tbody>
@@ -18198,21 +18218,21 @@
                         })()}
                     </div>
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🗓️ الجدول الزمني المتوقع (كرة الثلج جولة بجولة)</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">🗓️ الجدول الزمني المتوقع (كرة الثلج جولة بجولة)</h4>
                         <div style="overflow-x:auto;">
-                            <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
-                                <thead><tr style="border-bottom:2px solid var(--line);">
-                                    <th style="padding:6px;text-align:right;">الدورة</th><th style="padding:6px;">عدد العنابر</th><th style="padding:6px;">السعة الكلية</th><th style="padding:6px;">دخل الصندوق</th><th style="padding:6px;">رصيد الصندوق</th><th style="padding:6px;text-align:right;">الحدث</th>
+                            <table class="u-26">
+                                <thead><tr class="u-27">
+                                    <th style="padding:6px;text-align:right;">الدورة</th><th class="u-03">عدد العنابر</th><th class="u-03">السعة الكلية</th><th class="u-03">دخل الصندوق</th><th class="u-03">رصيد الصندوق</th><th style="padding:6px;text-align:right;">الحدث</th>
                                 </tr></thead>
                                 <tbody>
                                     ${plan.timeline.map(t => `<tr style="border-bottom:1px solid var(--line);">
-                                        <td style="padding:6px;">${t.round}</td>
-                                        <td style="padding:6px;text-align:center;">${t.houseCount}</td>
-                                        <td style="padding:6px;text-align:center;">${fmt(t.totalCapacity, 0)}</td>
+                                        <td class="u-03">${t.round}</td>
+                                        <td class="u-05">${t.houseCount}</td>
+                                        <td class="u-05">${fmt(t.totalCapacity, 0)}</td>
                                         <td style="padding:6px;text-align:center;color:${t.fundAdded >= 0 ? 'var(--green)' : 'var(--red)'};">${money(t.fundAdded)}</td>
-                                        <td style="padding:6px;text-align:center;">${money(t.fundBalance)}</td>
-                                        <td style="padding:6px;">${t.action}${t.note ? `<div style="font-size:9.5px;color:var(--gold-dark, var(--barn-dark));font-weight:700;">${t.note}</div>` : ''}</td>
+                                        <td class="u-05">${money(t.fundBalance)}</td>
+                                        <td class="u-03">${t.action}${t.note ? `<div style="font-size:9.5px;color:var(--gold-dark, var(--barn-dark));font-weight:700;">${t.note}</div>` : ''}</td>
                                     </tr>`).join('')}
                                 </tbody>
                             </table>
@@ -18236,22 +18256,22 @@
                         if (!kb || !kb.length) return '';
                         const top = kb.slice(0, 5);
                         return `<div>
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">📜 خبرة دوراتك السابقة قبل ما تكمّل التوسع</h4>
+                        <h4 class="u-04">📜 خبرة دوراتك السابقة قبل ما تكمّل التوسع</h4>
                         <div style="display:grid;gap:0;">` + top.map(e => {
                             const solTxt = e.bestSolution
                                 ? `الحل اللي نجح غالبًا: <b>${esc(e.bestSolution.name)}</b> (${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة)`
                                 : 'لسه مفيش حل مُثبت مرتبط بهذا النمط';
                             return `<div class="check-row"><div class="txt">
-                                <div style="font-weight:800;">${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
+                                <div class="u-02">${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
                                 <div class="day">تكرر فى ${e.cyclesAffected} من دوراتك المؤرشفة — ${solTxt}</div>
                             </div></div>`;
                         }).join('') + `</div>
-                        <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 قبل ما تحجز عنبر/رأس مال إضافي لهذا النوع، جهّز خطة لمواجهة هذه الأنماط — التفاصيل الكاملة فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
+                        <p class="u-11">💡 قبل ما تحجز عنبر/رأس مال إضافي لهذا النوع، جهّز خطة لمواجهة هذه الأنماط — التفاصيل الكاملة فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
                         </div>`;
                     })()}
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">✅ عوامل النجاح ركّز عليها</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">✅ عوامل النجاح ركّز عليها</h4>
                         <div style="display:grid;gap:8px;">
                             ${hist.fcrCorr != null ? `<div class="day">🌾 معدل تحويل العلف (FCR) عندك ${hist.fcrCorr < -0.3 ? 'مرتبط بقوة بربحيتك — كل ما قلّ زادت الأرباح فعليًا فى بياناتك' : 'مؤثر لكن مش العامل الحاسم الوحيد فى بياناتك'} — حافظ عليه قريب من ${fmt(hist.avgFcr, 2)} أو أقل.</div>` : ''}
                             ${hist.mortCorr != null ? `<div class="day">💀 نسبة النفوق ${hist.mortCorr < -0.3 ? 'بتأثر بشكل واضح على أرباحك — أي ارتفاع فيها بياكل هامش الربح بسرعة' : 'لها تأثير، خليها تحت المتوسط التاريخي'} (${fmt(hist.avgMortality, 1)}%).</div>` : ''}
@@ -18260,8 +18280,8 @@
                         </div>
                     </div>
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">⚠️ إيه ممكن يأخّر الخطة وإزاي تتفاداه</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">⚠️ إيه ممكن يأخّر الخطة وإزاي تتفاداه</h4>
                         <div style="display:grid;gap:8px;">
                             <div class="day">🌡️ إجهاد حراري / كوليباسيلوز — بيرفع النفوق فجأة ويحوّل دورة رابحة لخاسرة، وبيأخر فتح العنبر التالي فى نسله. تابع تنبيهات لوحة التحكم أول بأول.</div>
                             <div class="day">📈 تقلب سعر العلف أو فرق سعر الأجل — لو زاد فرق السعر عن اللي دخلته فى قسم المدخلات، الربح الفعلي هيقل عن المتوقع فى الجدول. حدّثه دوريًا.</div>
@@ -18274,48 +18294,48 @@
                     ${risk ? (() => {
                         const levelColor = risk.overallLevel === 'مرتفعة' ? 'var(--red)' : risk.overallLevel === 'متوسطة' ? 'var(--gold-dark, var(--barn-dark))' : 'var(--green)';
                         return `
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">⚠️ حساب المخاطر — التقييم العام</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">⚠️ حساب المخاطر — التقييم العام</h4>
                         ${statLine(`التقييم العام لمخاطر الخطة`, `${risk.overallLevel} (${risk.riskFlags} من 8 عوامل خطر نشطة)`, {vStyle:`font-weight:900;color:${levelColor};`})}
                     </div>
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">💧 مخاطر السيولة (سيناريوهات الصندوق)</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">💧 مخاطر السيولة (سيناريوهات الصندوق)</h4>
                         <div style="overflow-x:auto;">
-                            <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
-                                <thead><tr style="border-bottom:2px solid var(--line);">
-                                    <th style="padding:6px;text-align:right;">السيناريو</th><th style="padding:6px;">أدنى رصيد للصندوق</th><th style="padding:6px;">رصيد الصندوق النهائي</th><th style="padding:6px;">أهداف تحققت</th>
+                            <table class="u-26">
+                                <thead><tr class="u-27">
+                                    <th style="padding:6px;text-align:right;">السيناريو</th><th class="u-03">أدنى رصيد للصندوق</th><th class="u-03">رصيد الصندوق النهائي</th><th class="u-03">أهداف تحققت</th>
                                 </tr></thead>
                                 <tbody>
-                                    <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px;">🟢 الأساسي (متوسط أدائك)</td><td style="padding:6px;text-align:center;">${money(risk.baseCase.minFundBalance)}</td><td style="padding:6px;text-align:center;">${money(risk.baseCase.finalFund)}</td><td style="padding:6px;text-align:center;">${risk.baseCase.milestonesAchievedCount} من ${plan.milestones.length}</td></tr>
-                                    <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px;">🟡 متشائم (-1σ فى الربح)</td><td style="padding:6px;text-align:center;color:${risk.pessimisticCase.breachedSafety?'var(--red)':'inherit'};">${money(risk.pessimisticCase.minFundBalance)}</td><td style="padding:6px;text-align:center;">${money(risk.pessimisticCase.finalFund)}</td><td style="padding:6px;text-align:center;">${risk.pessimisticCase.milestonesAchievedCount} من ${plan.milestones.length}</td></tr>
-                                    <tr style="border-bottom:1px solid var(--line);"><td style="padding:6px;">🔴 كارثي (-2σ فى الربح)</td><td style="padding:6px;text-align:center;color:${risk.severeCase.breachedSafety?'var(--red)':'inherit'};font-weight:${risk.severeCase.breachedSafety?900:400};">${money(risk.severeCase.minFundBalance)}</td><td style="padding:6px;text-align:center;">${money(risk.severeCase.finalFund)}</td><td style="padding:6px;text-align:center;">${risk.severeCase.milestonesAchievedCount} من ${plan.milestones.length}</td></tr>
+                                    <tr style="border-bottom:1px solid var(--line);"><td class="u-03">🟢 الأساسي (متوسط أدائك)</td><td class="u-05">${money(risk.baseCase.minFundBalance)}</td><td class="u-05">${money(risk.baseCase.finalFund)}</td><td class="u-05">${risk.baseCase.milestonesAchievedCount} من ${plan.milestones.length}</td></tr>
+                                    <tr style="border-bottom:1px solid var(--line);"><td class="u-03">🟡 متشائم (-1σ فى الربح)</td><td style="padding:6px;text-align:center;color:${risk.pessimisticCase.breachedSafety?'var(--red)':'inherit'};">${money(risk.pessimisticCase.minFundBalance)}</td><td class="u-05">${money(risk.pessimisticCase.finalFund)}</td><td class="u-05">${risk.pessimisticCase.milestonesAchievedCount} من ${plan.milestones.length}</td></tr>
+                                    <tr style="border-bottom:1px solid var(--line);"><td class="u-03">🔴 كارثي (-2σ فى الربح)</td><td style="padding:6px;text-align:center;color:${risk.severeCase.breachedSafety?'var(--red)':'inherit'};font-weight:${risk.severeCase.breachedSafety?900:400};">${money(risk.severeCase.minFundBalance)}</td><td class="u-05">${money(risk.severeCase.finalFund)}</td><td class="u-05">${risk.severeCase.milestonesAchievedCount} من ${plan.milestones.length}</td></tr>
                                 </tbody>
                             </table>
                             ${risk.severeCase.breachedSafety ? `<div class="day" style="margin-top:8px;">🔴 فى السيناريو الكارثي الصندوق بيكسر الحد الأدنى الآمن — يعني لو حصل تدهور حقيقي فى الأداء (مرض منتشر مثلًا)، محتاج تجهّز مصدر تمويل احتياطي تاني غير أرباح الدورة، أو تأجّل فتح عنابر جديدة مؤقتًا.</div>` : `<div class="day" style="margin-top:8px;">✅ حتى فى السيناريو الكارثي (-2σ)، الصندوق مبيكسرش الحد الأدنى الآمن — الخطة عندها هامش أمان معقول لتحمّل تراجع فى الأداء.</div>`}
                         </div>
                     </div>
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">💳 مخاطر السداد الآجل</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">💳 مخاطر السداد الآجل</h4>
                         <div style="display:grid;gap:8px;">
                             ${statLine(`إجمالي مستحق للموردين (كل المزرعة)`, `${money(risk.totalPayable)}`, {vStyle:`font-weight:900;${risk.overduePayable>0?'color:var(--red);':''}`})}
                             ${risk.overduePayable > 0 ? `${statLine(`منه متأخر السداد`, `${money(risk.overduePayable)}`, {vStyle:`font-weight:900;color:var(--red);`})}` : ''}
                             ${statLine(`إجمالي مستحق من العملاء (كل المزرعة)`, `${money(risk.totalReceivable)}`, {vStyle:`font-weight:900;${risk.overdueReceivable>0?'color:var(--gold-dark, var(--barn-dark));':''}`})}
                             ${risk.overdueReceivable > 0 ? `${statLine(`منه متأخر التحصيل`, `${money(risk.overdueReceivable)}`, {vStyle:`font-weight:900;color:var(--gold-dark, var(--barn-dark));`})}` : ''}
-                            <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${(risk.overduePayable>0||risk.overdueReceivable>0) ? '⚠️ متأخرات السداد أو التحصيل بتأثر على قدرتك تفتح العنبر الجديد فى موعده حتى لو الربح الدفتري موجود فى الخطة.' : '✅ لا يوجد متأخرات سداد أو تحصيل حاليًا — التدفق النقدي منتظم.'}</p>
+                            <p class="u-28">${(risk.overduePayable>0||risk.overdueReceivable>0) ? '⚠️ متأخرات السداد أو التحصيل بتأثر على قدرتك تفتح العنبر الجديد فى موعده حتى لو الربح الدفتري موجود فى الخطة.' : '✅ لا يوجد متأخرات سداد أو تحصيل حاليًا — التدفق النقدي منتظم.'}</p>
                         </div>
                     </div>
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">💳 الاعتماد على الأجل — امتى بيبقى ضرر بدل ميزة؟</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">💳 الاعتماد على الأجل — امتى بيبقى ضرر بدل ميزة؟</h4>
                         <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.7;">فرق سعر الأجل فى العلف بتدفعه كل دورة للأبد طول ما مستمر تشتري من السوق. مصنع العلف/المجزر الخاص بيه رأس مال مرة واحدة بيلغي التكلفة المتكررة دي — "سنين الاسترداد" تحت بتقولك امتى الاستثمار ده يستاهل. عدّل الأرقام دي من قسم المدخلات فوق.</p>
                         <div style="display:grid;gap:8px;">
                             ${risk.creditDependency.feedCreditAnnualCost != null ? `
                             ${statLine(`تكلفة الأجل السنوية الحالية (على سعتك الحالية)`, `${money(risk.creditDependency.feedCreditAnnualCost)}`, {vStyle:`font-weight:900;color:var(--red);`})}
                             ${risk.creditDependency.feedMillCapex != null ? statLine(`رأس مال مصنع العلف المطلوب`, `${money(risk.creditDependency.feedMillCapex)}`) : ''}
                             ${risk.creditDependency.feedMillPaybackYears != null ? statLine(`سنين استرداد رأس المال (مصنع العلف)`, `${fmt(risk.creditDependency.feedMillPaybackYears,1)} سنة`, {vStyle:`font-weight:900;color:${risk.creditDependency.feedMillPaybackYears<=3?'var(--red)':'var(--green)'};`}) : ''}
-                            <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">${risk.creditDependency.feedMillAchieved ? '✅ عندك مصنع علف خاص بالفعل — الاعتماد على الأجل فى شراء العلف من السوق مش مطروح.' : (risk.creditDependency.feedMillPaybackYears != null && risk.creditDependency.feedMillPaybackYears <= 3 ? '⚠️ وصلت لنقطة التعادل — الاستمرار فى الأجل بقى أضرّ من بناء مصنع علف خاص (استرداد سريع نسبيًا).' : '✅ لسه بدري — الاعتماد على الأجل حاليًا أوفر من بناء مصنع علف خاص.')}</p>` : ''}
+                            <p class="u-28">${risk.creditDependency.feedMillAchieved ? '✅ عندك مصنع علف خاص بالفعل — الاعتماد على الأجل فى شراء العلف من السوق مش مطروح.' : (risk.creditDependency.feedMillPaybackYears != null && risk.creditDependency.feedMillPaybackYears <= 3 ? '⚠️ وصلت لنقطة التعادل — الاستمرار فى الأجل بقى أضرّ من بناء مصنع علف خاص (استرداد سريع نسبيًا).' : '✅ لسه بدري — الاعتماد على الأجل حاليًا أوفر من بناء مصنع علف خاص.')}</p>` : ''}
                             ${risk.creditDependency.slaughterhousePaybackYears != null ? `
                             ${statLine(`سنين استرداد رأس المال (مجزر خاص)`, `${fmt(risk.creditDependency.slaughterhousePaybackYears,1)} سنة`, {vStyle:`font-weight:900;color:${risk.creditDependency.slaughterhousePaybackYears<=3?'var(--red)':'var(--green)'};`})}` : ''}
                             ${risk.creditDependency.cashVsCredit ? `
@@ -18328,12 +18348,12 @@
                         </div>
                     </div>
 
-                    <div style="border-top:1px solid var(--line);padding-top:12px;">
-                        <h4 style="margin:0 0 8px;font-size:13px;font-weight:900;color:var(--barn-dark);">🌡️ مخاطر الأمراض الموسمية (${risk.seasonalRisk.season})</h4>
+                    <div class="u-09">
+                        <h4 class="u-04">🌡️ مخاطر الأمراض الموسمية (${risk.seasonalRisk.season})</h4>
                         <div style="display:grid;gap:8px;">
                             ${statLine(`مستوى الخطورة الموسمية الحالية`, `${risk.seasonalRisk.level}`, {vStyle:`font-weight:900;color:${risk.seasonalRisk.level.includes('مرتفعة') ? 'var(--red)' : 'var(--gold-dark, var(--barn-dark))'};`})}
                             ${risk.seasonalRisk.risks.map(r => `<div class="day">⚠️ ${r}</div>`).join('')}
-                            <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">التوسع الأفقي بيزوّد عدد العنابر المعرضة لنفس المخاطر الموسمية فى وقت واحد — كل عنبر جديد لازم يكون معاه نفس مستوى الاستعداد (تهوية/تبريد/تدفئة) قبل التسكين، مش بعده.</p>
+                            <p class="u-28">التوسع الأفقي بيزوّد عدد العنابر المعرضة لنفس المخاطر الموسمية فى وقت واحد — كل عنبر جديد لازم يكون معاه نفس مستوى الاستعداد (تهوية/تبريد/تدفئة) قبل التسكين، مش بعده.</p>
                         </div>
                     </div>`;
                     })() : ''}
@@ -18660,7 +18680,7 @@
                 const overdue = i.date && i.date < today && i.type !== 'sale';
                 const color = i.type === 'payable' ? 'var(--red)' : i.type === 'receivable' ? 'var(--green)' : 'var(--wheat)';
                 return `<div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">${esc(i.label)} ${overdue ? '<span class="pill bad" style="font-size:10px;">متأخر</span>' : ''}</div>
+                    <div class="u-02">${esc(i.label)} ${overdue ? '<span class="pill bad" style="font-size:10px;">متأخر</span>' : ''}</div>
                     <div class="day">${i.batchName} ${i.date ? '· ' + i.date : '· بدون تاريخ استحقاق محدد'}</div>
                 </div>
                 <div style="font-weight:900;color:${color};">${i.amount != null ? money(i.amount) : '—'}</div></div>`;
@@ -18672,7 +18692,7 @@
                     ${cal.undated.map(rowHtml).join('') || ''}
                     ${(!cal.dated.length && !cal.undated.length) ? '<div class="empty" style="padding:14px;">لا توجد مستحقات أو تواريخ بيع متوقعة حاليًا.</div>' : ''}
                 </div>
-                <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 يجمع هذا التقويم: مستحقات الدفع الآجلة للموردين، المستحقات المتوقع تحصيلها من العملاء، وتاريخ البيع المتوقع لكل دفعة نشطة (بناءً على العمر المستهدف) — عبر كل الدفعات النشطة معًا.</p>
+                <p class="u-25">💡 يجمع هذا التقويم: مستحقات الدفع الآجلة للموردين، المستحقات المتوقع تحصيلها من العملاء، وتاريخ البيع المتوقع لكل دفعة نشطة (بناءً على العمر المستهدف) — عبر كل الدفعات النشطة معًا.</p>
             </div>`;
         }
 
@@ -18698,7 +18718,7 @@
                 ${statLine(`مستحق للموردين (آجل)`, `${money(fin.totalPayable)}`, {lineStyle:`border-top:1.5px solid var(--line);margin-top:8px;padding-top:8px;`,vStyle:`color:var(--red);`})}
                 ${statLine(`مستحق من العملاء (آجل)`, `${money(fin.totalReceivable)}`, {vStyle:`color:var(--wheat);`})}
                 ${statLine(`صافي الموقف النقدي الفعلي`, `${money(fin.netCashPosition)}`, {lineStyle:`border-top:1.5px solid var(--line);padding-top:8px;`, kStyle:`font-weight:900;`, vStyle:`font-weight:900;color:${fin.netCashPosition>=0?'var(--green)':'var(--red)'};`})}
-                <p style="font-size:10.5px;color:var(--muted);margin:4px 2px 0;">💡 صافي الموقف النقدي = صافي الربح الدفتري − المستحق من العملاء + المستحق للموردين (يعكس النقد الفعلي المتاح لو حصّلت والتزمت بكل المستحقات الآن).</p>` : ''}
+                <p class="u-14">💡 صافي الموقف النقدي = صافي الربح الدفتري − المستحق من العملاء + المستحق للموردين (يعكس النقد الفعلي المتاح لو حصّلت والتزمت بكل المستحقات الآن).</p>` : ''}
                 <button class="btn ghost block" style="margin-top:10px;" onclick="showTransactionsLedger()">🧾 عرض/تعديل/حذف كل عمليات الشراء والبيع وحركات المخزون</button>
             </div></div>
 
@@ -19632,7 +19652,7 @@
                         <div style="font-size:10.5px;color:var(--muted);margin-top:1px;">${cur.apparentTemp != null ? `يُحس كأنها ${fmt(cur.apparentTemp,1)}°م` : ''}</div>` : `<div style="font-size:11px;color:var(--muted);margin-top:4px;">قراءة آنية غير متاحة الآن</div>`}
                     </div>
                     <div style="text-align:center;">
-                        <div style="font-size:10.5px;color:var(--muted);">أعلى حرارة اليوم</div>
+                        <div class="u-17">أعلى حرارة اليوم</div>
                         <div style="font-size:18px;font-weight:800;color:var(--red);">${fmt(weatherResult.tempMax,1)}°م</div>
                         ${weatherResult.peakTimeToday ? `<div style="font-size:10px;color:var(--muted);">الساعة ${clockLabel(weatherResult.peakTimeToday)}</div>` : ''}
                     </div>
@@ -19666,7 +19686,7 @@
                             const color = r.level === 'heat' ? 'var(--red)' : r.level === 'cold' ? '#2b6fe0' : r.level === 'watch' ? '#e08a2b' : 'var(--green)';
                             const icon = r.level === 'heat' ? '🔥' : r.level === 'cold' ? '❄️' : r.level === 'watch' ? '👁️' : '✅';
                             return `<div class="check-row" style="padding:8px 0;"><div class="txt">
-                                <div style="font-weight:800;">${icon} ${dayNames[i] || ('بعد ' + r.offset + ' أيام')} — ${r.date}</div>
+                                <div class="u-02">${icon} ${dayNames[i] || ('بعد ' + r.offset + ' أيام')} — ${r.date}</div>
                                 <div class="day">حرارة عليا متوقعة ${fmt(r.tempMax,1)}°م · دنيا ${fmt(r.tempMin,1)}°م${r.refTemp!=null?` (المعياري ليوم ${r.futureAge}: ${fmt(r.refTemp,1)}°م)`:''}</div>
                                 <div style="color:${color};font-weight:700;font-size:12px;margin-top:2px;">${r.action}</div>
                             </div></div>`;
@@ -20156,7 +20176,7 @@
                     const diseaseBadge = e.likelyDisease ? `<span style="background:#fde8e8;color:#a33;border-radius:8px;padding:1px 7px;font-size:10.5px;font-weight:700;margin-right:4px;">🩺 ${esc(e.likelyDisease)}</span>` : '';
                     const seasonBadge = e.seasonalHint ? `<span style="background:#fff3d6;color:#8a6800;border-radius:8px;padding:1px 7px;font-size:10.5px;font-weight:700;">🗓️ مرتبط بفصل ${e.seasonalHint}</span>` : '';
                     return `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">⚠️ ${esc(e.category)} — حوالي يوم ${e.ageCenter} ${diseaseBadge}${seasonBadge}</div>
+                        <div class="u-02">⚠️ ${esc(e.category)} — حوالي يوم ${e.ageCenter} ${diseaseBadge}${seasonBadge}</div>
                         <div class="day">حصل فى ${e.cyclesAffected} دورة مختلفة (${e.frequency} مرة إجمالاً)</div>
                         <div style="font-size:12px;margin-top:2px;">${solTxt}</div>
                     </div></div>`;
@@ -20166,7 +20186,7 @@
                 html += `<div class="section-head" style="margin-top:12px;"><h2>⚡ حلول حساسة للتوقيت</h2></div>
                     <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.6;">نفس البند طلع مفيد فى نطاق ومضر/غير مجدي فى نطاق تاني — الجرعة مش المشكلة، التوقيت هو الفارق.</p>
                     <div class="card" style="padding:0;">` + sensitivity.map(s => `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">${esc(s.name)}</div>
+                        <div class="u-02">${esc(s.name)}</div>
                         <div class="day" style="color:var(--green);">✅ مفيد قرب: ${s.goodContexts.map(c => `${esc(c.category)} (يوم ${c.ageCenter})`).join('، ')}</div>
                         <div class="day" style="color:var(--red);">❌ ضار/غير مجدي قرب: ${s.badContexts.map(c => `${esc(c.category)} (يوم ${c.ageCenter})`).join('، ')}</div>
                     </div></div>`).join('') + `</div>`;
@@ -20185,7 +20205,7 @@
                     <div class="card" style="padding:0;">` + locClusters.map(l => {
                         const flag = l.vsFarmAvg >= 1.3 && l.cycles >= 2 ? ' 🔴' : '';
                         return `<div class="check-row"><div class="txt">
-                        <div style="font-weight:800;">📍 ${esc(l.location)}${flag}</div>
+                        <div class="u-02">📍 ${esc(l.location)}${flag}</div>
                         <div class="day">${fmt(l.avgIncidentsPerCycle,1)} حادثة/دورة فى المتوسط (${l.cycles} دورة) — ${fmt(l.vsFarmAvg*100,0)}% من متوسط مزرعتك</div>
                     </div></div>`;
                     }).join('') + `</div>`;
@@ -20237,7 +20257,7 @@
                 const mortThatDay = rec ? (rec.mort||0)+(rec.cull||0) : null;
                 const mortNextDay = nextRec ? (nextRec.mort||0)+(nextRec.cull||0) : null;
                 return `<div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">⚡ انقطاع ${fmt(o.duration,1)} ساعة</div>
+                    <div class="u-02">⚡ انقطاع ${fmt(o.duration,1)} ساعة</div>
                     <div class="day">${o.date}${o.note ? ' · ' + esc(o.note) : ''}</div>
                     ${(mortThatDay!=null || mortNextDay!=null) ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">النفوق نفس اليوم: ${mortThatDay??'—'} · اليوم التالي: ${mortNextDay??'—'}</div>` : ''}
                 </div>
@@ -20303,7 +20323,7 @@
         function renderContactsSection() {
             const rows = state.contacts.length ? state.contacts.map(c => `
                 <div class="check-row"><div class="txt">
-                    <div style="font-weight:800;">${contactRoleIcon(c.role)} ${esc(c.name)}</div>
+                    <div class="u-02">${contactRoleIcon(c.role)} ${esc(c.name)}</div>
                     <div class="day">${esc(c.role)} · ${esc(c.phone)}</div>
                 </div>
                 <div class="row-actions" style="gap:6px;">
@@ -20405,7 +20425,7 @@
             const batchRows = allBatches.map(x => `
                 <div class="check-row" style="${x.id===state.activeId?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}">
                     <div class="txt">
-                        <div style="font-weight:800;">${esc(x.name)} ${x.id===state.activeId?'<span class="pill ok" style="font-size:10px;">الدفعة الحالية</span>':''} ${x.status==='مؤرشفة'?'<span class="pill info" style="font-size:10px;">مؤرشفة</span>':''}</div>
+                        <div class="u-02">${esc(x.name)} ${x.id===state.activeId?'<span class="pill ok" style="font-size:10px;">الدفعة الحالية</span>':''} ${x.status==='مؤرشفة'?'<span class="pill info" style="font-size:10px;">مؤرشفة</span>':''}</div>
                         <div class="day">${getSpeciesData(x.species).label} · ${x.startDate} · ${fmt(x.startCount,0)} كتكوت${x.location?' · 📍 '+esc(x.location):''}</div>
                     </div>
                     ${x.id!==state.activeId && x.status!=='مؤرشفة' ? `<button class="btn ghost sm" onclick="selectBatch('${x.id}')">تنشيط</button>` : ''}
@@ -20420,7 +20440,7 @@
                     ${activeNow.map(x => {
                         const xm = computeMetrics(x);
                         return `<div class="check-row" style="${x.id===state.activeId?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}"><div class="txt">
-                            <div style="font-weight:800;">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''}</div>
+                            <div class="u-02">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''}</div>
                             <div class="day">${getSpeciesData(x.species).label} · عمر ${fmt(xm.todayAge,0)} يوم</div>
                             ${statLine(`أحياء`, `${fmt(xm.liveCount,0)}`, {lineStyle:`margin-top:4px;`})}
                             ${statLine(`نسبة النفوق`, `${fmt(xm.mortRate,2)}%`)}
@@ -20430,7 +20450,7 @@
                         </div>`;
                     }).join('')}
                 </div>
-                <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 يظهر هذا القسم تلقائيًا عند وجود دفعتين نشطتين أو أكثر — مفيد لو عندك أكثر من عنبر أو موقع فى نفس الوقت.</p>
+                <p class="u-25">💡 يظهر هذا القسم تلقائيًا عند وجود دفعتين نشطتين أو أكثر — مفيد لو عندك أكثر من عنبر أو موقع فى نفس الوقت.</p>
             </div>` : '';
 
             // ============ فئة 0: هوية المزرعة ============
@@ -20451,7 +20471,7 @@
                 <div class="card" style="margin-top:10px;">
                     <label class="check-row" style="cursor:pointer;">
                         <input type="checkbox" id="set_vibration" ${state.vibrationEnabled !== false ? 'checked' : ''} onchange="toggleVibration(this.checked)">
-                        <div class="txt"><div style="font-weight:800;">📳 اهتزاز عند الحفظ والتنبيهات المهمة</div>
+                        <div class="txt"><div class="u-02">📳 اهتزاز عند الحفظ والتنبيهات المهمة</div>
                         <div class="day">اهتزاز خفيف عند حفظ سجل يومي، تنفيذ تحصين، أو ظهور تنبيه خطر</div></div>
                     </label>
                 </div>`;
@@ -20508,7 +20528,7 @@
             <div class="section">
                 <div class="section-head"><h2>🐔 بيانات الدفعات وإدارتها</h2></div>
                 <div class="card">
-                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                    <p class="u-22">
                         كل بيانات الدفعة (الاسم، النوع، السلالة، تاريخ الاستلام، عدد الكتاكيت، مساحة العنبر، أعمار وأوزان البيع المستهدفة) قابلة للتعديل من هنا مباشرة، وكذلك تنشيط دفعة أخرى أو حذفها نهائيًا — دون الحاجة للبحث عنها فى تبويبات أخرى.
                     </p>
                     <div class="card" style="padding:0;">${batchRows || '<div class="empty" style="padding:14px;">لا توجد دفعات بعد.</div>'}</div>
@@ -20521,11 +20541,11 @@
             <div class="section">
                 <div class="section-head"><h2>✅ قالب تشيك ليست العمليات اليومية</h2></div>
                 <div class="card">
-                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                    <p class="u-22">
                         عدّل بنود التشيك ليست هنا — أي بند تضيفه أو تحذفه بيظهر فورًا فى "تسجيل بيانات اليوم" عشان العامل ينفّذه. التنفيذ اليومي (التعليم ✔️) بيتم من هناك، مش من هنا.
                     </p>
                     <div class="card" style="padding:0;">${b.checklistTemplate.length ? b.checklistTemplate.map(t => `
-                        <div class="check-row"><div class="txt">${esc(t.text)} <span style="font-size:10.5px;color:var(--muted);">(${checklistPeriodLabel(t)})</span></div>
+                        <div class="check-row"><div class="txt">${esc(t.text)} <span class="u-17">(${checklistPeriodLabel(t)})</span></div>
                             <button class="btn ghost sm" onclick="editChecklistTask('${t.id}')">✏️</button>
                             <button class="btn danger sm" onclick="removeChecklistTask('${t.id}')">🗑️</button>
                         </div>`).join('') : '<div class="empty" style="padding:14px;"><div class="ico">✅</div>لا توجد بنود بعد.</div>'}</div>
@@ -20545,7 +20565,7 @@
             <div class="section">
                 <div class="section-head"><h2>⚠️ قواعد تعارض الإضافات</h2></div>
                 <div class="card">
-                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                    <p class="u-22">
                         عرّف هنا أي صنفين (علف/ماء) بتعرف من خبرتك إنهم متعارضين ومينفعش يتاخدوا مع بعض (زي حمض عضوي مع مضاد حيوي معين). اكتب كلمة مفتاحية من اسم كل صنف — لو الاتنين بقوا "نشطين" مع بعض فى نفس اليوم، هيظهرلك تنبيه أحمر فورًا فى التنبيهات.
                     </p>
                     ${(state.conflictRules||[]).map(r => `
@@ -20562,7 +20582,7 @@
             <div class="section">
                 <div class="section-head"><h2>🏠 العنابر/الأقسام (اختياري)</h2></div>
                 <div class="card">
-                    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+                    <p class="u-22">
                         لو الدفعة موزعة على أكثر من عنبر أو قسم، سجّلهم هنا للتوثيق والمقارنة فقط — الحسابات الرئيسية تعتمد على "مساحة العنبر" و"عدد الكتاكيت" المُدخلة عند إنشاء الدفعة، مش على القائمة دي.
                     </p>
                     <div class="form-grid">
@@ -20646,7 +20666,7 @@
                     <div class="day" style="margin-top:-4px;padding:0 2px;line-height:1.6;">💡 دي إشعارات حقيقية (Push) بتوصل من سيرفر حتى لو التطبيق مقفول تمامًا — بتشتغل لكل موعد ليه "وقت تنفيذ" و"نبّهني قبله بكذا" محدد (تحصين، علاج، إضافة، معاملة فرشة، أو استحقاق مورد/عميل). لازم اتصال إنترنت وقت وصول الإشعار.</div>
                     <label class="check-row" style="cursor:pointer;">
                         <input type="checkbox" id="as_soundAlert" ${state.appSettings.soundAlertEnabled ? 'checked' : ''} onchange="toggleSoundAlert()">
-                        <div class="txt"><div style="font-weight:800;">🔊 صوت تنبيه داخل التطبيق (بديل)</div>
+                        <div class="txt"><div class="u-02">🔊 صوت تنبيه داخل التطبيق (بديل)</div>
                         <div class="day">يعمل حتى لو إشعارات المتصفح غير مدعومة — يُشغَّل عند فتح التطبيق ووجود تنبيهات عاجلة</div></div>
                     </label>
                     <button class="btn ghost block" onclick="playAlertBeep()">🔊 تجربة الصوت الآن</button>
@@ -20664,7 +20684,7 @@
                 <div class="card">
                     <label class="check-row" style="cursor:pointer;">
                         <input type="checkbox" id="set_darkMode" ${state.darkMode ? 'checked' : ''} onchange="toggleDarkMode(this.checked)">
-                        <div class="txt"><div style="font-weight:800;">🌙 الوضع الليلي</div>
+                        <div class="txt"><div class="u-02">🌙 الوضع الليلي</div>
                         <div class="day">مريح أكتر للعين وقت تسجيل بيانات الليل جوه العنبر أو فى الضلمة</div></div>
                     </label>
                 </div>
@@ -20694,13 +20714,13 @@
                     <button class="btn gold block" onclick="exportData()">💾 تصدير نسخة احتياطية (JSON)</button>
                     <label class="check-row" style="cursor:pointer;">
                         <input type="checkbox" id="as_autoBackup" ${state.autoBackupEnabled ? 'checked' : ''} onchange="toggleAutoBackup()">
-                        <div class="txt"><div style="font-weight:800;">🔄 نسخ احتياطي تلقائي أسبوعي</div>
+                        <div class="txt"><div class="u-02">🔄 نسخ احتياطي تلقائي أسبوعي</div>
                         <div class="day">يُصدَّر تلقائيًا كل 7 أيام طالما الجهاز فاتح التطبيق — لا يعتمد على تذكّرك</div></div>
                     </label>
                     <button class="btn ghost block" onclick="exportCSV()">📊 تصدير سجل الدفعة الحالية (CSV)</button>
                     <button class="btn ghost block" onclick="exportXLSX()">📗 تصدير سجل الدفعة الحالية (Excel .xlsx)</button>
                     <button class="btn ghost block" onclick="document.getElementById('importFile').click()">📂 استيراد نسخة احتياطية</button>
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">💡 التطبيق يعمل بالكامل بدون إنترنت وبياناته محفوظة على هذا الجهاز أولًا (localStorage)، وتتزامن مع السحابة تلقائيًا لو فعّلت المزامنة أدناه. لحماية إضافية، صدّر نسخة احتياطية بشكل دوري.</p>
+                    <p class="u-20">💡 التطبيق يعمل بالكامل بدون إنترنت وبياناته محفوظة على هذا الجهاز أولًا (localStorage)، وتتزامن مع السحابة تلقائيًا لو فعّلت المزامنة أدناه. لحماية إضافية، صدّر نسخة احتياطية بشكل دوري.</p>
                 </div>
             </div>
             <div class="section">
@@ -20708,7 +20728,7 @@
                 <div class="card" style="display:grid;gap:10px;">
                     ${farmId ? `<div style="font-size:12.5px;padding:8px 10px;border-radius:10px;background:${cloudConnected?'rgba(44,122,75,.1)':'rgba(217,165,68,.15)'};color:${cloudConnected?'var(--green)':'var(--barn-dark)'};font-weight:700;">
                         ${cloudConnected ? '🟢 متصل ومتزامن مع باقي الأجهزة' : '🟡 جاري الاتصال بالسحابة...'}
-                    </div>` : `<p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">مفيش مزرعة سحابية مفعّلة على هذا الجهاز دلوقتي — بياناتك محفوظة محليًا فقط.</p>`}
+                    </div>` : `<p class="u-20">مفيش مزرعة سحابية مفعّلة على هذا الجهاز دلوقتي — بياناتك محفوظة محليًا فقط.</p>`}
                     ${(() => {
                         const farms = getFarmsList();
                         if (!farms.length) return '';
@@ -20716,7 +20736,7 @@
                             ${farms.map(f => `
                                 <div class="check-row" style="${f.id===farmId?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}">
                                     <div class="txt">
-                                        <div style="font-weight:800;">${esc(f.name || f.id)} ${f.id===farmId?'<span class="pill ok" style="font-size:10px;">المزرعة الحالية</span>':''}</div>
+                                        <div class="u-02">${esc(f.name || f.id)} ${f.id===farmId?'<span class="pill ok" style="font-size:10px;">المزرعة الحالية</span>':''}</div>
                                         <div class="day">رمز: ${esc(f.id)}</div>
                                     </div>
                                     ${f.id!==farmId ? `<button class="btn ghost sm" onclick="switchToFarm('${f.id}')">🔁 تبديل</button>` : ''}
@@ -20731,7 +20751,7 @@
                         <button class="btn ghost sm" onclick="copyFarmCode()">📋 نسخ الرمز الحالي</button>
                     </div>
                     <button class="btn ghost block" onclick="disconnectFromFarm()">🔌 وقف المزامنة والعمل محليًا فقط</button>` : ''}
-                    <p style="font-size:10.5px;color:var(--muted);margin:0;line-height:1.6;">💡 كل مزرعة عندها بياناتها المستقلة تمامًا (دفعات، عمال، مخزون). التبديل بين مزرعتين بيعرض بيانات المزرعة المختارة بدل الحالية — مش عرض مجمّع للاتنين مع بعض.</p>
+                    <p class="u-28">💡 كل مزرعة عندها بياناتها المستقلة تمامًا (دفعات، عمال، مخزون). التبديل بين مزرعتين بيعرض بيانات المزرعة المختارة بدل الحالية — مش عرض مجمّع للاتنين مع بعض.</p>
                 </div>
             </div>
             <div class="section">
@@ -20744,13 +20764,13 @@
                             : `<div style="font-size:12px;color:var(--muted);">لا توجد صور فى دورات مؤرشفة قديمة تحتاج تنظيف حاليًا.</div>`;
                     })()}
                     <button class="btn ghost block" onclick="cleanupOldArchivedPhotos()">🧹 تنظيف صور الدورات المؤرشفة القديمة</button>
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">💡 يحذف الصور التوثيقية فقط من دورات مؤرشفة قديمة (بعد ${ARCHIVE_PHOTO_CLEANUP_DAYS} يوم من الأرشفة) — كل السجلات والأرقام والتحليلات تبقى كاملة ولا يتأثر بها أي تقرير أو مقارنة دورات. الدفعات النشطة حاليًا لا تتأثر إطلاقًا.</p>
+                    <p class="u-20">💡 يحذف الصور التوثيقية فقط من دورات مؤرشفة قديمة (بعد ${ARCHIVE_PHOTO_CLEANUP_DAYS} يوم من الأرشفة) — كل السجلات والأرقام والتحليلات تبقى كاملة ولا يتأثر بها أي تقرير أو مقارنة دورات. الدفعات النشطة حاليًا لا تتأثر إطلاقًا.</p>
                 </div>
             </div>
             <div class="section">
                 <div class="section-head"><h2>🕐 لقطات محلية سابقة (استرجاع سريع)</h2></div>
                 <div class="card" style="display:grid;gap:10px;">
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6;">لقطة تلقائية تُحفظ مرة كل يوم من جهازك نفسه (بدون صور توثيقية لتوفير المساحة)، بالإضافة لإمكانية أخذ لقطة يدوية فورية. آخر ${MAX_LOCAL_SNAPSHOTS} لقطات فقط بيتم الاحتفاظ بيهم.</p>
+                    <p class="u-20">لقطة تلقائية تُحفظ مرة كل يوم من جهازك نفسه (بدون صور توثيقية لتوفير المساحة)، بالإضافة لإمكانية أخذ لقطة يدوية فورية. آخر ${MAX_LOCAL_SNAPSHOTS} لقطات فقط بيتم الاحتفاظ بيهم.</p>
                     <button class="btn ghost block" onclick="manualSnapshotNow()">📸 احفظ لقطة الآن</button>
                     ${state.localSnapshots.length ? state.localSnapshots.map(s => `
                         <div class="check-row" style="padding:8px 0;"><div class="txt">
@@ -20817,7 +20837,7 @@
                         return wp.map(r => {
                             const onTimeColor = r.onTimePct == null ? 'var(--muted)' : (r.onTimePct >= 80 ? 'var(--green)' : (r.onTimePct >= 50 ? 'var(--warning-text)' : 'var(--red)'));
                             return `<div class="check-row"><div class="txt">
-                                <div style="font-weight:800;">${r.name === 'المالك' ? '👑' : '👷'} ${esc(r.name)}</div>
+                                <div class="u-02">${r.name === 'المالك' ? '👑' : '👷'} ${esc(r.name)}</div>
                                 <div class="day" style="margin-top:4px;">
                                     ${statLine(`عدد السجلات المُدخَلة`, `${fmt(r.recordsCount,0)}`)}
                                     ${statLine(`إضافات خارج الجدول`, `${fmt(r.quickInts,0)}`)}
@@ -21080,7 +21100,7 @@
             const crossCycleSection = (chickSrcHtml || protoEffHtml || seasonalityHtml || crossItemsHtml || crossTreatmentsHtml || crossFeedLotsHtml || perfSeasonHtml || arrivalQHtml || densityPerfHtml || complianceHtml || weatherHistHtml || corrMatrixHtml || profitAttrHtml || criticalWeekHtml) ? `
             <div class="section"><div class="section-head"><h2>🔬 تحليلات ذكية عبر الدورات</h2></div>
                 <div class="card" style="padding:0;">${corrMatrixHtml}${profitAttrHtml}${criticalWeekHtml}${chickSrcHtml}${protoEffHtml}${seasonalityHtml}${perfSeasonHtml}${arrivalQHtml}${densityPerfHtml}${complianceHtml}${weatherHistHtml}${crossItemsHtml}${crossTreatmentsHtml}${crossFeedLotsHtml}</div>
-                <p style="font-size:10.5px;color:var(--muted);margin:6px 2px 0;">💡 هذه التحليلات تحتاج عدة دورات مؤرشفة لتكون ذات معنى إحصائي، وتزداد دقتها كل ما راكمت بيانات أكتر.</p>
+                <p class="u-11">💡 هذه التحليلات تحتاج عدة دورات مؤرشفة لتكون ذات معنى إحصائي، وتزداد دقتها كل ما راكمت بيانات أكتر.</p>
                 ${(crossItemsHtml || crossTreatmentsHtml || crossFeedLotsHtml) ? `<div class="row-actions" style="margin-top:8px;">
                     <button class="btn ghost sm" style="flex:1;" onclick="printAdditiveEffectivenessReport()">🖨️ طباعة تقرير فعالية الإضافات</button>
                     <button class="btn gold sm" style="flex:1;" onclick="exportAdditiveEffectivenessPDF()">📄 حفظ PDF لمشاركته مع المورد/الطبيب</button>
@@ -21088,7 +21108,7 @@
             </div>` : '';
             // ============ أهم حاجة فى صفحة المقارنة هي جدول المقارنة نفسه، فيظهر أول قسم مفتوح؛ التحليلات التاريخية والذكية بعده مطوية ============
             return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>اختر الدورات للمقارنة</h2>${runningCount>=2?`<span class="tag">${runningCount} دورة شغّالة الآن</span>`:''}</div>
-                <div class="card"><div class="chip-select">${checks}</div>${runningCount>=2?`<p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 بما إن عندك أكتر من دورة شغّالة فى نفس الوقت، اتحددوا هنا تلقائيًا للمقارنة — تقدر تعدّل الاختيار وقت ما تحب.</p>`:''}</div>
+                <div class="card"><div class="chip-select">${checks}</div>${runningCount>=2?`<p class="u-25">💡 بما إن عندك أكتر من دورة شغّالة فى نفس الوقت، اتحددوا هنا تلقائيًا للمقارنة — تقدر تعدّل الاختيار وقت ما تحب.</p>`:''}</div>
                 ${tableHtml}</div>
                 ${trendSection}${crossCycleSection}${renderAnonCompareSection()}`;
         }
@@ -21206,21 +21226,21 @@
                         ? [r.notesDay ? `☀️ ${r.notesDay}` : '', r.notesNight ? `🌙 ${r.notesNight}` : ''].filter(Boolean).join('<br>')
                         : (r.notes || '—');
                     return `<tr>
-                        <td style="font-weight:bold;">${r.age}</td>
+                        <td class="u-16">${r.age}</td>
                         <td>${r.date}</td>
-                        <td style="font-size:9px;">${r.mort || 0}<br><span style="color:#888;">${dnPrintInt(r.mortDay, r.mortNight)}</span></td>
-                        <td style="font-size:9px;">${r.cull || 0}<br><span style="color:#888;">${dnPrintInt(r.cullDay, r.cullNight)}</span></td>
+                        <td class="u-18">${r.mort || 0}<br><span style="color:#888;">${dnPrintInt(r.mortDay, r.mortNight)}</span></td>
+                        <td class="u-18">${r.cull || 0}<br><span style="color:#888;">${dnPrintInt(r.cullDay, r.cullNight)}</span></td>
                         <td style="font-size:9.5px;white-space:nowrap;">${dnPrint(r.feedDay, r.feedNight)}</td>
                         <td style="font-size:9.5px;white-space:nowrap;">${dnPrint(r.waterDay, r.waterNight)}</td>
                         <td>${r.weight ? fmt(r.weight, 0) : '—'}</td>
                         <td style="font-size:9.5px;white-space:nowrap;">${dnPrint(r.tempDay, r.tempNight)}</td>
                         <td style="font-size:9.5px;white-space:nowrap;">${dnPrint(r.humidityDay, r.humidityNight)}</td>
                         <td>${r.health != null ? r.health + '/10' : '—'}</td>
-                        <td style="font-size:9px;">${r.analysis ? r.analysis.split(' | ').join('<br>') : '—'}</td>
-                        <td style="font-size:9px;">${feedAddText}</td>
-                        <td style="font-size:9px;">${waterAddText}</td>
-                        <td style="font-size:9px;">${treatText}${treatText!=='—'&&vaccText!=='—'?'<br>':''}${vaccText!=='—'?vaccText:''}</td>
-                        <td style="font-size:9px;">${notesText}</td>
+                        <td class="u-18">${r.analysis ? r.analysis.split(' | ').join('<br>') : '—'}</td>
+                        <td class="u-18">${feedAddText}</td>
+                        <td class="u-18">${waterAddText}</td>
+                        <td class="u-18">${treatText}${treatText!=='—'&&vaccText!=='—'?'<br>':''}${vaccText!=='—'?vaccText:''}</td>
+                        <td class="u-18">${notesText}</td>
                     </tr>`;
                 }).join('');
             }
@@ -21274,7 +21294,7 @@
             let purchasesRows = purchasesSorted.map(p => `<tr>
                         <td>${p.date}</td><td>${p.type}</td><td>${esc(p.desc) || '—'}</td><td>${esc(p.supplier) || '—'}</td>
                         <td>${p.qty ? fmt(p.qty, 2) + ' ' + (p.unit || '') : '—'}</td>
-                        <td>${p.price ? fmt(p.price, 2) : '—'}</td><td style="font-weight:bold;">${money(p.total)}</td>
+                        <td>${p.price ? fmt(p.price, 2) : '—'}</td><td class="u-16">${money(p.total)}</td>
                     </tr>`).join('');
             const purchasesTotal = purchasesSorted.reduce((s, p) => s + (p.total || 0), 0);
 
@@ -21291,7 +21311,7 @@
                 const s = supplierMapPr[name];
                 const avg = s.prices.length ? s.prices.reduce((a,c)=>a+c,0) / s.prices.length : 0;
                 return `<tr><td>${esc(name)}</td><td>${s.count}</td><td style="font-size:10px;">${esc(s.lastItem)}</td>
-                    <td>${s.lastPrice ? fmt(s.lastPrice,2) : '—'}</td><td>${avg ? fmt(avg,2) : '—'}</td><td style="font-weight:bold;">${money(s.total)}</td><td>${s.lastDate}</td></tr>`;
+                    <td>${s.lastPrice ? fmt(s.lastPrice,2) : '—'}</td><td>${avg ? fmt(avg,2) : '—'}</td><td class="u-16">${money(s.total)}</td><td>${s.lastDate}</td></tr>`;
             }).join('');
 
             // ============ سجل المبيعات الكامل ============
@@ -21302,7 +21322,7 @@
                     : `عدد: ${fmt(s.count || 0, 0)} | وزن: ${fmt(s.weight || 0, 1)} كجم × ${fmt(s.price || 0, 2)} ج (${s.productType === 'processed' ? 'مذبوح' : 'حي'})`;
                 return `<tr>
                         <td>${s.date}</td><td>${s.kind === 'litter' ? ((b.floorType === 'cage') ? '🟫 زرق' : '🌾 سبلة') : '🐔 لحم'}</td><td>${esc(s.buyer) || '—'}</td>
-                        <td style="font-size:10px;">${details}</td><td style="font-weight:bold;">${money(s.total)}</td>
+                        <td style="font-size:10px;">${details}</td><td class="u-16">${money(s.total)}</td>
                     </tr>`;
             }).join('');
             const salesTotal = salesSorted.reduce((s, x) => s + (x.total || 0), 0);
@@ -21322,7 +21342,7 @@
                 const avgPrice = bm.prices.length ? bm.prices.reduce((a,c)=>a+c,0) / bm.prices.length : 0;
                 const avgTicket = bm.count > 0 ? bm.total / bm.count : 0;
                 return `<tr><td>${esc(name)}</td><td>${bm.count}</td><td>${bm.weight > 0 ? fmt(bm.weight,1) + ' كجم' : '—'}</td>
-                    <td>${avgPrice > 0 ? fmt(avgPrice,2) : '—'}</td><td style="font-weight:bold;">${money(bm.total)}</td><td>${money(avgTicket)}</td><td>${bm.lastDate}</td></tr>`;
+                    <td>${avgPrice > 0 ? fmt(avgPrice,2) : '—'}</td><td class="u-16">${money(bm.total)}</td><td>${money(avgTicket)}</td><td>${bm.lastDate}</td></tr>`;
             }).join('');
 
             // ============ البنود الإضافية الكاملة ============
@@ -21394,20 +21414,20 @@
 
                     <!-- جدول الأيام التفصيلي -->
                     <h3 style="color:#2F4538;font-size:15px;margin:12px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">📋 سجل المتابعة اليومي (${records.length} يوم)</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10px;background:white;min-width:1500px;">
                             <thead>
-                                <tr style="background:#2F4538;color:white;">
-                                    <th style="padding:6px 4px;">العمر</th>
-                                    <th style="padding:6px 4px;">التاريخ</th>
-                                    <th style="padding:6px 4px;">نافق</th>
-                                    <th style="padding:6px 4px;">مستبعد</th>
-                                    <th style="padding:6px 4px;">علف ☀️/🌙 (كجم)</th>
-                                    <th style="padding:6px 4px;">ماء ☀️/🌙 (لتر)</th>
-                                    <th style="padding:6px 4px;">الوزن (جم)</th>
-                                    <th style="padding:6px 4px;">حرارة ☀️/🌙 °C</th>
-                                    <th style="padding:6px 4px;">رطوبة ☀️/🌙 %</th>
-                                    <th style="padding:6px 4px;">صحة /10</th>
+                                <tr class="u-06">
+                                    <th class="u-01">العمر</th>
+                                    <th class="u-01">التاريخ</th>
+                                    <th class="u-01">نافق</th>
+                                    <th class="u-01">مستبعد</th>
+                                    <th class="u-01">علف ☀️/🌙 (كجم)</th>
+                                    <th class="u-01">ماء ☀️/🌙 (لتر)</th>
+                                    <th class="u-01">الوزن (جم)</th>
+                                    <th class="u-01">حرارة ☀️/🌙 °C</th>
+                                    <th class="u-01">رطوبة ☀️/🌙 %</th>
+                                    <th class="u-01">صحة /10</th>
                                     <th style="padding:6px 4px;min-width:110px;">تحليل تلقائي (فروق نهار/ليل)</th>
                                     <th style="padding:6px 4px;min-width:80px;">إضافات العلف</th>
                                     <th style="padding:6px 4px;min-width:80px;">إضافات المياه</th>
@@ -21442,116 +21462,116 @@
                     </div>
 
                     <!-- سجل تنفيذ إضافات العلف والمياه -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">💉 سجل تنفيذ الإضافات خلال الدورة (${execSorted.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <h3 class="u-13">💉 سجل تنفيذ الإضافات خلال الدورة (${execSorted.length})</h3>
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:500px;">
-                            <thead><tr style="background:#2F4538;color:white;">
-                                <th style="padding:6px 4px;">التاريخ</th><th style="padding:6px 4px;">النوع</th>
-                                <th style="padding:6px 4px;">اسم الإضافة</th><th style="padding:6px 4px;">الكمية المنفذة</th>
+                            <thead><tr class="u-06">
+                                <th class="u-01">التاريخ</th><th class="u-01">النوع</th>
+                                <th class="u-01">اسم الإضافة</th><th class="u-01">الكمية المنفذة</th>
                             </tr></thead>
                             <tbody>${execRowsPrint || '<tr><td colspan="4" style="text-align:center;color:#999;">لا توجد عمليات تنفيذ إضافات مسجلة</td></tr>'}</tbody>
                         </table>
                     </div>
 
                     <!-- سجل حركات المخزن -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">📦 سجل حركات المخزن (${movementsSorted.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <h3 class="u-13">📦 سجل حركات المخزن (${movementsSorted.length})</h3>
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:600px;">
-                            <thead><tr style="background:#2F4538;color:white;">
-                                <th style="padding:6px 4px;">التاريخ</th><th style="padding:6px 4px;">الصنف</th>
-                                <th style="padding:6px 4px;">نوع الحركة</th><th style="padding:6px 4px;">الكمية</th>
-                                <th style="padding:6px 4px;">ملاحظة</th>
+                            <thead><tr class="u-06">
+                                <th class="u-01">التاريخ</th><th class="u-01">الصنف</th>
+                                <th class="u-01">نوع الحركة</th><th class="u-01">الكمية</th>
+                                <th class="u-01">ملاحظة</th>
                             </tr></thead>
                             <tbody>${movementsRows || '<tr><td colspan="5" style="text-align:center;color:#999;">لا توجد حركات مخزن مسجلة</td></tr>'}</tbody>
                         </table>
                     </div>
 
                     <!-- سجل المشتريات -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">🧾 سجل المشتريات (${purchasesSorted.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <h3 class="u-13">🧾 سجل المشتريات (${purchasesSorted.length})</h3>
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:700px;">
-                            <thead><tr style="background:#2F4538;color:white;">
-                                <th style="padding:6px 4px;">التاريخ</th><th style="padding:6px 4px;">النوع</th>
-                                <th style="padding:6px 4px;">البيان</th><th style="padding:6px 4px;">المورد</th>
-                                <th style="padding:6px 4px;">الكمية</th><th style="padding:6px 4px;">السعر</th>
-                                <th style="padding:6px 4px;">الإجمالي</th>
+                            <thead><tr class="u-06">
+                                <th class="u-01">التاريخ</th><th class="u-01">النوع</th>
+                                <th class="u-01">البيان</th><th class="u-01">المورد</th>
+                                <th class="u-01">الكمية</th><th class="u-01">السعر</th>
+                                <th class="u-01">الإجمالي</th>
                             </tr></thead>
                             <tbody>${purchasesRows || '<tr><td colspan="7" style="text-align:center;color:#999;">لا توجد مشتريات مسجلة</td></tr>'}</tbody>
-                            ${purchasesSorted.length ? `<tfoot><tr style="background:#f5f0e8;font-weight:bold;"><td colspan="6" style="padding:6px;text-align:left;">إجمالي المشتريات</td><td style="padding:6px;">${money(purchasesTotal)}</td></tr></tfoot>` : ''}
+                            ${purchasesSorted.length ? `<tfoot><tr style="background:#f5f0e8;font-weight:bold;"><td colspan="6" style="padding:6px;text-align:left;">إجمالي المشتريات</td><td class="u-03">${money(purchasesTotal)}</td></tr></tfoot>` : ''}
                         </table>
                     </div>
 
                     <!-- (جديد) مقارنة الموردين -->
                     ${supplierNamesPr.length ? `
                     <h3 style="color:#2F4538;font-size:14px;margin:10px 0 6px;">🚚 مقارنة الموردين (${supplierNamesPr.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:650px;">
                             <thead><tr style="background:#6B4226;color:white;">
-                                <th style="padding:6px 4px;">المورد</th><th style="padding:6px 4px;">عدد التعاملات</th>
-                                <th style="padding:6px 4px;">آخر صنف</th><th style="padding:6px 4px;">آخر سعر</th>
-                                <th style="padding:6px 4px;">متوسط السعر</th><th style="padding:6px 4px;">إجمالي المشتريات</th>
-                                <th style="padding:6px 4px;">آخر تعامل</th>
+                                <th class="u-01">المورد</th><th class="u-01">عدد التعاملات</th>
+                                <th class="u-01">آخر صنف</th><th class="u-01">آخر سعر</th>
+                                <th class="u-01">متوسط السعر</th><th class="u-01">إجمالي المشتريات</th>
+                                <th class="u-01">آخر تعامل</th>
                             </tr></thead>
                             <tbody>${supplierRowsPr}</tbody>
                         </table>
                     </div>` : ''}
 
                     <!-- سجل المبيعات -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">💵 سجل المبيعات (${salesSorted.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <h3 class="u-13">💵 سجل المبيعات (${salesSorted.length})</h3>
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:600px;">
-                            <thead><tr style="background:#2F4538;color:white;">
-                                <th style="padding:6px 4px;">التاريخ</th><th style="padding:6px 4px;">النوع</th>
-                                <th style="padding:6px 4px;">المشتري</th><th style="padding:6px 4px;">التفاصيل</th>
-                                <th style="padding:6px 4px;">الإجمالي</th>
+                            <thead><tr class="u-06">
+                                <th class="u-01">التاريخ</th><th class="u-01">النوع</th>
+                                <th class="u-01">المشتري</th><th class="u-01">التفاصيل</th>
+                                <th class="u-01">الإجمالي</th>
                             </tr></thead>
                             <tbody>${salesRows || '<tr><td colspan="5" style="text-align:center;color:#999;">لا توجد مبيعات مسجلة</td></tr>'}</tbody>
-                            ${salesSorted.length ? `<tfoot><tr style="background:#f5f0e8;font-weight:bold;"><td colspan="4" style="padding:6px;text-align:left;">إجمالي المبيعات</td><td style="padding:6px;">${money(salesTotal)}</td></tr></tfoot>` : ''}
+                            ${salesSorted.length ? `<tfoot><tr style="background:#f5f0e8;font-weight:bold;"><td colspan="4" style="padding:6px;text-align:left;">إجمالي المبيعات</td><td class="u-03">${money(salesTotal)}</td></tr></tfoot>` : ''}
                         </table>
                     </div>
 
                     <!-- (جديد) مقارنة المشترين -->
                     ${buyerNamesSl.length ? `
                     <h3 style="color:#2F4538;font-size:14px;margin:10px 0 6px;">🤝 مقارنة المشترين (${buyerNamesSl.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:650px;">
                             <thead><tr style="background:#6B4226;color:white;">
-                                <th style="padding:6px 4px;">المشتري</th><th style="padding:6px 4px;">عدد التعاملات</th>
-                                <th style="padding:6px 4px;">إجمالي الوزن</th><th style="padding:6px 4px;">متوسط السعر</th>
-                                <th style="padding:6px 4px;">إجمالي المبيعات</th><th style="padding:6px 4px;">متوسط قيمة العملية</th>
-                                <th style="padding:6px 4px;">آخر تعامل</th>
+                                <th class="u-01">المشتري</th><th class="u-01">عدد التعاملات</th>
+                                <th class="u-01">إجمالي الوزن</th><th class="u-01">متوسط السعر</th>
+                                <th class="u-01">إجمالي المبيعات</th><th class="u-01">متوسط قيمة العملية</th>
+                                <th class="u-01">آخر تعامل</th>
                             </tr></thead>
                             <tbody>${buyerRowsSl}</tbody>
                         </table>
                     </div>` : ''}
 
                     <!-- البنود الإضافية -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">➕ البنود الإضافية (${customSorted.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <h3 class="u-13">➕ البنود الإضافية (${customSorted.length})</h3>
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:500px;">
-                            <thead><tr style="background:#2F4538;color:white;">
-                                <th style="padding:6px 4px;">التاريخ</th><th style="padding:6px 4px;">البند</th>
-                                <th style="padding:6px 4px;">النوع</th><th style="padding:6px 4px;">ملاحظة</th>
-                                <th style="padding:6px 4px;">القيمة</th>
+                            <thead><tr class="u-06">
+                                <th class="u-01">التاريخ</th><th class="u-01">البند</th>
+                                <th class="u-01">النوع</th><th class="u-01">ملاحظة</th>
+                                <th class="u-01">القيمة</th>
                             </tr></thead>
                             <tbody>${customRows || '<tr><td colspan="5" style="text-align:center;color:#999;">لا توجد بنود إضافية</td></tr>'}</tbody>
                         </table>
                     </div>
 
                     <!-- سجل الأمان الحيوي -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">🛡️ سجل الأمان الحيوي (${biosecuritySorted.length})</h3>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <h3 class="u-13">🛡️ سجل الأمان الحيوي (${biosecuritySorted.length})</h3>
+                    <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;min-width:400px;">
-                            <thead><tr style="background:#2F4538;color:white;">
-                                <th style="padding:6px 4px;">التاريخ</th><th style="padding:6px 4px;">الإجراء</th>
-                                <th style="padding:6px 4px;">ملاحظة</th>
+                            <thead><tr class="u-06">
+                                <th class="u-01">التاريخ</th><th class="u-01">الإجراء</th>
+                                <th class="u-01">ملاحظة</th>
                             </tr></thead>
                             <tbody>${biosecurityRows || '<tr><td colspan="3" style="text-align:center;color:#999;">لا توجد سجلات أمان حيوي</td></tr>'}</tbody>
                         </table>
                     </div>
 
                     <!-- التقرير المالي -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">💰 التقرير المالي</h3>
+                    <h3 class="u-13">💰 التقرير المالي</h3>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;background:#faf7ee;border-radius:8px;padding:12px;border:1px solid #e0dcd2;">
                         <div><b>تكلفة العلف:</b> ${money(fin.feedCost)}</div>
                         <div><b>تكلفة الكتاكيت:</b> ${money(fin.chickCost)}</div>
@@ -21588,31 +21608,31 @@
                         if (!unpaidPur.length && !unpaidSal.length) return '';
                         const t0 = todayStr();
                         const purRowsP = unpaidPur.map(p => `<tr><td>${p.date}</td><td>${esc(p.supplier) || '—'}</td><td>${esc(p.desc) || p.type}</td>
-                            <td style="font-weight:bold;">${money(p.total)}</td><td>${p.dueDate || '—'}</td>
+                            <td class="u-16">${money(p.total)}</td><td>${p.dueDate || '—'}</td>
                             <td style="color:${p.dueDate && p.dueDate < t0 ? 'red' : '#8A6116'};">${p.dueDate && p.dueDate < t0 ? '⚠️ متأخر' : 'قائم'}</td></tr>`).join('');
                         const salRowsP = unpaidSal.map(s => `<tr><td>${s.date}</td><td>${esc(s.buyer) || '—'}</td><td>${s.kind === 'litter' ? 'سبلة' : 'لحم'}</td>
-                            <td style="font-weight:bold;">${money(s.total)}</td><td>${s.dueDate || '—'}</td>
+                            <td class="u-16">${money(s.total)}</td><td>${s.dueDate || '—'}</td>
                             <td style="color:${s.dueDate && s.dueDate < t0 ? 'red' : '#8A6116'};">${s.dueDate && s.dueDate < t0 ? '⚠️ متأخر' : 'قائم'}</td></tr>`).join('');
                         const payTotal = unpaidPur.reduce((s, p) => s + p.total, 0);
                         const recTotal = unpaidSal.reduce((s, x) => s + x.total, 0);
                         return `
-                        <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">💳 كشف المستحقات الآجلة</h3>
+                        <h3 class="u-13">💳 كشف المستحقات الآجلة</h3>
                         ${unpaidPur.length ? `
                         <div style="font-size:12px;font-weight:bold;margin:6px 0 4px;color:#6B4226;">مستحق للموردين (${unpaidPur.length}) — إجمالي ${money(payTotal)}</div>
                         <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;margin-bottom:10px;">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>التاريخ</th><th>المورد</th><th>البيان</th><th>المبلغ</th><th>الاستحقاق</th><th>الحالة</th></tr></thead>
+                        <thead><tr class="u-06"><th>التاريخ</th><th>المورد</th><th>البيان</th><th>المبلغ</th><th>الاستحقاق</th><th>الحالة</th></tr></thead>
                         <tbody>${purRowsP}</tbody></table></div>` : ''}
                         ${unpaidSal.length ? `
                         <div style="font-size:12px;font-weight:bold;margin:6px 0 4px;color:#6B4226;">مستحق من العملاء (${unpaidSal.length}) — إجمالي ${money(recTotal)}</div>
-                        <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                        <div class="u-10">
                         <table border="1" cellpadding="4" style="width:100%;border-collapse:collapse;font-size:10.5px;background:white;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>التاريخ</th><th>المشتري</th><th>النوع</th><th>المبلغ</th><th>الاستحقاق</th><th>الحالة</th></tr></thead>
+                        <thead><tr class="u-06"><th>التاريخ</th><th>المشتري</th><th>النوع</th><th>المبلغ</th><th>الاستحقاق</th><th>الحالة</th></tr></thead>
                         <tbody>${salRowsP}</tbody></table></div>` : ''}`;
                     })()}
 
                     <!-- التنبيهات -->
-                    <h3 style="color:#2F4538;font-size:15px;margin:14px 0 6px;border-bottom:2px solid #D9A544;padding-bottom:4px;">🔔 التنبيهات والتوصيات</h3>
+                    <h3 class="u-13">🔔 التنبيهات والتوصيات</h3>
                     <ul style="font-size:12px;padding-right:20px;background:#faf7ee;border-radius:8px;padding:12px;border:1px solid #e0dcd2;margin:0;">
                         ${alerts && alerts.length ? alerts.map(a => `<li style="color:${a.level === 'danger' ? 'red' : a.level === 'warn' ? '#8A6116' : '#2E6E8E'};">${a.text}</li>`).join('') : '<li style="color:green;">✅ لا توجد تنبيهات حالية</li>'}
                     </ul>
@@ -22547,7 +22567,7 @@
                 <div style="margin-top:16px;">
                     <h3 style="color:#2F4538;font-size:14px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;">🏆 مقارنة بأفضل أداء داخلي مُثبت (${bc.top.length} من ${bc.sampleSize} دورة سابقة)</h3>
                     <table border="1" cellpadding="6" style="width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>المؤشر</th><th>الدورة الحالية</th><th>متوسط أفضل الدورات</th></tr></thead>
+                        <thead><tr class="u-06"><th>المؤشر</th><th>الدورة الحالية</th><th>متوسط أفضل الدورات</th></tr></thead>
                         <tbody>
                             <tr><td>EPEF</td><td>${fmt(m.epef,0)}</td><td>${fmt(bc.avg.epef,0)}</td></tr>
                             <tr><td>FCR</td><td>${m.fcr?fmt(m.fcr,2):'—'}</td><td>${fmt(bc.avg.fcr,2)}</td></tr>
@@ -22662,7 +22682,7 @@
             const section = (title, rows, costCol) => !rows ? '' : `
                 <h3 style="color:#2F4538;font-size:14px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;margin-top:20px;">${title}</h3>
                 <table border="1" cellpadding="6" style="width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;">
-                    <thead><tr style="background:#2F4538;color:white;"><th>الاسم</th><th>عدد الدورات</th><th>التقييم</th><th>وزن (تحسّن/إجمالي)</th><th>تحويل (تحسّن/إجمالي)</th><th>نفوق (تحسّن/إجمالي)</th>${costCol ? '<th>تكلفة تقديرية/دورة</th>' : ''}</tr></thead>
+                    <thead><tr class="u-06"><th>الاسم</th><th>عدد الدورات</th><th>التقييم</th><th>وزن (تحسّن/إجمالي)</th><th>تحويل (تحسّن/إجمالي)</th><th>نفوق (تحسّن/إجمالي)</th>${costCol ? '<th>تكلفة تقديرية/دورة</th>' : ''}</tr></thead>
                     <tbody>${rows.map(r => `<tr>
                         <td>${esc(r.name)}</td><td style="text-align:center;">${r.cycles}</td>
                         <td style="text-align:center;color:${verdictColor(r.verdict)};font-weight:800;">${r.verdictLabel.replace(/^[🟢🔴⚪🟡]\s*/, '')}</td>
@@ -22759,40 +22779,40 @@
                         <p style="margin:4px 0 0;color:#888;font-size:9.5px;">امسح الكود لعرض ملخص بيانات الدفعة فورًا (يحتاج تطبيق قارئ QR على الهاتف)</p>
                     </div>
 
-                    <h3 style="color:#2F4538;font-size:13px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;">🐣 مصدر الكتاكيت</h3>
+                    <h3 class="u-21">🐣 مصدر الكتاكيت</h3>
                     <table border="1" cellpadding="5" style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>التاريخ</th><th>المورد</th><th>رقم التشغيلة/اللوت</th><th>العدد</th></tr></thead>
+                        <thead><tr class="u-06"><th>التاريخ</th><th>المورد</th><th>رقم التشغيلة/اللوت</th><th>العدد</th></tr></thead>
                         <tbody>${rowsOf(chickSources, p => `<tr><td>${p.date}</td><td>${esc(p.supplier)||'—'}</td><td>${p.lot||'—'}</td><td>${fmt(p.qty,0)}</td></tr>`, 'لا يوجد سجل شراء كتاكيت مرتبط — تاريخ الاستلام: ' + b.startDate)}</tbody>
                     </table>
                     <p style="font-size:10.5px;color:#777;margin:-8px 0 14px;">إجمالي عدد الكتاكيت المُستلمة: ${fmt(b.startCount,0)} بتاريخ ${b.startDate}</p>
 
-                    <h3 style="color:#2F4538;font-size:13px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;">🌾 مصادر العلف (حسب الشحنة/اللوت)</h3>
+                    <h3 class="u-21">🌾 مصادر العلف (حسب الشحنة/اللوت)</h3>
                     <table border="1" cellpadding="5" style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>التاريخ</th><th>المورد</th><th>رقم اللوت</th><th>الكمية</th></tr></thead>
+                        <thead><tr class="u-06"><th>التاريخ</th><th>المورد</th><th>رقم اللوت</th><th>الكمية</th></tr></thead>
                         <tbody>${rowsOf(feedSources, p => `<tr><td>${p.date}</td><td>${esc(p.supplier)||'—'}</td><td>${p.lot||'—'}</td><td>${fmt(p.qty,0)} ${p.unit||''}</td></tr>`, 'لا يوجد سجل مشتريات علف بعد')}</tbody>
                     </table>
 
-                    <h3 style="color:#2F4538;font-size:13px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;">💉 سجل التحصينات</h3>
+                    <h3 class="u-21">💉 سجل التحصينات</h3>
                     <table border="1" cellpadding="5" style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>اليوم</th><th>اللقاح</th><th>الجرعة</th><th>الحالة</th></tr></thead>
+                        <thead><tr class="u-06"><th>اليوم</th><th>اللقاح</th><th>الجرعة</th><th>الحالة</th></tr></thead>
                         <tbody>${rowsOf(vaccines, v => `<tr><td>يوم ${v.day}</td><td>${esc(v.name)}</td><td>${fmt(v.qty,1)} ${v.unit||''}</td><td>${v.done?'✅ تم':'⏳ مجدول'}</td></tr>`, 'لا يوجد برنامج تحصين مسجَّل')}</tbody>
                     </table>
 
-                    <h3 style="color:#2F4538;font-size:13px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;">💊 سجل العلاجات المنفَّذة</h3>
+                    <h3 class="u-21">💊 سجل العلاجات المنفَّذة</h3>
                     <table border="1" cellpadding="5" style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>اليوم</th><th>العلاج</th><th>الجرعة</th><th>ملاحظات</th></tr></thead>
+                        <thead><tr class="u-06"><th>اليوم</th><th>العلاج</th><th>الجرعة</th><th>ملاحظات</th></tr></thead>
                         <tbody>${rowsOf(treatments, t => `<tr><td>يوم ${t.day}</td><td>${esc(t.name)}</td><td>${fmt(t.qty,1)} ${t.unit||''}</td><td>${esc(t.notes)||'—'}</td></tr>`, 'لا يوجد علاجات مسجَّلة')}</tbody>
                     </table>
 
-                    <h3 style="color:#2F4538;font-size:13px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;">🛡️ أحداث الأمان الحيوي</h3>
+                    <h3 class="u-21">🛡️ أحداث الأمان الحيوي</h3>
                     <table border="1" cellpadding="5" style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>التاريخ</th><th>النوع</th><th colspan="2">ملاحظات</th></tr></thead>
+                        <thead><tr class="u-06"><th>التاريخ</th><th>النوع</th><th colspan="2">ملاحظات</th></tr></thead>
                         <tbody>${rowsOf(bioEvents, e => `<tr><td>${e.date}</td><td>${esc(e.type)}</td><td colspan="2">${esc(e.note)||'—'}</td></tr>`, 'لا يوجد أحداث أمان حيوي مسجَّلة')}</tbody>
                     </table>
 
-                    <h3 style="color:#2F4538;font-size:13px;border-bottom:2px solid #e3ddcf;padding-bottom:4px;">🚚 التسويق/الذبح</h3>
+                    <h3 class="u-21">🚚 التسويق/الذبح</h3>
                     <table border="1" cellpadding="5" style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 6px;">
-                        <thead><tr style="background:#2F4538;color:white;"><th>التاريخ</th><th>الجهة</th><th>العدد</th><th>الوزن (كجم)</th></tr></thead>
+                        <thead><tr class="u-06"><th>التاريخ</th><th>الجهة</th><th>العدد</th><th>الوزن (كجم)</th></tr></thead>
                         <tbody>${rowsOf(meatSales, s => `<tr><td>${s.date}</td><td>${esc(s.buyer)||'—'}</td><td>${fmt(s.count,0)}</td><td>${fmt(s.weight,0)}</td></tr>`, 'لا يوجد سجل تسويق/ذبح بعد')}</tbody>
                     </table>
 
@@ -22845,7 +22865,7 @@
             const items = [...b.inventory].sort((a, c) => a.category.localeCompare(c.category));
             const rows = items.map(it => `<tr>
                 <td style="text-align:right;">${esc(it.name)}</td><td>${it.category}</td>
-                <td style="font-weight:bold;">${fmt(it.balance, 1)} ${it.unit}</td>
+                <td class="u-16">${fmt(it.balance, 1)} ${it.unit}</td>
                 <td style="min-width:70px;"></td><td style="min-width:70px;"></td><td style="min-width:120px;"></td>
             </tr>`).join('');
             el.innerHTML = `
@@ -22856,9 +22876,9 @@
                         <p style="margin:2px 0 0;color:#777;font-size:12px;">تاريخ الجرد: ${todayStr()}</p>
                     </div>
                     <p style="font-size:11px;color:#777;margin:0 0 10px;">امسح المخزن فعليًا وسجّل العدد الحقيقي فى عمود "الرصيد الفعلي"، ثم قارنه بـ"الرصيد النظامي" لرصد أي فروقات (تلف، فقد، خطأ تسجيل).</p>
-                    <div style="overflow-x:auto;border:1px solid #ddd;border-radius:6px;">
+                    <div class="u-10">
                         <table border="1" cellpadding="6" style="width:100%;border-collapse:collapse;font-size:11px;background:white;">
-                            <thead><tr style="background:#2F4538;color:white;">
+                            <thead><tr class="u-06">
                                 <th>الصنف</th><th>التصنيف</th><th>الرصيد النظامي</th><th>الرصيد الفعلي (بالجرد)</th><th>الفرق</th><th>ملاحظات</th>
                             </tr></thead>
                             <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:#999;">لا توجد أصناف بالمخزن</td></tr>'}</tbody>
@@ -23319,7 +23339,7 @@
         function showGlossaryFull() {
             const rows = Object.keys(GLOSSARY_TERMS).map(k => {
                 const g = GLOSSARY_TERMS[k];
-                return `<div class="check-row"><div class="txt"><div style="font-weight:800;">${esc(g.t)}</div><div class="day">${esc(g.d)}</div></div></div>`;
+                return `<div class="check-row"><div class="txt"><div class="u-02">${esc(g.t)}</div><div class="day">${esc(g.d)}</div></div></div>`;
             }).join('');
             openGenericModal('📖 دليل المصطلحات', `<div class="card" style="padding:0;">${rows}</div>`);
         }
@@ -23730,7 +23750,7 @@
                         </span>
                     </div>`).join('')}
             </div>
-            <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;">💡 الترتيب والإخفاء يُطبَّق على أقسام الرسوم البيانية والتحليلات فى لوحة التحكم (الكروت الرئيسية بأعلى الصفحة ثابتة دايمًا).</p>
+            <p class="u-25">💡 الترتيب والإخفاء يُطبَّق على أقسام الرسوم البيانية والتحليلات فى لوحة التحكم (الكروت الرئيسية بأعلى الصفحة ثابتة دايمًا).</p>
             ${renderInsightGroupsSettings()}`;
         }
         // ============ 🔴 إصلاح Red Team (مدموج): إخفاء فئة كاملة من "🔬 تحليلات ذكية" (مش بس القسم كله) — عشان لو ============
