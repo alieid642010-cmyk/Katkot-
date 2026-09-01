@@ -92,7 +92,6 @@
             justify-content: space-between;
             gap: var(--space-2);
         }
-        .hero-priority .eyebrow .more-link { font-weight: 700; color: var(--blue); cursor: pointer; font-size: var(--fs-xs); }
         .hero-priority .lead-text {
             font-size: var(--fs-md);
             font-weight: 800;
@@ -107,45 +106,6 @@
         .hero-priority .rest-list { margin-top: var(--space-3); border-top: 1px dashed #e5ddc8; padding-top: var(--space-2); }
         .hero-priority .rest-row { display: flex; gap: var(--space-2); align-items: flex-start; padding: var(--space-1) 0; font-size: var(--fs-sm); color: var(--muted); }
         .hero-priority .rest-row b { color: var(--ink); font-weight: 700; }
-
-        /* -- شبكة كروت مزدوجة (أداء + ربح جنب بعض بدل تحت بعض) -- */
-        .dual-card-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-3);
-            margin-bottom: var(--space-4);
-        }
-        @media (max-width: 480px) {
-            .dual-card-grid { grid-template-columns: 1fr; }
-        }
-        .stat-mini-card {
-            background: var(--paper);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--line);
-            padding: var(--space-3);
-            box-shadow: var(--shadow-low);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-        .stat-mini-card .title { font-size: var(--fs-2xs); font-weight: 800; color: var(--muted); }
-        .stat-mini-card .value { font-size: var(--fs-xl); font-weight: 900; line-height: 1.1; }
-        .stat-mini-card .value small { font-size: var(--fs-sm); font-weight: 700; }
-        .stat-mini-card .caption { font-size: var(--fs-2xs); color: var(--muted); }
-
-        /* -- تبويبات فرعية لتصنيف التحليلات (بدل قائمة طويلة واحدة) -- */
-        .subtab-bar { display: flex; gap: var(--space-1); margin-bottom: var(--space-2); flex-wrap: wrap; }
-        .subtab-btn {
-            flex: 1; min-width: 90px; text-align: center; cursor: pointer;
-            padding: var(--space-2) var(--space-2);
-            border-radius: var(--radius-sm);
-            font-size: var(--fs-xs); font-weight: 800;
-            background: var(--cream); color: var(--muted);
-            border: 1px solid var(--line);
-            transition: background .15s, color .15s;
-        }
-        .subtab-btn.active { background: var(--barn-dark); color: #fff; border-color: var(--barn-dark); }
-        .subtab-btn .count { opacity: .75; font-weight: 700; margin-inline-start: 3px; }
 
         /* -- كارت درجة الصحة (اللون بس بيفضل ديناميكي inline لأنه مبني على قيمة محسوبة، الباقي كله كلاس) -- */
         .health-score-card {
@@ -240,16 +200,6 @@
         .perf-score-card .abs-title { font-size: var(--fs-2xs); font-weight: 800; }
         .perf-score-card .foot-note { font-size: var(--fs-2xs); color: var(--muted); margin-top: var(--space-2); }
 
-        /* -- كارت تحذير جودة البيانات -- تستخدم tokens الخطر الموجودة أصلاً --
-           ⚠️ إصلاح: نفس فخ .card/.card-XXX (شوف تعليق .card.sale-decision-card تحت) — بزّينا التخصيص
-           لـ.card.data-quality-warning عشان خلفية التحذير الحمراء الخفيفة متتلغيش بصمت بخلفية .card الفاتحة العادية. */
-        .card.data-quality-warning {
-            margin-bottom: var(--space-4); padding: var(--space-3);
-            border: 1px solid var(--red); background: var(--danger-bg); border-radius: var(--radius-lg);
-        }
-        .data-quality-warning .line { font-size: var(--fs-sm); font-weight: 800; color: var(--red); }
-        .data-quality-warning .hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 2px; }
-
         /* ============ الوضع الليلي (Dark Mode) — تفعيل عبر data-theme="dark" على <html> ============ */
         html[data-theme="dark"] {
             --barn: #4A6B54;
@@ -298,8 +248,7 @@
         }
         h1,
         h2,
-        h3,
-        .disp {
+        h3 {
             font-family: 'Cairo', sans-serif;
         }
         button {
@@ -426,37 +375,6 @@
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
-        }
-
-        /* ===== بانر احتفال (رقم قياسي / بداية دفعة) ===== */
-        .celebrate-banner {
-            margin-top: 14px;
-            padding: 16px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--wheat-light), var(--wheat));
-            color: var(--barn-dark);
-            text-align: center;
-            font-weight: 800;
-            font-size: var(--fs-base);
-            box-shadow: 0 8px 20px rgba(217, 165, 68, .35);
-            animation: celebratePop .5s cubic-bezier(.34,1.56,.64,1);
-        }
-        @keyframes celebratePop {
-            0% { transform: scale(.85); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* ===== شريط الاستمرارية (سلسلة أيام التسجيل) ===== */
-        .streak-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 12px;
-            border-radius: 999px;
-            background: var(--warning-bg);
-            color: var(--warning-text);
-            font-size: var(--fs-sm);
-            font-weight: 800;
         }
 
         .alert-banner {
@@ -902,12 +820,6 @@
            خالص، ده كان بيربك — المستخدم بيحاول يسحبه فمفيش حاجة بتحصل. استبدلناه بشريط تقدم بسيط بلون واحد بس،
            ولونه بيتغيّر حسب مستوى المخزون (أحمر لو منخفض جدًا، برتقالي لو متوسط، أخضر لو مريح) عشان يبقى مؤشر
            تحذيري فعلي مش مجرد رسم وصفي. */
-        .inv-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            align-items: center;
-        }
         .stock-lvl-wrap {
             margin: 6px 0 2px;
             max-width: 320px;
@@ -950,26 +862,6 @@
             margin: 0 2px;
             vertical-align: middle;
             line-height: 1;
-        }
-        .search-box-wrap {
-            position: relative;
-            margin-top: 10px;
-        }
-        .search-box-wrap input {
-            width: 100%;
-            padding: 11px 38px 11px 14px;
-            border-radius: 12px;
-            border: 1.5px solid rgba(255,255,255,.5);
-            background: rgba(255,255,255,.92);
-            font-size: var(--fs-base);
-        }
-        .search-box-wrap .search-ico {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: var(--fs-base);
-            opacity: .6;
         }
         .search-result-row {
             padding: 10px 4px;
@@ -1575,27 +1467,6 @@
             background: var(--danger-bg);
             color: var(--red);
         }
-        .deviation-bar {
-            height: 6px;
-            border-radius: 3px;
-            background: #ECEAE0;
-            margin-top: 4px;
-            overflow: hidden;
-        }
-        .deviation-bar .fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width .5s;
-        }
-        .deviation-bar .fill.normal {
-            background: var(--green);
-        }
-        .deviation-bar .fill.warning {
-            background: var(--wheat);
-        }
-        .deviation-bar .fill.danger {
-            background: var(--red);
-        }
 
         #printableReport {
             display: none;
@@ -1621,56 +1492,6 @@
             .no-print {
                 display: none !important;
             }
-        }
-        .ref-box {
-            background: #f8f5ed;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 10px;
-            margin-bottom: 12px;
-            font-size: var(--fs-base);
-        }
-        .ref-box .title {
-            font-weight: 800;
-            color: var(--barn);
-        }
-        .ref-box .row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px 16px;
-            margin-top: 4px;
-        }
-        .ref-box .row span {
-            font-size: var(--fs-sm);
-        }
-        .ref-box .badge-ref {
-            background: var(--wheat);
-            color: var(--barn-dark);
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: var(--fs-2xs);
-            font-weight: 700;
-        }
-        .ref-box .badge-actual {
-            background: var(--barn);
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: var(--fs-2xs);
-            font-weight: 700;
-        }
-        .deviation-indicator {
-            font-weight: 900;
-            font-size: var(--fs-base);
-        }
-        .deviation-indicator.ok {
-            color: var(--green);
-        }
-        .deviation-indicator.warn {
-            color: var(--wheat);
-        }
-        .deviation-indicator.danger {
-            color: var(--red);
         }
 
         .print-btn-group {
@@ -1712,7 +1533,6 @@
         }
         .auth-card .btn { width: 100%; padding: 12px; font-size: var(--fs-base); font-weight: 800; }
         .auth-err { color: var(--red); font-size: var(--fs-sm); margin: -2px 0 10px; min-height: 14px; }
-        .auth-hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 12px; text-align: center; }
         .role-badge {
             display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,.15);
             color: #fff; padding: 5px 12px; border-radius: 999px; font-size: var(--fs-sm); font-weight: 700;
@@ -7375,6 +7195,7 @@
                 { title: '➕ الإضافات العلفية والمائية', items: [
                     { ic: '💊', label: 'إضافة علفية جديدة', fn: `document.getElementById('feedAddModalOverlay').classList.add('show')` },
                     { ic: '💧', label: 'إضافة مائية جديدة', fn: `document.getElementById('waterAddModalOverlay').classList.add('show')` },
+                    { ic: '📓', label: 'سجل الإضافات خارج الجدول', fn: `setTab('daily'); openDailyEventsSubTab('additives')` },
                 ]},
                 { title: '📦 المخزون والمعاملات', items: [
                     { ic: '🛒', label: 'شراء (وتخزين تلقائي)', fn: `openPurchaseModal()` },
@@ -7397,6 +7218,7 @@
                     { ic: '⚠️', label: 'تسجيل حادثة/مشكلة', fn: `openIncidentModal()` },
                     { ic: '🔌', label: 'تسجيل انقطاع كهرباء/تيار', fn: `openOutageModal()` },
                     { ic: '📚', label: 'قاعدة معرفة الحوادث السابقة', fn: `openIncidentKbModal()` },
+                    { ic: '📓', label: 'سجل حوادث الدفعة الحالية', fn: `setTab('daily'); openDailyEventsSubTab('incidents')` },
                 ]},
                 { title: '⚙️ حسابات وإعدادات', items: [
                     { ic: '👥', label: 'الحسابات والصلاحيات', fn: `openAccountsModal()` },
@@ -16049,11 +15871,7 @@
         function setDailyEventsSubTab(id) { dailyEventsSubTab = id; render(); }
         // فتح قسم "سجلات وأحداث إضافية" على تبويب فرعي مُحدَّد من زرار إجراء سريع — لازم كمان نجبر القسم يكون مفتوح
         // (مش بس نبدّل التبويب الداخلي) لأن قسم الأحداث ثاني قسم فى الصفحة وبيتقفل تلقائيًا افتراضيًا لو المستخدم لسه ماخصصش حاجة
-        // ⚠️ ملحوظة (يحتاج قرارك): الدالة دى كاملة وشغالة، لكن مفيش أي زرار أو تنبيه فى الكود كله بينادي
-        // عليها فعليًا حاليًا (zero callers). حسب الكومنت الأصلي كانت مبنية عشان "زرار إجراء سريع" يوديك
-        // مباشرة لتبويب الإضافات أو الحوادث جوه السجل اليومي، لكن الزرار ده مش موجود. سيبتها زي ما هي من
-        // غير حذف أو ربط تخميني (تجنبًا لتغيير منطق التنبيهات/الأولويات من غير علمك) — لو تحب تحدد فين
-        // بالظبط عايز الزرار ده يظهر (مثلاً جنب عداد الإضافات/الحوادث فى مكان تاني)، قوللي وأربطه فورًا.
+        // 🔧 وصل: بقت متاحة من قائمة "الوصول السريع" — قسم "➕ الإضافات..." يفتح تبويب الإضافات، وقسم "🚨 حوادث..." يفتح تبويب الحوادث.
         function openDailyEventsSubTab(id) {
             dailyEventsSubTab = id;
             toggleSectionOpen('daily', DAILY_EVENTS_SECTION_KEY, true, 'السجل اليومي (نهار / ليل)');
@@ -17013,26 +16831,6 @@
         ];
         function expansionSpeciesLabel(key) { const s = EXPANSION_SPECIES_LIST.find(x => x.key === key); return s ? `${s.icon} ${s.label}` : (key || '—'); }
 
-        // ============ تحذيرات من "قاعدة معرفة الحوادث" قبل الدخول/التوسع فى نوع مُعيّن — بتظهر أعلى تبويب التوسع ============
-        function renderExpansionIncidentWarnings(species) {
-            const kb = computeIncidentKnowledgeBase(species);
-            if (!kb || !kb.length) return '';
-            const top = kb.slice(0, 5);
-            return `<div class="section">
-                <div class="section-head"><h2>⚠️ خبرة دوراتك السابقة قبل ما تكمّل التوسع فى ${expansionSpeciesLabel(species)}</h2></div>
-                <div class="card" style="padding:0;">` + top.map(e => {
-                    const solTxt = e.bestSolution
-                        ? `الحل اللي نجح غالبًا: <b>${esc(e.bestSolution.name)}</b> (${fmt(e.bestSolution.successRate*100,0)}% من ${e.bestSolution.timesUsed} محاولة)`
-                        : 'لسه مفيش حل مُثبت مرتبط بهذا النمط';
-                    return `<div class="check-row"><div class="txt">
-                        <div class="u-02">${esc(e.category)} — حوالي يوم ${e.ageCenter}</div>
-                        <div class="day">تكرر فى ${e.cyclesAffected} من دوراتك المؤرشفة — ${solTxt}</div>
-                    </div></div>`;
-                }).join('') + `</div>
-                <p class="u-11">💡 قبل ما تحجز عنبر/رأس مال إضافي لهذا النوع، جهّز خطة لمواجهة هذه الأنماط — التفاصيل الكاملة فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
-            </div>`;
-        }
-
         const DEFAULT_EXPANSION_INPUTS = {
             minHouseCapacity: 10000, targetHouseCount: 10, stockingIntervalDays: 3, capacityMultiplier: 2,
             costPerBirdOpenHouse: null, feedCreditMarkupPerBird: null, safetyFundMin: null,
@@ -17164,15 +16962,48 @@
                 targetSlaughterKgPerDay, targetFeedMillTonsPerDay, targetBirdsPerDay, annualChicksNeeded: bp.annualChicksNeeded, hensNeeded: bp.hensNeeded };
         }
 
-        // قائمة الأهداف الكبرى (تكامل رأسي) الخاصة بالنوع المختار — بيتم تنفيذها بالترتيب من الأرخص للأغلى كل ما الصندوق يكفي
-        function getExpansionMilestones(inputs, autoCapex) {
-            const list = [
-                { id: 'hatchery', label: '🐣 معمل تفريخ', capex: autoCapex.capexHatchery },
-                { id: 'feedmill', label: '🏭 مصنع علف', capex: autoCapex.capexFeedMill },
-                { id: 'breeders', label: '🥚 قطيع أمهات', capex: autoCapex.capexBreeders },
-                { id: 'slaughterhouse', label: '🔪 مجزر خاص', capex: autoCapex.capexSlaughterhouse },
-            ];
-            return list.filter(x => x.capex != null && x.capex > 0).sort((a, b) => a.capex - b.capex);
+        // ============ 🎯 ترتيب أولوية الاستثمار — مش بالأرخص الأول، لكن بالأسرع استردادًا لرأس المال وأقوى أثر سنوي ============
+        // كل هدف بيتقاس بـ"سنين استرداد رأس المال" (payback) = رأس المال المطلوب ÷ القيمة السنوية اللي بيضيفها فعليًا:
+        //   • مصنع العلف: بيوفّر فرق سعر الأجل فى شراء العلف من السوق كل دورة.
+        //   • المجزر: بيرفع هامش البيع (مُجهّز بدل حي) على كل الإنتاج.
+        //   • الأمهات + معمل التفريخ: وجهين لعملة واحدة (الاستقلال عن شراء الكتاكيت) — القيمة الكاملة (فرق سعر
+        //     الكتكوت × الاحتياج السنوي) بتتحقق بس لو الاتنين موجودين مع بعض، فبنعرضها كسقف أقصى محتمل لكل واحد فيهم.
+        // اللي بيسترد رأس ماله أسرع = بيتفّضل يتمول أول من صندوق التوسع، لأنه بيحرر فلوس أسرع تخدم باقي الأهداف.
+        // اللي معندهوش بيانات كافية (لسه معملتش فرق سعر أجل/رفع سعر بيع) بيتحط آخر الترتيب حسب التكلفة، مع تنبيه.
+        function computeMilestoneImpact(inputs, autoCapex, hist, bp) {
+            const cyclesPerYear = (hist && hist.avgCycleDays > 0) ? 365 / hist.avgCycleDays : null;
+            const targetTotalCapacity = (inputs.targetHouseCount || 10) * (inputs.minHouseCapacity || 10000);
+            const feedAnnualValue = (cyclesPerYear != null && inputs.feedCreditMarkupPerBird) ? inputs.feedCreditMarkupPerBird * targetTotalCapacity * cyclesPerYear : null;
+            const slaughterAnnualValue = (cyclesPerYear != null && inputs.liveToProcessedUpliftPerBird) ? inputs.liveToProcessedUpliftPerBird * targetTotalCapacity * cyclesPerYear : null;
+            const breedersAnnualValue = (bp && bp.breakeven != null && bp.annualChicksNeeded) ? bp.breakeven * bp.annualChicksNeeded : null;
+
+            function mkItem(id, label, capex, annualValue, why) {
+                if (capex == null || capex <= 0) return null;
+                const paybackYears = (annualValue != null && annualValue > 0) ? capex / annualValue : null;
+                return { id, label, capex, annualValue, paybackYears, why };
+            }
+
+            const items = [
+                mkItem('feedmill', '🏭 مصنع علف', autoCapex.capexFeedMill, feedAnnualValue, 'بيوقف نزيف فرق سعر الأجل فى شراء العلف من السوق كل دورة'),
+                mkItem('slaughterhouse', '🔪 مجزر خاص', autoCapex.capexSlaughterhouse, slaughterAnnualValue, 'بيرفع هامش البيع (مُجهّز بدل حي) على كل إنتاجك'),
+                mkItem('breeders', '🥚 قطيع أمهات', autoCapex.capexBreeders, breedersAnnualValue, 'بيقلل تكلفة الكتكوت — القيمة الكاملة تتحقق مع معمل تفريخ'),
+                mkItem('hatchery', '🐣 معمل تفريخ', autoCapex.capexHatchery, breedersAnnualValue, 'بيقفل دورة إنتاج الكتاكيت — القيمة الكاملة تتحقق مع قطيع أمهات'),
+            ].filter(Boolean);
+
+            items.sort((a, b) => {
+                if (a.paybackYears != null && b.paybackYears != null) return a.paybackYears - b.paybackYears;
+                if (a.paybackYears != null) return -1;
+                if (b.paybackYears != null) return 1;
+                return a.capex - b.capex;
+            });
+            return items;
+        }
+
+        // قائمة الأهداف الكبرى (تكامل رأسي) الخاصة بالنوع المختار — بيتم تنفيذها بترتيب الأولوية الفعلية
+        // (computeMilestoneImpact: الأسرع استردادًا وأقوى أثر أول)، مش بالأرخص فقط زي قبل كده
+        function getExpansionMilestones(inputs, autoCapex, hist, bp) {
+            return computeMilestoneImpact(inputs, autoCapex, hist, bp || computeBreederFlockPlan(inputs))
+                .map(x => ({ id: x.id, label: x.label, capex: x.capex }));
         }
 
         // ============ حاسبة قطيع الأمهات — عدد الأمهات المطلوب لتغطية إنتاج النوع المختار + نقطة التعادل مقابل شراء الصغار ============
@@ -17212,7 +17043,9 @@
             const costPerBird = inputs.costPerBirdOpenHouse || 0;
             const safetyMin = inputs.safetyFundMin || 0;
             const autoCapex = computeAutoMilestoneCapex(inputs, hist);
-            const milestones = getExpansionMilestones(inputs, autoCapex);
+            const bpForMilestones = computeBreederFlockPlan(inputs);
+            const milestones = getExpansionMilestones(inputs, autoCapex, hist, bpForMilestones);
+            const milestoneImpact = computeMilestoneImpact(inputs, autoCapex, hist, bpForMilestones);
             let milestoneIdx = 0;
             const achievedMilestones = [];
 
@@ -17280,7 +17113,7 @@
             const nextMilestone = milestones[milestoneIdx] || null;
             const roundsToNextMilestone = nextMilestone ? (timeline.findIndex(t => t.round > 0 && t.fundBalance >= (nextMilestone.capex - safetyMin)) + 1 || null) : null;
 
-            return { hist, insufficientData: false, timeline, p, profitPerBird, milestones, achievedMilestones, nextMilestone, safetyMin, roundsToNextMilestone, species, autoCapex };
+            return { hist, insufficientData: false, timeline, p, profitPerBird, milestones, milestoneImpact, achievedMilestones, nextMilestone, safetyMin, roundsToNextMilestone, species, autoCapex };
         }
 
         // ============ 🌐 الخطة الشاملة (تعاقب الأنواع) — فائض صندوق النوع الأساسي بيمول بداية أنواع تانية بترتيب محدد ============
@@ -17306,15 +17139,51 @@
             return minCap * costPerBird;
         }
 
+        // ============ 🌐 يحسب أنهي هدف/نوع "يستاهل" رأس مال التعاقب أول — بالعائد السنوي المتوقع لكل جنيه رأس مال ============
+        // بدل الترتيب الثابت اللي كان مكتوب يدوي (سمان ← ساسو ← بلدي...)، كل خطوة دلوقتي بتتقاس بـ:
+        //   roi = القيمة السنوية المتوقعة ÷ رأس المال المطلوب لها
+        // للأنواع الجديدة: القيمة السنوية = ربح الطائر المتوقع (فعلي لو عندك دورة مؤرشفة، وإلا احتياطي يدوي) ×
+        // سعة أول عنبر × عدد الدورات السنوية للنوع ده. للأمهات+معمل التفريخ: نفس منطق computeMilestoneImpact
+        // (فرق سعر الكتكوت × الاحتياج السنوي). اللي عائده أعلى لكل جنيه = بيتفضّل يتمول أول من فائض النوع الأساسي.
+        // اللي معندهوش بيانات كافية (نوع لسه معملتلوش أي دورة ولا بيانات احتياطية) بيتحط آخر الترتيب حسب التكلفة.
+        function computeCascadeStepImpact(step, baseSpecies, hist) {
+            if (step.id === 'breedersHatchery') {
+                const baseInputs = getExpansionInputs(baseSpecies);
+                const bp = computeBreederFlockPlan(baseInputs);
+                const autoCapex = computeAutoMilestoneCapex(baseInputs, hist);
+                const capex = (autoCapex.capexBreeders || 0) + (autoCapex.capexHatchery || 0);
+                const annualValue = (bp.breakeven != null && bp.annualChicksNeeded) ? bp.breakeven * bp.annualChicksNeeded : null;
+                const roi = (annualValue != null && capex > 0) ? annualValue / capex : null;
+                return { ...step, capex, annualValue, roi };
+            }
+            const capex = step.speciesKeys.reduce((s, k) => s + computeSpeciesSeedCapital(k), 0);
+            let annualValue = null;
+            step.speciesKeys.forEach(k => {
+                const kInputs = getExpansionInputs(k);
+                const kHist = getExpansionStatsWithFallback(k, kInputs);
+                if (kHist && kHist.avgProfitPerBird != null && kHist.avgCycleDays > 0) {
+                    const kCycles = 365 / kHist.avgCycleDays;
+                    const kAnnual = kHist.avgProfitPerBird * (kInputs.minHouseCapacity || 10000) * kCycles;
+                    annualValue = (annualValue || 0) + kAnnual;
+                }
+            });
+            const roi = (annualValue != null && capex > 0) ? annualValue / capex : null;
+            return { ...step, capex, annualValue, roi };
+        }
         function getMasterCascadeMilestones(baseSpecies, hist) {
-            const baseInputs = getExpansionInputs(baseSpecies);
-            const autoCapex = computeAutoMilestoneCapex(baseInputs, hist);
-            return MASTER_CASCADE_STEPS.map(step => {
-                const capex = step.id === 'breedersHatchery'
-                    ? (autoCapex.capexBreeders || 0) + (autoCapex.capexHatchery || 0)
-                    : step.speciesKeys.reduce((s, k) => s + computeSpeciesSeedCapital(k), 0);
-                return { ...step, capex };
-            }).filter(x => x.capex > 0);
+            const steps = MASTER_CASCADE_STEPS.map(step => computeCascadeStepImpact(step, baseSpecies, hist)).filter(x => x.capex > 0);
+            // 🔒 جولة ترتيب — إصلاح: عائد سالب (نوع هيخسّرك) كان بيترتب فوق نوع "بيانات ناقصة" لأن -0.5 عدد حقيقي
+            // أصغر من null فى المقارنة. دلوقتي أي عائد ≤ صفر بيتعامل زي "معندوش بيانات كافية تستاهل الأولوية"
+            // وبيترتب آخر الصف حسب التكلفة، لكن رقمه الحقيقي (حتى لو سالب) لسه بيظهر فى الجدول للشفافية.
+            steps.sort((a, b) => {
+                const aKnown = a.roi != null && a.roi > 0;
+                const bKnown = b.roi != null && b.roi > 0;
+                if (aKnown && bKnown) return b.roi - a.roi; // الأعلى عائد لكل جنيه أول
+                if (aKnown) return -1;
+                if (bKnown) return 1;
+                return a.capex - b.capex; // مفيش عائد موجب معروف لحد منهم = رجّع للأرخص
+            });
+            return steps;
         }
 
         function computeMasterExpansionPlan(baseSpecies) {
@@ -17414,7 +17283,23 @@
             <div class="section">
                 <div class="section-head"><h2>🌐 الخطة الشاملة — تعاقب الأنواع من فائض ${baseLabel}</h2></div>
                 <div class="card" style="display:grid;gap:8px;">
-                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">فائض صندوق ${baseLabel} <b>فوق الحد الآمن</b> (${money(plan.safetyMin)} — تكلفة تسكين عنبر واحد بالكامل تاني بمتوسط أدائك الفعلي) مش بيروح لأهداف ${baseLabel} نفسه — بيتحوّل بالترتيب ده: <b>سمان ← ساسو ← ديوك بلدي ← بط ورومي ← أمهات ومعمل تفريخ</b>. كل نوع بمجرد ما ياخد رأس ماله الأول، بيدخل فى كرة ثلج مستقلة بصندوق طوارئ خاص بيه (زي ${baseLabel} بالظبط). بعد ما التعاقب كله يتمول، أي فائض تاني بيبقى فائض استثماري حر خارج نطاق أنواع الطيور فى التطبيق.</p>
+                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">فائض صندوق ${baseLabel} <b>فوق الحد الآمن</b> (${money(plan.safetyMin)} — تكلفة تسكين عنبر واحد بالكامل تاني بمتوسط أدائك الفعلي) مش بيروح لأهداف ${baseLabel} نفسه — بيتحوّل بترتيب <b>العائد الفعلي الأقوى أول</b> (مش ترتيب ثابت): <b>${plan.milestones.map(m => m.label).join(' ← ')}</b>. كل نوع بمجرد ما ياخد رأس ماله الأول، بيدخل فى كرة ثلج مستقلة بصندوق طوارئ خاص بيه (زي ${baseLabel} بالظبط). بعد ما التعاقب كله يتمول، أي فائض تاني بيبقى فائض استثماري حر خارج نطاق أنواع الطيور فى التطبيق.</p>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-head"><h2>🎯 ليه الترتيب ده؟ — العائد السنوي لكل جنيه رأس مال</h2></div>
+                <div class="card" style="padding:0;overflow-x:auto;">
+                    <table class="u-26">
+                        <thead><tr style="background:var(--cream);"><th class="u-03">#</th><th>الهدف</th><th class="u-05">رأس المال</th><th class="u-05">القيمة السنوية المتوقعة</th><th class="u-05">العائد لكل جنيه</th></tr></thead>
+                        <tbody>${plan.milestones.map((m, i) => `<tr style="border-bottom:1px solid var(--line);">
+                            <td class="u-03">${i + 1}</td>
+                            <td style="padding:6px;">${m.label}</td>
+                            <td class="u-05">${money(m.capex)}</td>
+                            <td class="u-05">${m.annualValue != null ? money(m.annualValue) + '/سنة' : '<span style="color:var(--muted);">بيانات ناقصة</span>'}</td>
+                            <td style="padding:6px;text-align:center;font-weight:900;color:${m.roi != null ? 'var(--green)' : 'var(--muted)'};">${m.roi != null ? fmt(m.roi * 100, 0) + '%' : '—'}</td>
+                        </tr>`).join('')}</tbody>
+                    </table>
+                    <p style="font-size:10.5px;color:var(--muted);margin:8px;line-height:1.6;">💡 اللي بياناته ناقصة (زي نوع لسه معملتلوش دورة أو بيانات احتياطية) بيتحط آخر الترتيب مؤقتًا حسب التكلفة بس — دخّل بياناته من قائمة النوع فوق عشان يدخل المقارنة الحقيقية.</p>
                 </div>
             </div>
             <div class="section">
@@ -18240,6 +18125,25 @@
                         </div>
                     </div>
 
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-head"><h2>🎯 أولوية الاستثمار — مين يتمول أول ولماذا</h2></div>
+                <div class="card" style="display:grid;gap:8px;">
+                    <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.7;">الترتيب هنا مش بالأرخص الأول — ده ترتيب <b>أسرع هدف بيرد رأس ماله وأقوى تأثير سنوي على أرباحك</b>، وهو نفس الترتيب اللي صندوق التوسع بيمشي عليه فى الجدول فوق.</p>
+                    ${!plan.milestoneImpact.length ? '<p style="font-size:11px;color:var(--muted);margin:0;">💡 دخّل تكلفة الوحدة لأي هدف كبير (معمل تفريخ/مصنع علف/أمهات/مجزر) فى قسم المدخلات فوق عشان تظهر أولوياته هنا.</p>' : plan.milestoneImpact.map((mi, i) => `
+                    <div class="check-row" style="align-items:flex-start;">
+                        <div style="flex-shrink:0;width:26px;height:26px;border-radius:50%;background:${i===0?'var(--wheat)':'var(--cream)'};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:var(--barn-dark);">${i+1}</div>
+                        <div class="txt" style="flex:1;">
+                            <div class="u-02">${mi.label}${i===0?' <span style="font-size:10px;color:var(--green);font-weight:800;">← الأولوية القصوى</span>':''}</div>
+                            <div class="day">${mi.why}</div>
+                            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;font-size:10.5px;color:var(--muted);">
+                                <span>رأس المال: <b style="color:var(--ink);">${money(mi.capex)}</b></span>
+                                ${mi.annualValue != null ? `<span>القيمة السنوية: <b style="color:var(--green);">${money(mi.annualValue)}/سنة</b></span>` : '<span>القيمة السنوية: بيانات ناقصة</span>'}
+                                ${mi.paybackYears != null ? `<span>استرداد رأس المال: <b style="color:${mi.paybackYears<=3?'var(--green)':'var(--warning-text)'};">${fmt(mi.paybackYears,1)} سنة</b></span>` : ''}
+                            </div>
+                        </div>
+                    </div>`).join('')}
                 </div>
             </div>
             ${renderExpansionFeasibilitySection(plan, inputs)}`;
