@@ -7225,6 +7225,19 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
         }
+        // 🔴 إصلاح: تضمين نص ديناميكي جوه onclick="fn('...')" — esc() لوحدها كانت بتحوّل ' لـ &#39;، وده
+        // بيرجع يتفكّ لعلامة تنصيص مفردة حقيقية *قبل* ما المتصفح ينفّذ الـJS (فك ترميز HTML entities بيحصل
+        // على كل الـattribute الأول، بما فيها onclick، وبعدين الناتج هو اللي بيتنفّذ كـJS). يعني أي نص فيه
+        // علامة تنصيص مفردة أو مزدوجة (زي أسماء التحصينات/العلاجات المكتوبة "بين علامتي تنصيص" فى التنبيهات)
+        // كان بيكسر الـattribute أو الـJS جواه بصمت من غير أي خطأ ظاهر — الزرار كان بيبقى عمليًا مالوش أي تأثير.
+        function jsOnclickArg(str) {
+            return String(str)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
 
         function todayStr() {
             const d = new Date();
@@ -12658,7 +12671,7 @@
             }
             // ============ 🔴 إصلاح Red Team: "تجاهل" بقى معناه فعلي (مش "تأجيل" لحد بكرة) — شوف dismissAlert/isDismissedToday ============
             // مش هيرجع يظهر تاني إلا لو المشكلة اتحلت فعلاً وبعدين رجعت من جديد، أو زادت خطورتها.
-            const dismissBtn = `<button class="btn ghost xs muted-snooze" style="flex-shrink:0;" onclick="dismissAlert('${a.key}')" title="مش هتظهر تاني إلا لو اتحلت فعلاً وبعدين رجعت، أو زادت خطورتها">🔕 تجاهل</button>`;
+            const dismissBtn = `<button class="btn ghost xs muted-snooze" style="flex-shrink:0;" onclick="dismissAlert('${jsOnclickArg(a.key)}')" title="مش هتظهر تاني إلا لو اتحلت فعلاً وبعدين رجعت، أو زادت خطورتها">🔕 تجاهل</button>`;
             const actionBtnsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">${doneBtn}${actionBtn}${dismissBtn}</div>`;
             // ============ 🔴 إصلاح Red Team (مدموج): شارة شفافية توضّح إن التنبيه أخذ أولوية أقل فى "أهم 3 أفعال" ============
             // لأنه اتكتم كتير قبل كده، بدل ما يبقى تصرّف مخفي فى الخوارزمية من غير ما تعرف السبب.
@@ -12691,7 +12704,7 @@
                 html = `<div class="empty"><div class="ico">✅</div>لا توجد تنبيهات حالية.</div>`;
             }
             if (dismissedToday.length) {
-                html += `<details class="alert-group" style="margin-top:6px;"><summary style="cursor:pointer;padding:8px 10px;font-size:12px;color:var(--muted);">🔕 ${dismissedToday.length} تم كتمها اليوم — اضغط للعرض</summary>${dismissedToday.map(a => `<div class="alert-item ${a.level}" style="opacity:.6;display:flex;align-items:center;gap:6px;justify-content:space-between;"><span style="flex:1;">${esc(a.text)}</span><button class="btn ghost xs" style="flex-shrink:0;" onclick="undismissAlert('${a.key}')">↩️ إظهار</button></div>`).join('')}</details>`;
+                html += `<details class="alert-group" style="margin-top:6px;"><summary style="cursor:pointer;padding:8px 10px;font-size:12px;color:var(--muted);">🔕 ${dismissedToday.length} تم كتمها اليوم — اضغط للعرض</summary>${dismissedToday.map(a => `<div class="alert-item ${a.level}" style="opacity:.6;display:flex;align-items:center;gap:6px;justify-content:space-between;"><span style="flex:1;">${esc(a.text)}</span><button class="btn ghost xs" style="flex-shrink:0;" onclick="undismissAlert('${jsOnclickArg(a.key)}')">↩️ إظهار</button></div>`).join('')}</details>`;
             }
             return html;
         }
@@ -14967,22 +14980,28 @@
             }
             b.vaccineLog.forEach(v => {
                 if (!v.done) {
-                    if (m.todayAge > v.day + cfg.vaccGraceDays) alerts.push({ level: 'danger',
+                    // 🔴 إصلاح: من غير key صريح، المفتاح التلقائي (alertKeyFromText) بيشيل كل الأرقام من النص
+                    // عشان يفضل ثابت يوم بعد يوم — بس ده كان بيخلي كل تحصينات نفس الاسم فى أيام مختلفة (لقاح
+                    // نيوكاسل يوم 7 ويوم 21 مثلًا) تتصادم على نفس المفتاح، فكتم/تجاهل واحد كان بيأثر على التاني
+                    // بالغلط. هنا: مفتاح صريح مبني على معرّف التحصين نفسه (v.id) — فريد ومستقل لكل بند فعليًا.
+                    if (m.todayAge > v.day + cfg.vaccGraceDays) alerts.push({ level: 'danger', key: 'vacc_' + v.id,
                         actionLabel: '✓ اتحصّن', actionOnclick: `toggleVaccine('${v.id}')`,
                         text: `⚠️ فاتك معاد تحصين "${v.name}" (كان فى يوم ${v.day}) - العمر الحالي ${m.todayAge} يوم` });
-                    else if (m.todayAge >= v.day) alerts.push({ level: 'warn',
+                    else if (m.todayAge >= v.day) alerts.push({ level: 'warn', key: 'vacc_' + v.id,
                         actionLabel: '✓ اتحصّن', actionOnclick: `toggleVaccine('${v.id}')`,
                         text: `💉 موعد تحصين "${v.name}" اليوم (يوم ${v.day})` });
-                    else if (v.day - m.todayAge <= cfg.vaccAdvanceDays) alerts.push({ level: 'info',
+                    else if (v.day - m.todayAge <= cfg.vaccAdvanceDays) alerts.push({ level: 'info', key: 'vacc_upcoming_' + v.id,
                         text: `💉 تحصين قادم: "${v.name}" بعد ${v.day - m.todayAge} يوم` });
                 }
             });
             b.treatmentLog.forEach(t => {
                 if (!t.done) {
-                    if (m.todayAge > t.day + cfg.treatGraceDays) alerts.push({ level: 'warn',
+                    // نفس إصلاح التحصينات فوق بالظبط — مفتاح صريح مبني على t.id بدل المفتاح التلقائي من النص،
+                    // عشان جرعات نفس الإضافة (بروبايوتك يوم 15/20/25/30 مثلًا) تفضل بنود مستقلة عن بعضها.
+                    if (m.todayAge > t.day + cfg.treatGraceDays) alerts.push({ level: 'warn', key: 'treat_' + t.id,
                         actionLabel: '✓ اديته', actionOnclick: `toggleTreatment('${t.id}')`,
                         text: `🧴 فاتك معاد "${t.name}" (كان فى يوم ${t.day})` });
-                    else if (m.todayAge >= t.day) alerts.push({ level: 'info',
+                    else if (m.todayAge >= t.day) alerts.push({ level: 'info', key: 'treat_' + t.id,
                         actionLabel: '✓ اديته', actionOnclick: `toggleTreatment('${t.id}')`,
                         text: `🧴 موعد اليوم: "${t.name}"${timeLabel(t.time)}` });
                 }
