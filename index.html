@@ -12313,7 +12313,15 @@
             const age = last ? last.age : 0; // عمر آخر سجل فعلي مُدخَل (يُستخدم فى حسابات الوزن/الأداء المرتبطة بالبيانات المسجَّلة)
             // عمر القطيع الفعلي اليوم بالتقويم — يُستخدم للتنبيهات والتذكيرات وتنفيذ الإضافات، حتى قبل حفظ سجل اليوم
             const todayAge = b.archivedDate ? age : Math.max(age, daysBetween(b.startDate, todayStr()));
-            const liveCount = last ? last.liveCount : b.startCount;
+            // 🔴 إصلاح: liveCount (وكل ما يُبنى عليه فى الداشبورد: الكثافة، الكتلة الحيوية، EPEF...) كان بيتجمد
+            // عند تاريخ آخر سجل يومي مُدخَل — فلو اتسجّلت عملية بيع بتاريخ بعد آخر سجل يومي (شائع جدًا: البيع
+            // بيحصل فى نص اليوم وسجل اليوم الكامل لسه ما اتسجلش)، العدد المعروض فورًا فى "الأعداد الحية" كان
+            // بيفضل زي ما هو من غير أي نقصان، لحد ما يتسجل سجل يومي جديد بتاريخ يلحق تاريخ البيع أو بعده.
+            // الحل: نحسب أي بيع اتسجل بعد تاريخ آخر سجل ولحد النهاردة، ونخصمه فورًا هنا (بس على القيمة
+            // المعروضة/المستخدمة حاليًا — سجلات السلسلة التاريخية series[].liveCount فضلت زي ما هي لأنها
+            // مبنية على تاريخ كل سجل فعليًا وقت حدوثه، وده صحيح لحسابات FCR/الأداء التاريخية يوم بيوم).
+            const soldSinceLastRecord = b.archivedDate ? 0 : Math.max(soldCountAsOf(todayStr()) - (last ? last.cumSold : 0), 0);
+            const liveCount = Math.max((last ? last.liveCount : b.startCount) - soldSinceLastRecord, 0);
             const liveCountPct = b.startCount > 0 ? (liveCount / b.startCount) * 100 : 100;
             const mortRate = b.startCount > 0 ? ((cumMort + cumCull) / b.startCount) * 100 : 0;
             // آخر وزن فعلي تم تسجيله فعلًا (لعرضه فى الواجهة كمرجع "آخر وزن مقاس")
