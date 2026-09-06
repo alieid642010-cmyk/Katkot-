@@ -47,6 +47,8 @@
             --ink: #2A2A28;
             --muted: #6B6B62;
             --line: #E6E0D2;
+            /* لون الفاصل المتقطع بين الأقسام الفرعية جوه كارت واحد (كان hex مكرر 5 مرات فى أماكن مختلفة) */
+            --line-dashed: #E5DDC8;
             /* ألوان الحالة (تمت إضافتها لتوحيد الأنماط المتكررة بدل التكرار اليدوي) */
             --success-bg: #E4F3EA;
             --success-text: #2C7A4B;
@@ -54,6 +56,15 @@
             --danger-text: #C1443C;
             --warning-bg: #FFF3DC;
             --warning-text: #8A6116;
+            /* ============ تحسين: توكن مستقل لحالة "تحذير متقدم/تدهور محتمل" — كان مكرر inline فى JS كـ #e08a2b
+               بدل ما يبقى جزء من نظام الألوان الموحّد زي باقي حالات health-score-card ============ */
+            /* ============ 🔴 إصلاح Red Team (تباين لوني): القيمة الأصلية #E08A2B كانت بتدّي نسبة تباين
+               ~2.5:1 بس على خلفيات فاتحة (--paper/--cream) وهي مستخدمة كلون نص فعلي فى أكتر من مكان
+               (ليبل درجة الصحة، تحذيرات الإجهاد الحراري) — أقل بكتير من حد WCAG AA (4.5:1 للنص العادي).
+               اتغمّقت لنفس الاتجاه اللوني (برتقالي/كهرماني) لحد ما وصلت لنسبة تباين ~4.7:1. القيمة
+               الأصلية الأفتح نُقلت لتوكن الوضع الليلي تحت (فيه بتدّي تباين ممتاز ~5.9:1 على الخلفيات الغامقة،
+               بينما النسخة المعتّمة الجديدة هتفشل هناك). ============ */
+            --caution-text: #A05F17;
             --info-bg: #E1EEF3;
             --info-text: #2E6E8E;
             /* ============ سلم أحجام الخط الموحّد (8 مستويات بدل 20 قيمة متفرقة كانت مستخدمة) ============ */
@@ -127,12 +138,46 @@
         .cursor-pointer { cursor: pointer; }
         .d-none { display: none; }
         .flex-1 { flex: 1; }
+        .flex-narrow { flex: 0.6; }
+        .fw-700 { font-weight: 700; }
+        .fw-800 { font-weight: 800; }
+        .fw-600 { font-weight: 600; }
+        .flex-wrap { flex-wrap: wrap; }
+        .row-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .overflow-hidden { overflow: hidden; }
+        .insights-note-top { font-size: var(--fs-xs); color: var(--muted); margin: -4px 2px 8px; }
+        /* صف عنبر نشط فى مقارنة العنابر (multiHouseSection) — كان لون الخلفية والحدّ اليمين inline شرطي */
+        .check-row.is-active-house { background: rgba(217,165,68,.12); border-inline-end: 3px solid var(--wheat); }
+        /* ============ ✨ توحيد "قسم الماء" (جدولة السقاية + إضافات الماء): نفس مبدأ is-active-house بالظبط
+           لكن بتوكنات --info-bg/--blue (دلالة "ماء" بدل "علف") بدل rgba(46,110,142,.1) + border-right ثابتين
+           كانوا مكتوبين inline — كانوا كمان بيكسروا فى RTL كامل زي باقي حالات border-right القديمة، وبيفشلوا
+           فى الوضع الليلي لأن الأزرق كان hardcoded بمعزل عن --info-bg/--blue اللي بيتغيّروا مع data-theme="dark". ============ */
+        .check-row.is-active-water { background: var(--info-bg); border-inline-end: 3px solid var(--blue); }
+        /* -- ملحقات كارت "أهم فعل عليك اتخاذه الآن" (hero-priority) وقسم "يحتاج متابعتك الآن" -- */
+        .hero-priority .eyebrow-count { font-size: var(--fs-2xs); font-weight: 700; color: var(--muted); }
+        .hero-priority .recurring-note { font-size: var(--fs-xs); color: var(--warning-text); font-weight: 700; margin-top: var(--space-1); }
+        .hero-priority .hero-priority-note { font-size: var(--fs-2xs); color: var(--muted); margin: var(--space-2) 0 0; }
+        .hero-priority .rest-row { flex-wrap: wrap; }
+        .hero-priority .rest-row .badge-domain { flex-shrink: 0; }
+        .hero-priority .rest-row .badge-urgency { margin-inline-start: var(--space-1); }
+        .hero-priority .rest-row .btn.ghost.xs { margin-inline-start: auto; }
+        .attention-section-note { font-size: var(--fs-2xs); color: var(--muted); margin: -4px 2px 8px; }
+        .attention-insights-gap { margin-top: var(--space-1); }
+        .attention-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
+        .card.all-clear-note { padding: var(--space-3); text-align: center; color: var(--muted); font-size: var(--fs-sm); }
         .d-flex { display: flex; }
         .d-flex-g6 { display: flex; gap: 6px; }
         .w-100 { width: 100%; }
         .line-b { border-bottom: 1px solid var(--line); }
         .grid-g2 { display: grid; gap: var(--space-2); }
         .grid-g3 { display: grid; gap: var(--space-3); }
+        /* ============ ✨ شبكة عمودين ثابتة (2×N) — كانت مكررة inline فى أكتر من مكان (ملخص الأداء الإنتاجي
+           فى التقرير المالي، وأماكن مشابهة فى خطة التوسع) ============ */
+        .grid-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .m-0 { margin: 0; }
         .bg-cream { background: var(--cream); }
         .empty-state { text-align: center; padding: var(--space-5); color: var(--muted); }
@@ -215,14 +260,26 @@
             background: rgba(217,165,68,.08); border-radius: 0 var(--radius-md) var(--radius-md) 0;
             padding: var(--space-3); margin-bottom: var(--space-3);
         }
+        /* ============ ✨ فاصل "حاسبة تفصيلية" (renderEnvironmentTimeline): كان خط منقط + span كله inline
+           style، ومتكرر باحتمال حاجة له تاني فى تبويبات أخرى فيها "توصيات جاهزة" + "أدوات حساب تفصيلية"
+           جنب بعض — بقى كلاس عام قابل لإعادة الاستخدام بدل نسخ/لصق. ============ */
+        .calc-divider { border-top: 1px dashed var(--line); margin: 12px 0 8px; padding-top: 2px; text-align: center; }
+        .calc-divider-label { font-size: var(--fs-2xs); color: var(--muted); background: inherit; padding: 0 8px; }
+        /* ============ ✨ عنوان كارت بارز موحّد (بديل تكرار style="margin:0 0 8px;color:var(--barn-dark)"
+           فى عناوين h2 داخل الكروت الرئيسية — مسار البيئة، الطقس...) ============ */
+        .card-title { margin: 0 0 8px; color: var(--barn-dark); }
 
         /* -- كارت "أهم فعل الآن" (Hero) -- بديل الكارت اللي كان مبني بالكامل inline -- */
+        /* ============ 🔴 إصلاح Red Team (وضع ليلي، أولوية قصوى): #fffdf7 كانت طرف تدرج ثابت بمعزل عن
+           --paper/--cream — هي أهم كارت فى الداشبورد كله ("راجعها أول حاجة كل يوم")، وكانت بتفضل شبه بيضا
+           جزئيًا حتى فى الوضع الليلي بينما --ink بيبقى فاتح، يعني جزء من الكارت (قرب زاوية التدرج) بيبقى
+           نص فاتح على خلفية فاتحة تقريبًا = صعب القراءة جدًا. نفس حل كارت الصحة بالظبط. ============ */
         .hero-priority {
             margin-bottom: var(--space-4);
             padding: var(--space-4);
             border-radius: var(--radius-lg);
             border: 1.5px solid var(--wheat);
-            background: linear-gradient(135deg, #fffdf7, var(--cream));
+            background: linear-gradient(135deg, var(--paper), var(--cream));
             box-shadow: var(--shadow-med);
         }
         .hero-priority .eyebrow {
@@ -245,25 +302,82 @@
             display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
             margin-top: var(--space-2);
         }
-        .hero-priority .rest-list { margin-top: var(--space-3); border-top: 1px dashed #e5ddc8; padding-top: var(--space-2); }
+        .hero-priority .rest-list { margin-top: var(--space-3); border-top: 1px dashed var(--line-dashed); padding-top: var(--space-2); }
         .hero-priority .rest-row { display: flex; gap: var(--space-2); align-items: flex-start; padding: var(--space-1) 0; font-size: var(--fs-sm); color: var(--muted); }
         .hero-priority .rest-row b { color: var(--ink); font-weight: 700; }
 
         /* -- كارت درجة الصحة (اللون بس بيفضل ديناميكي inline لأنه مبني على قيمة محسوبة، الباقي كله كلاس) -- */
+        /* ============ 🔴 إصلاح Red Team (وضع ليلي): الخلفية كانت hardcoded (#fff, #f8f5ed) بمعزل عن
+           نظام المتغيرات، فكانت بتفضل بيضا حتى فى الوضع الليلي بينما النص فوقها (--ink) بيبقى فاتح فى
+           نفس الوضع — يعني نص فاتح على خلفية بيضا، الكارت كله كان بيبقى شبه غير مقروء ليلاً.
+           بقت مبنية على --paper/--cream اللي بيتغيّروا تلقائيًا مع data-theme="dark". ============ */
         .health-score-card {
             margin-bottom: var(--space-4);
             padding: var(--space-4);
             text-align: center;
-            background: linear-gradient(135deg, #fff, #f8f5ed);
+            background: linear-gradient(135deg, var(--paper), var(--cream));
             border-radius: var(--radius-lg);
             border-width: 2px;
             border-style: solid;
         }
         .health-score-card .caption { font-size: var(--fs-sm); color: var(--muted); margin-bottom: 2px; }
+        /* ============ Gauge دائري حول الدرجة — بديل بصري أسرع قراءة من رقم مجرد (تحسين UX #1) ============
+           r=42 فى viewBox 100x100 → محيط الدائرة = 2π×42 ≈ 263.9، بنحسب جزء الامتلاء منه فى الـJS. */
+        .hsc-score-wrap { position: relative; width: 108px; height: 108px; margin: 0 auto 2px; }
+        .hsc-gauge { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .hsc-gauge-track { fill: none; stroke: var(--line); stroke-width: 8; }
+        .hsc-gauge-fill { fill: none; stroke: var(--hsc-color, var(--ink)); stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray .5s ease; }
+        .hsc-score-wrap .score { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
         .health-score-card .score { font-size: 34px; font-weight: 900; }
         .health-score-card .score small { font-size: var(--fs-md); }
         .health-score-card .label { font-size: var(--fs-base); font-weight: 700; }
+        /* ============ تحسين UX #2: جملة الشرح الطويلة (لما الدرجة كويسة ظاهريًا لكن فيه إنذار مبكر) بقت
+           منفصلة عن كلاس .label (المُصمَّم لكلمتين بولد، مش فقرة) — وزن خط عادي حتى ميتلخبطش بصريًا مع الرقم الكبير فوقه. */
+        .health-score-card .hsc-state-detail { font-size: var(--fs-sm); font-weight: 500; color: var(--ink); margin-top: var(--space-1); line-height: 1.6; }
+        /* ============ تحسين UX #3: كل عامل مؤثر بقى له نقطة لون تعبّر عن حجم تأثيره (وزنه الفعلي فى الحساب)
+           بدل كل العوامل بنفس اللون الرمادي المحايد بغض النظر عن خطورتها ============ */
         .health-score-card .factors { font-size: var(--fs-xs); color: var(--muted); margin-top: var(--space-2); text-align: right; }
+        .hsc-factor-row { display: flex; align-items: center; gap: var(--space-1); padding: 2px 0; }
+        .hsc-factor-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        /* ============ 🆕 تحسين UX #6: legend صغير يشرح معنى ألوان نقط العوامل أول مرة — كانت الألوان
+           (أحمر/برتقالي/أصفر) بتعبّر عن وزن كل عامل فى الحساب من غير أي تلميح نصي يوضح المعنى ده ============ */
+        .hsc-factor-legend { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 3px 6px; margin-top: var(--space-1); font-size: var(--fs-2xs); color: var(--muted); }
+        .hsc-factor-dot.high { background: var(--red); }
+        .hsc-factor-dot.mid { background: var(--caution-text); }
+        .hsc-factor-dot.low { background: var(--wheat); }
+        /* ⚙️ توحيد: اللون الديناميكي (hs.color) بقى custom property واحدة على الكارت الأب بدل ما يتكرر
+           inline على كل عنصر فرعي (caption/score/label) لوحده — نفس الفكرة المعلّقة فوق ("الباقي كله كلاس")
+           لكن بتطبيقها بشكل أدق: خاصية واحدة (--hsc-color) تتوارث لكل الأبناء اللي محتاجينها. */
+        .health-score-card { border-color: var(--hsc-color, var(--line)); }
+        .health-score-card .score, .health-score-card .label { color: var(--hsc-color, var(--ink)); }
+        /* الأقسام الفرعية المتكررة جوه الكارت (الترتيب/التوقعات/احتمالية مشكلة قادمة/الملحوظة الختامية) —
+           كانت 4 بلوكات بنفس الـmargin/padding/border-top inline بالحرف الواحد */
+        /* ============ 🔴 إصلاح Red Team (اتساق المحاذاة): الكارت الأب text-align:center مناسب للدرجة/الليبل
+           بس، لكن كل الأقسام الفرعية دي (مقارنة بالتاريخ / توقعات / احتمالية مشكلة قادمة) فقرات نصية
+           بتلف على أكتر من سطر — كانت وارثة الـcenter بالغلط فطلعت "مسننة" وصعبة القراءة. .factors لوحدها
+           كانت اتصلحت قبل كده بـtext-align:right صريح؛ الإصلاح ده بيعمم نفس المنطق على باقي محتوى الكارت
+           النصي بقاعدة واحدة بدل تكرارها على كل كلاس فرعي لوحده. ============ */
+        .health-score-card .hsc-subsection { margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px dashed var(--line-dashed); text-align: right; }
+        .health-score-card .hsc-subsection-title { font-size: var(--fs-xs); font-weight: 800; color: var(--barn-dark); }
+        /* ============ تحسين UX #4: كانت <summary> بداخل <details> متداخل جوه قسم مطوي أصلاً (foldableSection)
+           — طَي داخل طَي (double disclosure) لمعلومة مهمة. بقت سطر ثابت الظهور، الطي الوحيد المتبقي هو
+           طي القسم الأب نفسه، اللي المستخدم أصلاً فتحه بقصد ============ */
+        .health-score-card .hsc-rank-summary { font-size: var(--fs-xs); font-weight: 800; }
+        .health-score-card .hsc-sub-rows { margin-top: var(--space-1); font-size: var(--fs-2xs); }
+        .health-score-card .hsc-sub-rows.lh-loose { line-height: 1.9; }
+        .health-score-card .hsc-mini-block { margin-top: var(--space-2); font-size: var(--fs-2xs); }
+        .health-score-card .hsc-mini-title { font-weight: 800; color: var(--muted); }
+        .health-score-card .hsc-fine-print { margin-top: var(--space-1); font-size: var(--fs-2xs); color: var(--muted); }
+        /* ============ تحسين UX #5 (نطاق ضيق وآمن): توحيد بصري لصف "احتمالية مشكلة قادمة" مع نفس لغة
+           .alert-item (خلفية مصبوغة + حواف دائرية) بدل نص عادي بنقطة "•" — من غير أي لمس لكلاس alert-item
+           نفسه أو الأماكن التانية اللي بتستخدمه (مستخدمة فى 6 شاشات مختلفة، وتوحيدها الكامل قرار أكبر
+           ومحتاج مراجعة منفصلة قبل ما يتنفذ). ============
+        .health-score-card .hsc-risk-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); padding: 8px 10px; border-radius: 10px; font-weight: 700; }
+        .health-score-card .hsc-risk-row.danger { background: var(--danger-bg); color: var(--red); }
+        .health-score-card .hsc-risk-row.warn { background: var(--warning-bg); color: var(--warning-text); }
+        .health-score-card .hsc-risk-row .btn.gold.xs { margin-inline-start: var(--space-2); flex-shrink: 0; }
+        /* -- شريط إدخال بورصة اليوم (card-accent) — الحقل كان inline style="flex:1;min-width:90px;" -- */
+        .card-accent .accent-input { flex: 1; min-width: 90px; }
 
         /* -- مجموعات "تحليلات ذكية" — كل مجموعة بلون مميز يبين نوعها من نظرة واحدة، بدل كل الأكورديونات بنفس اللون الرمادي -- */
         .insight-group { border-bottom: 1px solid var(--line); }
@@ -273,9 +387,9 @@
             cursor: pointer;
             background: var(--paper);
             border-inline-start: 4px solid var(--group-color, var(--line));
+            display: flex; flex-direction: column; gap: 2px; justify-content: flex-start;
         }
         .insight-group[open] summary { background: var(--group-bg, var(--cream)); }
-        .insight-group summary { display: flex; flex-direction: column; gap: 2px; justify-content: flex-start; }
         .insight-group summary::after { display: none; }
         .insight-group .igrp-top { display: flex; align-items: center; gap: var(--space-2); }
         .insight-group .igrp-top::after {
@@ -294,10 +408,18 @@
             padding: 1px 8px; font-size: var(--fs-2xs); font-weight: 700; margin-inline-start: var(--space-1);
         }
         .insight-group .igrp-desc { font-size: var(--fs-2xs); color: var(--muted); font-weight: 400; margin-top: 2px; margin-inline-start: 34px; }
-        .insight-group[data-gkey="attention"] { --group-color: var(--red); --group-bg: var(--danger-bg); }
+        /* ============ 🔴 إصلاح Red Team (CSS ميت): data-gkey="attention" كانت مجموعة قديمة اتشالت
+           فعليًا فى إعادة هيكلة 2026 (دُمجت جوه "⚠️ يحتاج متابعتك الآن") — مفيش أي استدعاء insightGroup('attention', ...)
+           فى الكود خالص، فالقاعدة دي كانت CSS ميت من غير أي عنصر يستخدمها. ============ */
         .insight-group[data-gkey="forecast"] { --group-color: var(--blue); --group-bg: var(--info-bg); }
         .insight-group[data-gkey="performance"] { --group-color: var(--green); --group-bg: var(--success-bg); }
         .insight-group[data-gkey="benchmark"] { --group-color: var(--wheat); --group-bg: var(--warning-bg); }
+        /* ============ 🔴 إصلاح Red Team (تباين لوني): خلفية مجموعة "benchmark" فاتحة (--wheat)، والنص
+           الأبيض الافتراضي لـigrp-count/igrp-icon كان بيدّي تباين فاشل (~2.2:1 نهاري / ~1.7:1 ليلي).
+           نفس مشكلة ونفس حل .btn.gold الموجود أصلاً فى التطبيق (لون نص --barn-dark مع خلفية --wheat،
+           بيدّي تباين ممتاز 6.3:1/8.4:1 فى الوضعين) — بنطبّقه هنا بنفس المنطق بدل ما يكون استثناء منفرد. ============ */
+        .insight-group[data-gkey="benchmark"] .igrp-count,
+        .insight-group[data-gkey="benchmark"] .igrp-icon { color: var(--barn-dark); }
         .insight-group > div.igrp-body { padding: 0 var(--space-3); }
 
         /* -- كارت تمييز خفيف (دهبي) لعناصر سريعة أعلى الداشبورد: بورصة اليوم، سلسلة التسجيل -- */
@@ -310,6 +432,45 @@
             border-radius: var(--radius-lg);
         }
         .card-accent .accent-label { font-size: var(--fs-sm); font-weight: 800; color: var(--barn-dark); white-space: nowrap; }
+
+        /* -- كارت المخزون فى الداشبورد (renderInventoryDashboardCard) — كانت كل عناصره inline بالكامل
+           (grid يدوي، ألوان hex ثابتة #2d4a5a، أحجام خط متفرقة 10.5/13/15px). دلوقتي نظام كامل بالـtokens
+           بيطابق باقي بطاقات الداشبورد، بدل صندوق كحلي غريب وسط الألوان الكريمية/القمحية للتطبيق. -- */
+        .dash-inv-card .inv-top-row { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+        .dash-inv-card .inv-photo-wrap { text-align: center; }
+        .dash-inv-card .inv-photo-wrap img {
+            max-width: 70px; max-height: 70px; border-radius: var(--radius-md);
+            border: 1px solid var(--line); object-fit: cover; cursor: pointer;
+        }
+        .dash-inv-card .inv-detail-col { flex: 1; min-width: 130px; }
+        /* سيليكت اختيار الصنف — نفس مقاسات/سلوك .field select (سهم SVG موحّد) بس فى سياق مستقل بره فورم */
+        /* ============ 🔴 إصلاح Red Team (وضع ليلي): background:#fff هنا كانت أعلى specificity من قاعدة
+           html[data-theme="dark"] select العامة (كلاسين فرعيين بيغلبوا عنصر+attribute+عنصر)، فكانت
+           بتفضل بيضا حتى فى الوضع الليلي بينما اللون (--ink) بيبقى فاتح — نص فاتح على خلفية بيضا. ============ */
+        .dash-inv-card .inv-select {
+            appearance: none; -webkit-appearance: none;
+            width: 100%; margin-bottom: var(--space-2);
+            border: 1.5px solid var(--line); border-radius: var(--radius-md);
+            padding: 6px 8px; padding-inline-start: 28px;
+            font-size: var(--fs-sm); font-weight: 700; color: var(--ink); background: var(--paper);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B4226' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: left 10px center;
+        }
+        .dash-inv-card .inv-select:focus { outline: none; border-color: var(--wheat); box-shadow: 0 0 0 3px rgba(217,165,68,.25); }
+        .dash-inv-card .inv-stock-action { margin-top: var(--space-1); }
+        .dash-inv-card .inv-photo-remove { margin-top: 2px; color: var(--red); }
+        /* صندوق "مستحق للموردين/العملاء" — كان gradient كحلي (#2d4a5a) غريب عن هوية التطبيق،
+           بقى بلوني --barn/--barn-dark (نفس عائلة الألوان الخضراء الغامقة المستخدمة أصلاً فى العلامة) */
+        .dash-inv-balances {
+            display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);
+            margin-top: var(--space-3);
+            background: linear-gradient(135deg, var(--barn), var(--barn-dark));
+            color: #fff; border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+        }
+        .dash-inv-balances .lbl { opacity: .85; font-size: var(--fs-2xs); }
+        .dash-inv-balances .val { font-weight: 900; font-size: var(--fs-base); }
+        .dash-inv-balances .val.has-due { color: #ffb4b4; }
+        .dash-inv-balances .val.has-receivable { color: #ffe08a; }
 
         /* -- أزرار إجراءات سريعة بألوان دلالية موحّدة (تستخدم tokens الحالة الموجودة أصلاً --warning/--danger/--success/--info) --
            ⚙️ تصحيح تسمية: كانت الأسماء .tone-danger / .tone-success بتتصادم لفظيًا مع .btn.danger / .btn.success
@@ -369,6 +530,8 @@
             --warning-text: #EFC96B;
             --info-bg: #1C2E36;
             --info-text: #7FC3E3;
+            /* القيمة الأصلية (قبل إصلاح التباين فى الوضع النهاري) — بتدّي تباين ممتاز على خلفيات غامقة */
+            --caution-text: #E08A2B;
             /* ظلال أخف فى الوضع الليلي — نفس الشدة على خلفية غامقة بتطلع "لطخة" واضحة زيادة */
             --shadow-low: 0 2px 8px rgba(0, 0, 0, .25);
             --shadow-med: 0 4px 14px rgba(0, 0, 0, .35);
@@ -378,6 +541,20 @@
         html[data-theme="dark"] .card, html[data-theme="dark"] .modal, html[data-theme="dark"] input,
         html[data-theme="dark"] select, html[data-theme="dark"] textarea { background: var(--paper); color: var(--ink); border-color: var(--line); }
         html[data-theme="dark"] img, html[data-theme="dark"] .logo { filter: brightness(0.92); }
+        /* ============ 🔴 إصلاح Red Team (تباين لوني): #ffb4b4 (نص "مستحق للموردين") مقاس على صندوق
+           التدرج --barn→--barn-dark. فى الوضع النهاري تباينه ممتاز (6.1-8.3:1) على طرفي التدرج، لكن فى
+           الوضع الليلي --barn نفسها بتفتح (#4A6B54) فيقل التباين عند الطرف ده لـ~3.5:1 (أقل من حد
+           WCAG AA للنص العادي 4.5:1). #ffe08a (مستحق العملاء) سليمة فى الحالتين (4.6:1+) فمتلمسناهاش. ============ */
+        html[data-theme="dark"] .dash-inv-balances .val.has-due { color: #FFE0E0; }
+        /* ============ 🔴 إصلاح Red Team (وضع ليلي، نطاق أوسع): سهم الـ<select> المخصّص (كل من .field select
+           العام و.dash-inv-card .inv-select) لونه SVG ثابت بني غامق (#6B4226) — تباين ممتاز على خلفية
+           بيضا (8.6:1) لكن شبه مختفي تمامًا على الخلفية الغامقة فى الوضع الليلي (1.8:1 بس). نفس الشكل
+           بالظبط، بس بلون --wheat (فاتح، بيدّي 6.3:1 على --paper الغامقة). ============ */
+        html[data-theme="dark"] .field select,
+        html[data-theme="dark"] .dash-inv-card .inv-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D9A544' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        }
+        html[data-theme="dark"] .badge-domain-financial { color: #FFDF66; }
         * {
             box-sizing: border-box;
             margin: 0;
@@ -536,6 +713,7 @@
             font-weight: 700;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 8px;
         }
         .alert-item.warn {
@@ -1417,7 +1595,10 @@
             font-size: var(--fs-2xs); font-weight: 800;
         }
         .badge-domain-production { background: var(--success-bg); color: var(--green); }
-        .badge-domain-financial  { background: var(--warning-bg); color: #8a6d00; }
+        /* ============ 🔴 إصلاح Red Team (تباين لوني): #8a6d00 كانت بتدّي 4.48:1 بالظبط على الخلفية
+           النهارية (أقل بالكاد من حد WCAG AA 4.5:1) و2.64:1 بس على نسخة الخلفية الليلية — اتعمّقت
+           شوية للنهاري (5.4:1) وليها قيمة مخصصة أفتح للوضع الليلي تحت (9.9:1). ============ */
+        .badge-domain-financial  { background: var(--warning-bg); color: #7A6100; }
         .badge-domain-ops        { background: var(--info-bg); color: var(--blue); }
         .badge-domain-weather    { background: var(--danger-bg); color: var(--red); }
         .badge-urgency { font-size: var(--fs-2xs); font-weight: 800; }
@@ -1767,6 +1948,11 @@
             transition: background .12s;
         }
         .igrp-body .check-row:hover { background: rgba(0,0,0,.015); }
+        /* ============ 🔴 إصلاح Red Team (استجابة لمس): .check-row.cursor-pointer مستخدمة فى 6+ أماكن
+           كصف قابل للنقر فعليًا (تبديل الدفعة النشطة، اختيار موقع، تبديل إعدادات...) لكن كان مفيش أي
+           تأثير بصري عند اللمس — لا :active ولا حتى :hover (اللي أصلاً مش هيتفعّل باللمس على الموبايل).
+           نفس المبدأ المطبّق على .btn:active فى الأعلى، بنطبّقه هنا بنفس المنطق. ============ */
+        .check-row.cursor-pointer:active { background: rgba(0,0,0,.04); }
         .igrp-body .check-row .txt > div:first-child { font-weight: 700; font-size: var(--fs-sm); }
         .settings-subnav {
             display: flex;
@@ -1793,6 +1979,11 @@
             color: #fff;
             border-color: var(--barn-dark);
         }
+        /* ============ ✨ توحيد "تبويب الإعدادات" (قسم الوصول والحسابات): كانت لابل UID/كود التفعيل/تأمين
+           الحساب الثلاثة بتكرر نفس الـstyle inline، وكانت صناديق عرض الـUID وكود التفعيل بتكرر نفس صندوق
+           الخلفية الكريمية أيضًا — بقوا كلاسين موحّدين بدل التكرار. ============ */
+        .label-strong { font-size: var(--fs-sm); font-weight: 800; color: var(--barn-dark); display: block; margin-bottom: 4px; }
+        .code-box { background: var(--cream); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; }
         details > div { padding: 4px 12px 10px; }
         details > div .check-row { padding: 8px 0; }
         details summary { list-style: none; display: flex; align-items: center; justify-content: space-between; }
@@ -1854,6 +2045,207 @@
             background: var(--danger-bg);
             color: var(--red);
         }
+        /* ============ ✨ توحيد تبويب "المقارنة": كانت أنماط الجدول والملاحظات والفواصل بين الكروت
+           كلها inline styles متكررة (نفس القيم بالحرف فى أكتر من 15 مكان) — دلوقتي كلاسات واحدة
+           تُستخدم فى كل التبويب، بنفس مبدأ .hero-priority و.fs-* المطبّق فى باقي التطبيق. ============ */
+        .compare-table td.label-cell {
+            text-align: right;
+            font-weight: 800;
+        }
+        .compare-note {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+            margin-top: var(--space-2);
+        }
+        .compare-live-note {
+            font-size: var(--fs-xs);
+            color: var(--green);
+            font-weight: 700;
+            margin: 0 0 var(--space-2);
+        }
+        .compare-trend-caption {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+            margin-top: 0;
+        }
+        .check-row .day.tight {
+            margin-top: 2px;
+        }
+        .corr-cell-sm {
+            font-size: var(--fs-xs);
+        }
+        .corr-cell-muted {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+        }
+        /* ============ ✨ توحيد "التبويب اليومي" وملحقاته المباشرة (سجلات وأحداث إضافية + مودال الأمان
+           الحيوي): نفس مبدأ توحيد تبويب المقارنة — استبدال الـ inline styles المتكررة بكلاسات، مع
+           الحفاظ على أي style يتحكم فيه الجافاسكريبت مباشرة (زي display:none/block) بدون مساس. ============ */
+        .empty.compact {
+            padding: 14px;
+        }
+        .daily-search-bar {
+            padding: 8px 10px;
+            margin-bottom: var(--space-2);
+            display: flex;
+            gap: var(--space-2);
+            align-items: center;
+        }
+        .daily-search-input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .count-badge-muted {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        .daily-hint-note {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+            margin: var(--space-2) 0;
+            line-height: 1.6;
+        }
+        .bio-compare-wrap {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+        .bio-compare-item {
+            text-align: center;
+        }
+        .bio-compare-img {
+            max-width: 130px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+        }
+        .bio-compare-caption {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .pill-btn {
+            border-radius: var(--radius-pill);
+        }
+        /* ============ ✨ توحيد "تبويب العلف" (برنامج التحويل بين الأعلاف + إضافات العلف + مرحلة العلف
+           الحالية + مخزون العلف): نفس مبدأ التبويبات السابقة — استبدال الـ inline المتكرر بكلاسات،
+           وإصلاح جانبي: border-right كان بيكسر التبويبات المقلوبة (RTL كامل زي فارسي/أوردو)، استبدلناه
+           بـ border-inline-end زي باقي التطبيق (كلاس .is-active-house الجاهز). ============ */
+        .feed-stage-name {
+            font-weight: 900;
+            font-size: var(--fs-md);
+            color: var(--barn-dark);
+        }
+        .feed-stage-progress-track {
+            background: var(--line);
+            border-radius: 8px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .feed-stage-progress-fill {
+            background: var(--wheat);
+            height: 100%;
+        }
+        .feed-stage-note {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+            margin-top: 5px;
+        }
+        .feed-transition-intro {
+            font-size: var(--fs-xs);
+            color: var(--muted);
+            margin: 0 0 var(--space-3);
+            line-height: 1.7;
+        }
+        .feed-transition-card {
+            margin-bottom: var(--space-3);
+            background: var(--cream);
+        }
+        .feed-transition-title {
+            font-weight: 800;
+            color: var(--barn-dark);
+        }
+        .feed-transition-meta {
+            font-weight: 600;
+            color: var(--muted);
+            font-size: var(--fs-xs);
+        }
+        .input-xs-inline {
+            width: 64px;
+            padding: 6px;
+            border: 1.5px solid var(--line);
+            border-radius: 8px;
+        }
+        .section-divider-top {
+            margin-top: var(--space-4);
+            border-top: 1.5px solid var(--line);
+            padding-top: var(--space-4);
+        }
+        .feed-stock-row-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--fs-base);
+            font-weight: 700;
+        }
+        /* ============ ✨ توحيد قسم "جدولة سقاية الماء" (renderWaterScheduleCard): كانت حقول اسم/جرعة/وحدة
+           الإضافة داخل كل فترة سقاية بأحجام px حرة مكتوبة inline (width:110px / width:55px) بمعزل عن نظام
+           الحقول الموحّد، وبعرض 55px ضيق جدًا كهدف لمس على الموبايل. هنا وحّدنا العرض والحواف مع .input-xs-inline
+           وكبّرنا حقل الجرعة لهدف لمس أوضح، ونقلنا الفواصل بين الحقول لكلاس بدل margin-inline-end متكرر يدويًا. ============ */
+        .water-sched-field-name {
+            width: 110px;
+            padding: 6px;
+            border: 1.5px solid var(--line);
+            border-radius: 8px;
+            font-size: var(--fs-xs);
+            margin-inline-end: var(--space-2);
+        }
+        .water-sched-field-num {
+            width: 64px;
+            padding: 6px;
+            border: 1.5px solid var(--line);
+            border-radius: 8px;
+            font-size: var(--fs-xs);
+            margin-inline-end: var(--space-2);
+        }
+        .water-sched-field-select {
+            width: auto;
+            padding: 6px;
+            border: 1.5px solid var(--line);
+            border-radius: 8px;
+            font-size: var(--fs-xs);
+        }
+        /* ============ تحسين UX (تبويب العلف، خطوة 3): جدول أيام التحويل (5 أعمدة داخل scroll-x أفقي)
+           كان بيحتاج سحب يمين/شمال على شاشة موبايل ضيقة عشان تشوف كل الأعمدة — نفس مشكلة جدول
+           طاقة المجزر اللي اتحلّت قبل كده فى تبويب التوسع (capacity-round-card). الحل هنا مطابق:
+           نفس البيانات بالظبط، بس كارت واحد لكل يوم تحويل بدل صف فى جدول، والقيم بتتلف تلقائيًا. ============ */
+        .ftd-row {
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--line);
+        }
+        .ftd-row:last-child { border-bottom: none; }
+        .ftd-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: var(--space-2);
+            margin-bottom: 6px;
+        }
+        .ftd-day { font-size: var(--fs-sm); font-weight: 800; color: var(--barn-dark); }
+        .ftd-age { font-size: var(--fs-xs); color: var(--muted); }
+        .ftd-pct-line {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+        .ftd-pct-input { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); }
+        .ftd-pct-arrow { color: var(--muted); font-size: var(--fs-xs); }
+        .ftd-pct-fixed { font-size: var(--fs-xs); color: var(--muted); }
+        .ftd-pct-fixed b { color: var(--ink); }
 
         #printableReport {
             display: none;
@@ -6141,7 +6533,7 @@
         // يقدر يتحدّث لوحده من غير هدم تبويب الإعدادات كله — نفس نص الكارت بالظبط زي ما كان قبل الاستخراج) ============
         function renderAccessRequestsListCard() {
             return `<div class="card" style="margin-top:10px;">
-                    <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:8px;">📋 طلبات الدخول ${accessRequestsCache.filter(r=>r.status==='pending').length ? `<span class="pill" style="font-size:10px;background:#fff3cd;color:#997404;">${accessRequestsCache.filter(r=>r.status==='pending').length} جديد</span>` : ''}</label>
+                    <label class="label-strong" style="margin-bottom:8px;">📋 طلبات الدخول ${accessRequestsCache.filter(r=>r.status==='pending').length ? `<span class="pill" style="font-size:10px;background:#fff3cd;color:#997404;">${accessRequestsCache.filter(r=>r.status==='pending').length} جديد</span>` : ''}</label>
                     ${accessRequestsCache.length ? accessRequestsCache.map(r => `
                         <div class="check-row" style="flex-wrap:wrap;">
                             <div class="txt">
@@ -12677,7 +13069,7 @@
             // لأنه اتكتم كتير قبل كده، بدل ما يبقى تصرّف مخفي فى الخوارزمية من غير ما تعرف السبب.
             const fatigueBadge = (a.level === 'warn' && a.dismissCount >= 3)
                 ? `<span style="font-size:9.5px;color:var(--muted);flex-shrink:0;" title="كتمته ${a.dismissCount} مرة قبل كده — بياخد أولوية أقل فى أهم 3 أفعال">🔕×${a.dismissCount}</span>` : '';
-            return `<div class="alert-item ${a.level}" style="display:flex;align-items:center;gap:6px;justify-content:space-between;">
+            return `<div class="alert-item ${a.level}">
                 <span style="flex:1;">${esc(a.text)}</span>
                 ${fatigueBadge}
                 ${actionBtnsHtml}
@@ -12704,7 +13096,7 @@
                 html = `<div class="empty"><div class="ico">✅</div>لا توجد تنبيهات حالية.</div>`;
             }
             if (dismissedToday.length) {
-                html += `<details class="alert-group" style="margin-top:6px;"><summary style="cursor:pointer;padding:8px 10px;font-size:12px;color:var(--muted);">🔕 ${dismissedToday.length} تم كتمها اليوم — اضغط للعرض</summary>${dismissedToday.map(a => `<div class="alert-item ${a.level}" style="opacity:.6;display:flex;align-items:center;gap:6px;justify-content:space-between;"><span style="flex:1;">${esc(a.text)}</span><button class="btn ghost xs" style="flex-shrink:0;" onclick="undismissAlert('${jsOnclickArg(a.key)}')">↩️ إظهار</button></div>`).join('')}</details>`;
+                html += `<details class="alert-group" style="margin-top:6px;"><summary style="cursor:pointer;padding:8px 10px;font-size:12px;color:var(--muted);">🔕 ${dismissedToday.length} تم كتمها اليوم — اضغط للعرض</summary>${dismissedToday.map(a => `<div class="alert-item ${a.level}" style="opacity:.6;"><span style="flex:1;">${esc(a.text)}</span><button class="btn ghost xs" style="flex-shrink:0;" onclick="undismissAlert('${jsOnclickArg(a.key)}')">↩️ إظهار</button></div>`).join('')}</details>`;
             }
             return html;
         }
@@ -14631,6 +15023,17 @@
             render();
             showToast('✅ تم حفظ برنامج مراحل العلف لهذه الدفعة');
         }
+        // ============ تحسين UX (تبويب العلف، خطوة 2): كارت "المرحلة الحالية" وكارت "تعديل الكميات"
+        // كانا كارتين منفصلين لنفس البيانات (عرض + تعديل) يتحطوا فوق بعض دايمًا. دلوقتي التعديل
+        // مطوي جوه نفس الكارت خلف زرار كشف، بنفس نمط revealFeedItemNight المستخدم فى السجل اليومي. ============
+        function toggleFeedStageEdit() {
+            const wrap = document.getElementById('feedStageEditWrap');
+            const btn = document.getElementById('feedStageEditToggleBtn');
+            if (!wrap || !btn) return;
+            const willShow = wrap.style.display === 'none';
+            wrap.style.display = willShow ? 'block' : 'none';
+            btn.textContent = willShow ? '▲ إخفاء التعديل' : '✏️ تعديل كميات المراحل';
+        }
 
         function getFeedStageInfo(b, m) {
             if (!m || !(m.cumFeed > 0)) return null;
@@ -14711,13 +15114,13 @@
         function renderExpirySection(b) {
             const rows = computeExpiryAlerts(b);
             if (!rows.length) return '';
-            return `<div class="section" style="margin-top:0;"><div class="section-head"><h2>⏳ صلاحية اللقاحات/الأدوية</h2></div>
-                <div class="card" style="padding:0;">
+            return `<div class="section mt-0"><div class="section-head"><h2>⏳ صلاحية اللقاحات/الأدوية</h2></div>
+                <div class="card p-0">
                     ${rows.map(r => `<div class="check-row"><div class="txt">
                         <div class="u-02">${esc(r.name)}</div>
                         <div class="day">الرصيد: ${fmt(r.balance,1)} ${r.unit} · صلاحية حتى ${r.expiryDate}</div>
                     </div>
-                    <span class="pill ${r.level==='expired'?'bad':'warn'}" style="font-size:11px;">${r.level==='expired' ? `منتهي منذ ${Math.abs(r.daysLeft)} يوم` : `متبقٍ ${r.daysLeft} يوم`}</span></div>`).join('')}
+                    <span class="pill ${r.level==='expired'?'bad':'warn'} fs-xs">${r.level==='expired' ? `منتهي منذ ${Math.abs(r.daysLeft)} يوم` : `متبقٍ ${r.daysLeft} يوم`}</span></div>`).join('')}
                 </div>
             </div>`;
         }
@@ -15697,18 +16100,25 @@
             // ده الفرق الجوهري بين النظام الهجين ده وأي نظام من الاتنين لوحده: نظام الحالة الآنية وحده كان
             // ممكن يقول "🟢 ممتازة" مع إن فيه 3-4 إشارات إحصائية بتلمّح لمشكلة قادمة خلال أيام — والعكس، نظام
             // التوقّع وحده كان بيدي رقم "خطورة" من غير ما يوضّح إن الحالة الفعلية دلوقتي كويسة. هنا بنقول الاتنين مع بعض.
-            let label, color;
+            // ============ تحسين UX: فصل "label" (شارة قصيرة تتحط فى badge/tag) عن "detail" (جملة شرح
+            // كاملة تُعرض بوزن خط عادي تحت الشارة، مش جوه نفس كلاس .label اللي مصمَّم لكلمتين بولد).
+            // نفس منطق القرار (الشروط والترتيب) زي ما هو بالظبط — التغيير بصري/عرضي بس. ============
+            let label, detail, color;
             const highMismatch = score >= 65 && riskLevel === 'danger';
             const midMismatch = score >= 65 && riskLevel === 'warn';
-            if (score >= 85 && riskLevel === 'ok') { label = '🟢 ممتازة'; color = 'var(--green)'; }
-            else if (highMismatch) { label = '🟠 الوضع الحالي مستقر ظاهريًا، لكن مؤشرات إحصائية قوية بتنذر بمشكلة قادمة — تدخّل الآن أرخص من علاجها لاحقًا'; color = '#e08a2b'; }
-            else if (score >= 85) { label = '🟢 ممتازة، مع مراقبة إشارات مبكرة متوسطة'; color = 'var(--green)'; }
-            else if (midMismatch) { label = '🟡 جيدة حاليًا، لكن فيه إشارات مبكرة متوسطة تستاهل المتابعة'; color = 'var(--warning-text)'; }
-            else if (score >= 65) { label = '🟡 جيدة، تحتاج انتباه بسيط'; color = 'var(--warning-text)'; }
-            else if (score >= 45) { label = riskLevel === 'danger' ? '🟠 تحتاج متابعة عاجلة — ومؤشرات إحصائية بتؤكد وجود مخاطرة حقيقية قادمة' : '🟠 تحتاج متابعة عاجلة'; color = '#e08a2b'; }
-            else { label = '🔴 حرجة — تدخّل فوري'; color = 'var(--red)'; }
+            if (score >= 85 && riskLevel === 'ok') { label = '🟢 ممتازة'; detail = null; color = 'var(--green)'; }
+            else if (highMismatch) { label = '🟠 استقرار ظاهري — إنذار مبكر قوي'; detail = 'الوضع الحالي مستقر ظاهريًا، لكن مؤشرات إحصائية قوية بتنذر بمشكلة قادمة — تدخّل الآن أرخص من علاجها لاحقًا.'; color = 'var(--caution-text)'; }
+            else if (score >= 85) { label = '🟢 ممتازة، مع مراقبة إشارات مبكرة متوسطة'; detail = null; color = 'var(--green)'; }
+            else if (midMismatch) { label = '🟡 جيدة حاليًا — إنذار مبكر متوسط'; detail = 'فيه إشارات مبكرة متوسطة تستاهل المتابعة رغم إن الوضع الحالي جيد.'; color = 'var(--warning-text)'; }
+            else if (score >= 65) { label = '🟡 جيدة، تحتاج انتباه بسيط'; detail = null; color = 'var(--warning-text)'; }
+            else if (score >= 45) {
+                if (riskLevel === 'danger') { label = '🟠 متابعة عاجلة — خطورة مؤكدة'; detail = 'مؤشرات إحصائية بتؤكد وجود مخاطرة حقيقية قادمة.'; }
+                else { label = '🟠 تحتاج متابعة عاجلة'; detail = null; }
+                color = 'var(--caution-text)';
+            }
+            else { label = '🔴 حرجة — تدخّل فوري'; detail = null; color = 'var(--red)'; }
             factors.sort((a, c) => c.weight - a.weight);
-            return { score, label, color, dangerCount, warnCount, factors: factors.slice(0, 3), riskLevel, riskReasons };
+            return { score, label, detail, color, dangerCount, warnCount, factors: factors.slice(0, 3), riskLevel, riskReasons };
         }
 
         // ============ محرك القرار الموحّد: كل الإشارات (🌱 إنتاج + 💰 مالية + 🛡️ تشغيل + 🌡️ بيئة/طقس) فى مكان واحد ============
@@ -16026,9 +16436,15 @@
             // مع إن توقع الربح أصلاً محسوب من نفس بيانات قرار البيع (osd)، فكان عرضهم منفصلين مربك. دلوقتي
             // بيتحسب هنا قبل بناء كارت قرار البيع عشان يتدمجوا فى كارت واحد.
             const liveProfit = computeLiveProfitForecast(b, m, fin, saleAdv);
+            // ⚠️ إصلاح تباين: كارت قرار البيع خلفيته غامقة *ثابتة* دايمًا (مش بتتأثر بالوضع الليلي/النهاري
+            // — نفس مبدأ --hero-ink فوق)، لكن كان بيستخدم var(--green) لتلوين الربح الموجب، وهو متغير
+            // بيتغيّر مع الثيم: فى الوضع النهاري قيمته أخضر غامق (#2C7A4B) بيدّي تباين ~2.7:1 بس على
+            // خلفية الكارت الغامقة (فاشل تمامًا)، وكان شغّال بالصدفة بس فى الوضع الليلي (#4FAE73، ~5.1:1).
+            // الحالة السلبية أصلاً كانت متعاملة صح بلون ثابت hardcoded (#F09088) بغض النظر عن الثيم —
+            // نفس المنطق اتطبّق هنا: لون أخضر ثابت (نفس قيمة الوضع الليلي المُختبرة) بدل المتغير. ============
             const heroProfitLineHtml = !liveProfit ? '' : `<div class="profit-line">
                     <span class="profit-label">💹 الربح المتوقع حتى وقت البيع</span>
-                    <span class="profit-value" style="color:${liveProfit.projectedProfit>=0?'var(--green)':'#F09088'};">${money(liveProfit.projectedProfit)}<small> (${money(liveProfit.projectedProfitPerBird)}/طائر)</small></span>
+                    <span class="profit-value" style="color:${liveProfit.projectedProfit>=0?'#4FAE73':'#F09088'};">${money(liveProfit.projectedProfit)}<small> (${money(liveProfit.projectedProfitPerBird)}/طائر)</small></span>
                 </div>`;
             // ============ 🎨 كارت قرار البيع + توقع الربح الحي البارز (خارج الأكورديون) — كارت واحد مدموج، نفس بيانات saleHtml/liveProfitHtml تحت لكن بواجهة مميزة لأنه أهم قرار عملي يومي ============
             const saleDecisionCardHtml = !saleAdv.osd ? '' : `
@@ -16039,7 +16455,7 @@
                 </div>
                 ${saleAdv.osd.limitingFactor==='density'?'<div class="warn-line">⚠️ بسبب الكثافة/المساحة، قبل الحد الاقتصادي</div>':''}
                 <div class="advice-line">${saleAdv.adviceIcon} ${saleAdv.advice}</div>
-                ${thinAdv ? `<div class="advice-line mt-2">🔀 بدل ما تبيع الدفعة كلها: خفّف <b>${fmt(thinAdv.thinCount,0)}</b> طائر دلوقتي (${money(thinAdv.thinRevenueNow)}) وسيب الباقي (${fmt(thinAdv.remainingBirds,0)} طائر) يكمل لغاية يوم ${thinAdv.economicOptimalDay} — أرباح إضافية تقديرية ~<b style="color:var(--green);">${money(thinAdv.extendedProfit)}</b> مقارنة ببيع القطيع بالكامل دلوقتي</div>` : ''}
+                ${thinAdv ? `<div class="advice-line mt-2">🔀 بدل ما تبيع الدفعة كلها: خفّف <b>${fmt(thinAdv.thinCount,0)}</b> طائر دلوقتي (${money(thinAdv.thinRevenueNow)}) وسيب الباقي (${fmt(thinAdv.remainingBirds,0)} طائر) يكمل لغاية يوم ${thinAdv.economicOptimalDay} — أرباح إضافية تقديرية ~<b style="color:#4FAE73;">${money(thinAdv.extendedProfit)}</b> مقارنة ببيع القطيع بالكامل دلوقتي</div>` : ''}
                 ${heroProfitLineHtml}
                 <div class="meta-line">مبني على سعر بورصة ${fmt(saleAdv.priceForCalc,2)} ج/كجم${saleAdv.osd.priceSource==='market'?' (مُدخَل يدويًا)':' (من متوسط مبيعات سابقة)'} · ${saleAdv.osd.weightDataPoints} وزنة فعلية ${confBadgeHtml(saleAdv.osd.weightDataPoints, {low:2, mid:4})}</div>
             </div>`;
@@ -16483,8 +16899,8 @@
             const totalInsights = ['forecast','performance','benchmark'].filter(k => !hiddenInsightGroups.includes(k))
                 .reduce((s, k) => s + ({forecast: groupForecastArr, performance: groupPerformanceArr, benchmark: groupBenchmarkArr}[k].length), 0);
             const insightsSection = !totalInsights ? '' : `<div class="section" id="smartInsightsSection"><div class="section-head"><h2>🔬 تحليلات ذكية</h2></div>
-                <p style="font-size:11px;color:var(--muted);margin:-4px 2px 8px;">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فوق فى "⚠️ يحتاج متابعتك الآن".</p>
-                <div class="card" style="padding:0;overflow:hidden;">
+                <p class="insights-note-top">دي تحليلات لفهم الاتجاه العام والتخطيط — مش تنبيهات عاجلة. لو فيه حاجة محتاجة تتصرف فيها دلوقتي، هتلاقيها فوق فى "⚠️ يحتاج متابعتك الآن".</p>
+                <div class="card p-0 overflow-hidden">
                     ${insightGroup('forecast', 'توقعات', '🔮', 'أرقام متوقعة لو استمر الوضع الحالي (وزن البيع، EPEF، سعر البيع الأمثل)', groupForecastArr, true)}
                     ${insightGroup('performance', 'أداء وكفاءة', '📊', 'تحليل وصفي لأداء الدورة الحالية (تكلفة، تجانس، أثر الإضافات)', groupPerformanceArr, false)}
                     ${insightGroup('benchmark', 'مقارنات ومعايير', '🌍', 'مقارنة بدوراتك السابقة والمعايير العالمية للسلالة', groupBenchmarkArr, false)}
@@ -16498,9 +16914,9 @@
             <div class="section mt-0"><div class="section-head"><h2>🏘️ نظرة عامة على كل الدفعات/العنابر النشطة</h2></div>
                 <div class="card p-0">
                     ${housesComparison.map(x => {
-                        return `<div class="check-row" style="${x.isActive?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}cursor:pointer;" onclick="selectBatch('${x.id}')">
+                        return `<div class="check-row cursor-pointer ${x.isActive?'is-active-house':''}" onclick="selectBatch('${x.id}')">
                             <div class="txt">
-                                <div class="u-02">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''} ${x.isActive?'<span class="pill ok" style="font-size:10px;">الحالية</span>':''}</div>
+                                <div class="u-02">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''} ${x.isActive?'<span class="pill ok fs-2xs">الحالية</span>':''}</div>
                                 <div class="day">يوم ${x.age} · ${fmt(x.liveCount,0)} طائر (${fmt(x.liveCountPct,1)}%) · نفوق ${fmt(x.mortRate,2)}% · FCR ${x.fcr?fmt(x.fcr,2):'—'}${x.devPct!=null?` · ${x.devPct>=0?'+':''}${fmt(x.devPct,1)}% عن المعياري`:''}</div>
                             </div>
                         </div>`;
@@ -16517,7 +16933,7 @@
                     const estLive = m.liveCount * share;
                     const estDensity = (h.area > 0) ? (estLive * m.avgWeightG / 1000) / h.area : null;
                     return `<div class="check-row"><div class="txt">
-                            <div style="font-weight:700;">🏠 ${esc(h.name)}</div>
+                            <div class="fw-700">🏠 ${esc(h.name)}</div>
                             <div class="day">${fmt(h.count||0,0)} طائر بداية (${fmt(share*100,0)}% من الدفعة) · مساحة ${fmt(h.area||0,0)} م² ${estDensity!=null?`· كثافة تقديرية ${fmt(estDensity,1)} كجم/م²`:''}</div>
                         </div></div>`;
                 }).join('');
@@ -16549,23 +16965,23 @@
             };
             const prioritiesSection = !heroPick ? '' : `
             <div class="hero-priority">
-                <div class="eyebrow"><span>🎯 أهم فعل عليك اتخاذه الآن</span> ${unified.top3.length > 1 ? `<span style="font-size:var(--fs-2xs);font-weight:700;color:var(--muted);">(${unified.top3.length} بند يحتاج تنفيذ الآن)</span>` : ''}</div>
+                <div class="eyebrow"><span>🎯 أهم فعل عليك اتخاذه الآن</span> ${unified.top3.length > 1 ? `<span class="eyebrow-count">(${unified.top3.length} بند يحتاج تنفيذ الآن)</span>` : ''}</div>
                 <div class="lead-meta">
                     <span class="badge-domain badge-domain-${heroPick.domain}">${heroPick.icon} ${unified.domainLabels[heroPick.domain]}</span>
                     <span class="badge-urgency ${urgencyClass[heroPick.urgency]}">⏱️ ${heroPick.urgency}</span>
                 </div>
                 <div class="lead-text">${esc(heroPick.text)}</div>
-                ${heroPick.recurringNote ? `<div style="font-size:var(--fs-xs);color:#b8860b;font-weight:700;margin-top:4px;">${esc(heroPick.recurringNote)}</div>` : ''}
+                ${heroPick.recurringNote ? `<div class="recurring-note">${esc(heroPick.recurringNote)}</div>` : ''}
                 ${actionBtnHtml(heroPick.action)}
                 ${restPicks.length ? `<div class="rest-list">
-                    ${restPicks.map((p, i) => `<div class="rest-row" style="flex-wrap:wrap;">
+                    ${restPicks.map((p, i) => `<div class="rest-row">
                         <b>${i+2}.</b>
-                        <span class="badge-domain badge-domain-${p.domain}" style="flex-shrink:0;">${p.icon}</span>
-                        <span>${esc(p.text)} <span class="badge-urgency ${urgencyClass[p.urgency]}" style="margin-inline-start:4px;">${p.urgency}</span></span>
-                        ${p.action ? (() => { const idx = registerKatkotAction(p.action); return `<button type="button" class="btn ghost xs" style="margin-inline-start:auto;" onclick="event.stopPropagation();runKatkotAction(${idx})">${esc(p.action.label || '⚡ نفّذ')}</button>`; })() : ''}
+                        <span class="badge-domain badge-domain-${p.domain}">${p.icon}</span>
+                        <span>${esc(p.text)} <span class="badge-urgency ${urgencyClass[p.urgency]}">${p.urgency}</span></span>
+                        ${p.action ? (() => { const idx = registerKatkotAction(p.action); return `<button type="button" class="btn ghost xs" onclick="event.stopPropagation();runKatkotAction(${idx})">${esc(p.action.label || '⚡ نفّذ')}</button>`; })() : ''}
                     </div>`).join('')}
                 </div>` : ''}
-                <p style="font-size:var(--fs-2xs);color:var(--muted);margin:var(--space-2) 0 0;">💡 مجمّعة من كل بيانات الدفعة (إنتاج/مالية/تشغيل/بيئة) ومرتبة بالأولوية، وعددها يتغيّر حسب خطورة الوضع فعليًا — راجعها أول حاجة كل يوم.</p>
+                <p class="hero-priority-note">💡 مجمّعة من كل بيانات الدفعة (إنتاج/مالية/تشغيل/بيئة) ومرتبة بالأولوية، وعددها يتغيّر حسب خطورة الوضع فعليًا — راجعها أول حاجة كل يوم.</p>
             </div>`;
             // ============ إعادة هيكلة 2026: قسم واحد موحّد بدل 3 أماكن منفصلة كانت بتعرض "حاجة عاجلة" ============
             // (كان فيه: hero-priority + accordion "يحتاج انتباه الآن" جوه تحليلات ذكية + accordion منفصل
@@ -16574,20 +16990,20 @@
             // بالكامل من غير طي (مش accordion) لأنه محتوى عاجل، مش تفصيلة تتقفل.
             const allAlertsHtml = renderAlertsList(alerts);
             const attentionInsightsHtml = groupAttentionArr.length
-                ? `<div style="margin-top:${allAlertsHtml.includes('لا توجد تنبيهات') ? '0' : '4px'};">${groupAttentionArr.join('')}</div>` : '';
+                ? `<div class="${allAlertsHtml.includes('لا توجد تنبيهات') ? '' : 'attention-insights-gap'}">${groupAttentionArr.join('')}</div>` : '';
             const totalAttentionCount = alerts.filter(a => !a.dismissed).length + groupAttentionArr.length;
             const unifiedAttentionSection = (!totalAttentionCount && !attentionInsightsHtml) ? `
-            <div class="section mt-0"><div class="card" style="padding:14px;text-align:center;color:var(--muted);font-size:13px;">
+            <div class="section mt-0"><div class="card all-clear-note">
                 ✅ مفيش حاجة محتاجة متابعتك دلوقتي
             </div></div>` : `
             <div class="section mt-0">
                 <div class="section-head"><h2>⚠️ يحتاج متابعتك الآن</h2></div>
-                <p style="font-size:10.5px;color:var(--muted);margin:-4px 2px 8px;">
+                <p class="attention-section-note">
                     🔕 <b>تأجيل</b> = بيخفي البطاقة لحد بكرة بس، مش معناها إنك حليت المشكلة. الزرار الدهبي = فعل حقيقي بيتسجّل فعليًا.
                     لو محتاج تفهم الاتجاه العام/التوقعات المبنية على اللي هنا، هتلاقيها فى "🔬 تحليلات ذكية" تحت.
                 </p>
-                <div class="card" style="padding:10px 12px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div class="card">
+                    <div class="attention-card-head">
                         <span class="tag">${totalAttentionCount} بند</span>
                         <button class="btn ghost xs" onclick="showAlertHistoryModal()">📜 السجل التاريخي</button>
                     </div>
@@ -16599,15 +17015,32 @@
             <div class="card-accent">
                 <div class="accent-label">📊 بورصة اليوم (ج/كجم حي)</div>
                 <input id="dashMarketPriceInput_${b.id}" type="number" step="0.05" min="0" placeholder="مثال: 47.5"
-                    value="${getLatestMarketPrice(b) != null ? getLatestMarketPrice(b) : ''}" style="flex:1;min-width:90px;">
+                    value="${getLatestMarketPrice(b) != null ? getLatestMarketPrice(b) : ''}" class="accent-input">
                 <button class="btn gold sm owner-only" onclick="updateMarketPriceFromDashboard('${b.id}')">💾 حفظ</button>
             </div>`;
             const healthScoreCardHtml = `
-            <div class="health-score-card" style="border-color:${hs.color};">
+            <div class="health-score-card" style="--hsc-color:${hs.color};">
                 <div class="caption">🩺 حالة الدفعة الشاملة (آنية + مقارنة + استباقية)${glossHtml('healthScore')}</div>
-                <div class="score" style="color:${hs.color};">${hs.score}<small>/100</small></div>
-                <div class="label" style="color:${hs.color};">${hs.label}</div>
-                ${hs.factors.length ? `<div class="factors">${hs.factors.map(f => `• ${f.label}`).join('<br>')}</div>` : ''}
+                ${(() => {
+                    // ============ Gauge دائري: نفس رقم hs.score بالظبط، بس بغلاف بصري (محيط دائرة r=42 ≈ 263.9)
+                    // بيدّي انطباع "الامتلاء" بلمحة واحدة بدل قراءة رقمين وتقدير النسبة ذهنيًا. ============
+                    const C = 263.9;
+                    const fillLen = (Math.max(0, Math.min(100, hs.score)) / 100) * C;
+                    return `<div class="hsc-score-wrap">
+                        <svg viewBox="0 0 100 100" class="hsc-gauge" aria-hidden="true">
+                            <circle cx="50" cy="50" r="42" class="hsc-gauge-track"></circle>
+                            <circle cx="50" cy="50" r="42" class="hsc-gauge-fill" style="stroke-dasharray:${fillLen.toFixed(1)} ${C};"></circle>
+                        </svg>
+                        <div class="score">${hs.score}<small>/100</small></div>
+                    </div>`;
+                })()}
+                <div class="label">${hs.label}</div>
+                ${hs.detail ? `<div class="hsc-state-detail">${hs.detail}</div>` : ''}
+                ${hs.factors.length ? `<div class="factors">${hs.factors.map(f => {
+                    const sev = f.weight >= 15 ? 'high' : (f.weight >= 7 ? 'mid' : 'low');
+                    return `<div class="hsc-factor-row"><span class="hsc-factor-dot ${sev}"></span><span>${f.label}</span></div>`;
+                }).join('')}</div>
+                <div class="hsc-factor-legend"><span class="hsc-factor-dot high"></span>تأثير كبير<span class="hsc-factor-dot mid"></span>متوسط<span class="hsc-factor-dot low"></span>بسيط</div>` : ''}
                 ${(() => {
                     // ============ نظام هجين موحّد: الترتيب مقابل تاريخك (كان كارت "🏅 مؤشر أداء الدورة" منفصل) بقى
                     // شريط مضمّن هنا — نفس الإشارات (نفوق/FCR/وزن) اللي درجة الصحة فوق مبنية عليها، بس بمنظور
@@ -16620,15 +17053,15 @@
                         const c = x.pct >= 70 ? 'var(--green)' : (x.pct >= 40 ? 'var(--warning-text)' : 'var(--red)');
                         return statLine(`${x.label}`, `${x.pct}%`, {vStyle:`color:${c};font-weight:700;`});
                     }).join('');
-                    return `<details style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;">
-                        <summary style="cursor:pointer;font-size:var(--fs-xs);font-weight:800;color:${scoreColor};">📊 مقارنة بتاريخك: <b>${perfRank.score}/100</b> — ${rankWord} ${confBadgeHtml(perfRank.sampleSize)}</summary>
+                    return `<div class="hsc-subsection">
+                        <div class="hsc-rank-summary" style="color:${scoreColor};">📊 مقارنة بتاريخك: <b>${perfRank.score}/100</b> — ${rankWord} ${confBadgeHtml(perfRank.sampleSize)}</div>
                         <div class="mt-2">${rowsHtml}</div>
-                        ${perfRank.absolute ? `<div style="margin-top:6px;font-size:var(--fs-2xs);">
-                            <div style="font-weight:800;color:var(--muted);">📏 مرجع مطلق مستقل (معيار السلالة القياسي يوم ${perfRank.absolute.atAge}، مش تاريخك انت)</div>
+                        ${perfRank.absolute ? `<div class="hsc-mini-block">
+                            <div class="hsc-mini-title">📏 مرجع مطلق مستقل (معيار السلالة القياسي يوم ${perfRank.absolute.atAge}، مش تاريخك انت)</div>
                             ${statLine(`معدل التحويل مقابل المعيار القياسي`, `${perfRank.absolute.fcrDiffPct==null?'—':(perfRank.absolute.fcrDiffPct>=0?'+':'')+fmt(perfRank.absolute.fcrDiffPct,1)+'%'}`, {vStyle:`font-weight:700;color:${perfRank.absolute.fcrDiffPct==null?'var(--muted)':(perfRank.absolute.fcrDiffPct<=0?'var(--green)':'var(--red)')};`})}
                         </div>` : ''}
-                        <div style="margin-top:4px;font-size:9.5px;color:var(--muted);">النسبة = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ترتيب نسبي مقابل نفسك، مش مقياس عالمي.</div>
-                    </details>`;
+                        <div class="hsc-fine-print">النسبة = كام % من دوراتك السابقة (لنفس النوع) الدورة الحالية "أحسن" منها فيه — ترتيب نسبي مقابل نفسك، مش مقياس عالمي.</div>
+                    </div>`;
                 })()}
                 ${(() => {
                     // ============ نظام هجين موحّد: توقعات نهاية الدورة (FCR/الوزن) بقت هنا كملخص سريع، مش مدفونة
@@ -16646,9 +17079,9 @@
                         const c = fp.diffPct <= 0 ? 'var(--green)' : 'var(--red)';
                         rows.push(`<div>🌾 الـFCR المتوقع يوم ${fp.targetAge}: <b>${fmt(fp.predictedFcr,2)}</b> <span style="color:${c};font-weight:700;">(${fp.diffPct>=0?'+':''}${fmt(fp.diffPct,1)}% عن المعيار)</span></div>`);
                     }
-                    return `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;">
-                        <div style="font-size:var(--fs-xs);font-weight:800;color:var(--barn-dark);">🔮 توقعات نهاية الدورة (لو استمر الأداء الحالي)</div>
-                        <div style="margin-top:4px;font-size:var(--fs-2xs);line-height:1.9;">${rows.join('')}</div>
+                    return `<div class="hsc-subsection">
+                        <div class="hsc-subsection-title">🔮 توقعات نهاية الدورة (لو استمر الأداء الحالي)</div>
+                        <div class="hsc-sub-rows lh-loose">${rows.join('')}</div>
                     </div>`;
                 })()}
                 ${(() => {
@@ -16661,17 +17094,14 @@
                     const countWord = hs.riskReasons.length === 1 ? 'إشارة تحذيرية واحدة نشطة' : `${hs.riskReasons.length} إشارات تحذيرية نشطة مجتمعة`;
                     const reasonsHtml = hs.riskReasons.map(r => {
                         const btn = r.action ? (() => { const idx = registerKatkotAction(r.action);
-                            return `<button type="button" class="btn gold xs" style="margin-inline-start:6px;flex-shrink:0;" onclick="runKatkotAction(${idx})">${esc(r.action.label || '⚡ نفّذ')}</button>`; })() : '';
-                        return `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:3px 0;"><span class="flex-1">• ${esc(r.text)}</span>${btn}</div>`;
+                            return `<button type="button" class="btn gold xs" onclick="runKatkotAction(${idx})">${esc(r.action.label || '⚡ نفّذ')}</button>`; })() : '';
+                        return `<div class="hsc-risk-row ${hs.riskLevel === 'danger' ? 'danger' : 'warn'}"><span class="flex-1">${esc(r.text)}</span>${btn}</div>`;
                     }).join('');
-                    return `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;">
-                        <div style="font-size:var(--fs-xs);font-weight:800;color:${sevColor};">🧭 احتمالية مشكلة قادمة: ${sevWord} — ${countWord}</div>
-                        <div style="margin-top:4px;font-size:var(--fs-2xs);">${reasonsHtml}</div>
+                    return `<div class="hsc-subsection">
+                        <div class="hsc-subsection-title" style="color:${sevColor};">🧭 احتمالية مشكلة قادمة: ${sevWord} — ${countWord}</div>
+                        <div class="hsc-sub-rows">${reasonsHtml}</div>
                     </div>`;
                 })()}
-                <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5ddc8;font-size:9.5px;color:var(--muted);line-height:1.7;">
-                    💡 الكارت ده بيجمع 4 زوايا لنفس القصة: <b>الدرجة</b> (الوضع دلوقتي) + <b>الترتيب</b> (مقابل تاريخك) + <b>التوقع</b> (لو استمر كده لآخر الدورة) + <b>احتمالية مشكلة قادمة</b> (إشارات مبكرة). "🎯 أهم فعل عليك اتخاذه الآن" فوق مبني على نفس المصادر دي بالظبط، و"⚠️ يحتاج متابعتك الآن" تحت بيوريك التفاصيل الكاملة وراها.
-                </div>
             </div>`;
             // ============ 🔧 ترتيب الداشبورد (بطلب أحمد): الأقسام دي بقت أول حاجة تظهر ومفتوحة دايمًا —
             // الطقس ← سعر اللحم (بورصة اليوم) ← كروت المؤشرات الرئيسية ← المخزون ← قرار البيع.
@@ -16693,12 +17123,24 @@
             <div class="kpi-grid-primary">
                 <div class="kpi"><div class="lbl">📅 عمر القطيع</div><div class="val">${m.todayAge} <small>يوم</small></div></div>
                 <div class="kpi ${m.liveCountPct < 95 ? 'warn' : 'good'}"><div class="lbl">🐔 الأعداد الحية</div><div class="val">${fmt(m.liveCount, 0)} <small>(${fmt(m.liveCountPct, 1)}%)</small></div></div>
-                <div class="kpi ${m.mortRate > 5 ? 'warn' : ''}"><div class="lbl">💀 نسبة النفوق التراكمية${glossHtml('mortRate')}</div><div class="val">${fmt(m.mortRate, 2)}%</div></div>
+                <div class="kpi ${m.mortRate > 5 ? 'warn' : 'good'}"><div class="lbl">💀 نسبة النفوق التراكمية${glossHtml('mortRate')}</div><div class="val">${fmt(m.mortRate, 2)}%</div></div>
                 <div class="kpi"><div class="lbl">⚖️ متوسط الوزن الحالي</div><div class="val">${m.avgWeightIsEstimated ? '~' : ''}${fmt(m.avgWeightG, 0)} <small>جم</small></div>${m.avgWeightIsEstimated ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;">تقديري — آخر وزن فعلي يوم ${m.lastWeighed ? m.lastWeighed.age : 0}</div>` : ''}</div>
             </div>
             <div class="kpi-grid">
                 <div class="kpi ${m.weightDiffPct < -5 ? 'warn' : 'good'}"><div class="lbl">📈 الانحراف عن المعيار</div><div class="val">${m.weightDiffPct >= 0 ? '+' : ''}${fmt(m.weightDiffPct, 1)}%</div></div>
                 <div class="kpi"><div class="lbl">🌾 إجمالي العلف المستهلك</div><div class="val">${fmt(m.cumFeed, 0)} <small>كجم</small></div></div>
+                ${(() => {
+                    // ============ 🆕 كارت جديد: استهلاك العلف لكل فرخ (تراكمي منذ بداية الدورة) ============
+                    // مكمّل لكارت "إجمالي العلف المستهلك" جنبه — الإجمالي مفيد لمتابعة المخزون، وده مفيد
+                    // لمتابعة كفاءة الاستهلاك على مستوى الطائر الواحد بدون ما تحسبها يدويًا (إجمالي العلف ÷
+                    // الأعداد الحية الآن، بنفس منطق حساب feedPerBird فى أماكن تانية بالملف — بس هنا تراكمي
+                    // للدورة كلها مش قراءة يوم واحد، فعرضناه بالكيلوجرام مش بالجرام، اتساقًا مع نفس التفرقة
+                    // المستخدمة أصلاً فى hist.avgFeedKgPerBird (تراكمي=كجم) مقابل feedPerBird فى تحليل
+                    // الإجهاد اليومي (يومي=جرام). محايد بدون warn/good لأن مفيش حد مطلق عالمي واحد يصلح
+                    // لكل الأعمار — المقارنة الأدق (بمنحنى السلالة) موجودة أصلاً فى FCR وتوقع العلف. ============
+                    const feedPerBirdKg = m.liveCount > 0 ? m.cumFeed / m.liveCount : null;
+                    return `<div class="kpi"><div class="lbl">🐔🌾 استهلاك العلف لكل فرخ${glossHtml('feedPerBird')}</div><div class="val">${feedPerBirdKg != null ? fmt(feedPerBirdKg, 2) : '—'} <small>كجم</small></div></div>`;
+                })()}
                 <div class="kpi ${m.fcr && (m.fcr > 2.2 || m.fcr <= 0) ? 'warn' : 'good'}"><div class="lbl">🧮 معامل التحويل FCR${glossHtml('fcr')}</div><div class="val">${m.fcr ? (m.avgWeightIsEstimated ? '~' : '') + fmt(m.fcr, 2) : '—'}</div></div>
                 <div class="kpi ${m.epef < 300 ? 'warn' : 'good'}"><div class="lbl">🏆 كفاءة الأداء EPEF${glossHtml('epef')}</div><div class="val">${m.epef ? (m.avgWeightIsEstimated ? '~' : '') + fmt(m.epef, 0) : '—'}</div></div>
                 <div class="kpi"><div class="lbl">📊 معدل الزيادة اليومي ADG${glossHtml('adg')}</div><div class="val">${fmt(m.adg, 1)} <small>جم/يوم</small></div></div>
@@ -16708,7 +17150,10 @@
                 ${b.area > 0 ? (() => {
                     const maxD = getMaxSafeDensity(b);
                     const pct = maxD > 0 ? (m.density / maxD) * 100 : 0;
-                    const kpiClass = pct >= 100 ? 'warn' : (pct >= 85 ? 'warn' : 'good');
+                    // ⚙️ تبسيط: كان الشرط pct>=100 ? 'warn' : (pct>=85 ? 'warn' : 'good') — الفرعان
+                    // بيرجّعوا نفس النتيجة 'warn' فعليًا (حد الإنذار المبكر 85% أصلاً بيغطي حد الخطورة 100%)،
+                    // فمفيش داعي لفرعين منفصلين بنفس المخرج. نفس السلوك بالظبط، كود أقصر.
+                    const kpiClass = pct >= 85 ? 'warn' : 'good';
                     return `<div class="kpi ${kpiClass}"><div class="lbl">⚖️ الكثافة الحالية${glossHtml('density')}</div><div class="val">${fmt(m.density, 1)} <small>كجم/م² (حد ${maxD})</small></div></div>`;
                 })() : ''}
                 <div class="kpi ${fin.netProfit < 0 ? 'warn' : 'good'}"><div class="lbl">💰 الربح/الخسارة الحالي</div><div class="val">${fmt(fin.netProfit, 0)} <small>ج</small></div></div>
@@ -16815,9 +17260,9 @@
                 <td class="fs-xs">${(r.notesDay||r.notesNight||r.notes) ? `<div class="cell-clip" style="width:110px;" onclick="showRecordDetail('${r.date}')">📝 ${esc(r.notesDay||r.notesNight||r.notes)}</div>` : '—'}</td>
                 <td><button class="btn ghost sm" onclick="editDailyRecord('${r.date}')">تعديل</button> ${getRecordPhotos(r).length ? `<button class="btn ghost sm" onclick="viewRecordPhotos('${r.date}')">📷 ${getRecordPhotos(r).length}</button>` : ''} <button class="btn danger sm" onclick="deleteRecord('${r.date}')">حذف</button></td></tr>`).join('');
             return quickBtns + `<div class="section mt-0"><div class="section-head"><h2>السجل اليومي (نهار / ليل)</h2><span class="tag">${b.records.length} سجل</span></div>
-                <div class="card" style="padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;">
-                    <input type="text" placeholder="🔍 بحث بالتاريخ أو الملاحظات أو التحليل..." oninput="liveFilterTable(this,'dailyRecordsBody')" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
-                    <span id="dailyRecordsBody_count" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
+                <div class="card daily-search-bar">
+                    <input type="text" placeholder="🔍 بحث بالتاريخ أو الملاحظات أو التحليل..." oninput="liveFilterTable(this,'dailyRecordsBody')" class="daily-search-input">
+                    <span id="dailyRecordsBody_count" class="count-badge-muted"></span>
                 </div>
                 ${renderTableOrEmpty(true, '<th>العمر</th><th>التاريخ</th><th>نفوق ☀️/🌙</th><th>المتبقي</th><th>علف ☀️/🌙</th><th>ماء ☀️/🌙</th><th>وزن</th><th>FCR</th><th>حرارة ☀️/🌙</th><th>رطوبة ☀️/🌙</th><th>صحة</th><th>إضاءة</th><th>تحليل تلقائي</th><th>ملاحظات</th><th></th>', rows, '', '', 'dailyRecordsBody')}
                 <!-- 🔧 دمج: كان الجدول ده متكرر يدويًا زي ما وصفه كومنت renderTableOrEmpty نفسه، بدّلناه بنداء
@@ -16825,7 +17270,7 @@
                 فيها محتوى إضافي متشابك جوه نفس الكارت (ملاحظات/شروحات قبل أو بعد الجدول مباشرة بنفس الـdiv)،
                 فدمجها كان محتاج تعديل توقيع الدالة نفسها (باراميتر style/class إضافي) — سيبتها زي ما هي
                 تفاديًا لأي فرق شكلي، وده قرار محتاج تأكيدك لو حابب أكمله. -->
-                <details class="mt-2"><summary style="font-weight:800;color:var(--barn-dark);cursor:pointer;padding:6px 0;font-size:12.5px;">ℹ️ الصيغ وطريقة التسجيل</summary>
+                <details class="mt-2"><summary class="u-15 fs-sm">ℹ️ الصيغ وطريقة التسجيل</summary>
                 <div class="formula-box">
                     FCR = إجمالي العلف ÷ (الكتلة الحيوية الحالية − الكتلة الحيوية الابتدائية)<br>
                     ADG = (الوزن الحالي − وزن البداية) ÷ عمر القطيع بالأيام<br>
@@ -16852,28 +17297,28 @@
                 const rows = list.map(it => `<div class="check-row"><div class="txt">
                         <div class="u-02">${it.type === 'feed' ? '🌾' : '💧'} ${esc(it.name || '')} — ${fmt(it.qty,2)} ${it.unit}</div>
                         <div class="day">${it.dateTime.replace('T',' الساعة ')} · ${esc(it.reason || '')}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
-                        ${it.note ? `<div style="font-size:11px;color:var(--muted);">${esc(it.note)}</div>` : ''}
+                        ${it.note ? `<div class="text-muted fs-xs">${esc(it.note)}</div>` : ''}
                     </div>
                     <button class="btn danger sm" onclick="deleteQuickIntervention('${it.id}')">حذف</button>
                 </div>`).join('');
-                body = `<p style="font-size:11px;color:var(--muted);margin:8px 0;line-height:1.6;">أي إضافة أو مكمل تضيفه فعليًا على العلف أو فى الماء بشكل طارئ خارج برنامج الإضافات المجدول.</p>
+                body = `<p class="daily-hint-note">أي إضافة أو مكمل تضيفه فعليًا على العلف أو فى الماء بشكل طارئ خارج برنامج الإضافات المجدول.</p>
                     <button class="btn gold block" onclick="openQuickIntModal()">➕ إضافة الآن</button>
-                    ${list.length ? `<div class="card" style="margin-top:8px;">${rows}</div>` : `<div class="card empty" style="padding:14px;margin-top:8px;"><div class="ico">➕</div>لا توجد إضافات خارج الجدول مسجَّلة بعد.</div>`}`;
+                    ${list.length ? `<div class="card mt-2">${rows}</div>` : `<div class="card empty compact mt-2"><div class="ico">➕</div>لا توجد إضافات خارج الجدول مسجَّلة بعد.</div>`}`;
             } else if (dailyEventsSubTab === 'incidents') {
                 const list = [...(b.incidents || [])].sort((a, c) => c.date.localeCompare(a.date)).slice(0, 15);
                 const rows = list.map(it => `<div class="check-row"><div class="txt">
                         <div class="u-02">${INCIDENT_SEVERITY_LABEL[it.severity] || ''} ${esc(it.category)} — ${esc(it.title)}</div>
                         <div class="day">يوم ${it.age} (${it.date})${it.solution ? ' · الحل: ' + esc(it.solution) : ''} · ${INCIDENT_OUTCOME_LABEL[it.outcome] || ''}${it.enteredBy ? ' · بواسطة ' + esc(it.enteredBy) : ''}</div>
-                        ${it.notes ? `<div style="font-size:11px;color:var(--muted);">${esc(it.notes)}</div>` : ''}
+                        ${it.notes ? `<div class="text-muted fs-xs">${esc(it.notes)}</div>` : ''}
                     </div>
                     <button class="btn danger sm" onclick="deleteIncident('${it.id}')">حذف</button>
                 </div>`).join('');
-                body = `<p style="font-size:11px;color:var(--muted);margin:8px 0;line-height:1.6;">سجّل أي حادثة أثّرت على الدفعة والحل ونتيجته — تدخل تلقائيًا فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
-                    <div class="row-actions" style="margin:0;">
-                        <button class="btn gold" style="flex:1;" onclick="openIncidentModal()">📓 تسجيل حادثة</button>
-                        <button class="btn ghost" style="flex:1;" onclick="openIncidentKbModal()">🧠 قاعدة المعرفة</button>
+                body = `<p class="daily-hint-note">سجّل أي حادثة أثّرت على الدفعة والحل ونتيجته — تدخل تلقائيًا فى "🧠 قاعدة معرفة الحوادث" (تبويب الإنتاج).</p>
+                    <div class="row-actions m-0">
+                        <button class="btn gold flex-1" onclick="openIncidentModal()">📓 تسجيل حادثة</button>
+                        <button class="btn ghost flex-1" onclick="openIncidentKbModal()">🧠 قاعدة المعرفة</button>
                     </div>
-                    ${list.length ? `<div class="card" style="margin-top:8px;">${rows}</div>` : `<div class="card empty" style="padding:14px;margin-top:8px;"><div class="ico">📓</div>لا توجد حوادث مُسجَّلة بعد.</div>`}`;
+                    ${list.length ? `<div class="card mt-2">${rows}</div>` : `<div class="card empty compact mt-2"><div class="ico">📓</div>لا توجد حوادث مُسجَّلة بعد.</div>`}`;
             }
             return `<div class="section" id="dailyEventsSection" style="margin-top:0;"><div class="section-head"><h2>${DAILY_EVENTS_SECTION_KEY}</h2></div>
                 ${nav}${body}
@@ -16885,25 +17330,25 @@
             const today = todayStr();
             const bioTypes = ['👨‍⚕️ زيارة طبيب بيطري', '🚗 دخول زائر', '🚙 دخول مركبة/سيارة', '🧴 تطهير ورش مطهرات', '🚪 تعقيم مدخل العنبر', '🐀 مكافحة قوارض/حشرات', '📌 أخرى'];
             const bioRows = [...(b.biosecurityLog || [])].sort((a,c)=>c.date.localeCompare(a.date)).slice(0, 15).map(e => `
-                <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}" style="font-size:9.5px;">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td style="text-align:right;">${esc(e.type)}${e.photo ? ` <button class="btn ghost xs" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td style="text-align:right;font-size:11px;color:var(--muted);">${esc(e.note)||''}</td>
+                <tr><td>${e.date}${e.stage ? `<br><span class="pill ${e.stage==='before'?'warn':'ok'}">${e.stage==='before'?'قبل':'بعد'}</span>` : ''}</td><td class="text-right">${esc(e.type)}${e.photo ? ` <button class="btn ghost xs" onclick="viewBioPhoto('${e.id}')">📷</button>` : ''}</td><td class="text-right text-muted fs-xs">${esc(e.note)||''}</td>
                 <td><button class="btn ghost sm owner-only" onclick="editBiosecurity('${e.id}')">✏️</button> <button class="btn danger sm owner-only" onclick="deleteBiosecurity('${e.id}')">حذف</button></td></tr>`).join('');
             const bioBeforePhotos = (b.biosecurityLog || []).filter(e => e.stage === 'before' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
             const bioAfterPhotos = (b.biosecurityLog || []).filter(e => e.stage === 'after' && e.photo).sort((a,c)=>c.date.localeCompare(a.date));
             const cleaningCompareHtml = (bioBeforePhotos.length && bioAfterPhotos.length) ? `
-                <div class="card" style="margin-top:10px;">
-                    <div style="font-weight:800;font-size:13px;margin-bottom:8px;">🧽 آخر مقارنة قبل/بعد التنظيف والتطهير</div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <div style="text-align:center;"><img src="${bioBeforePhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">قبل — ${bioBeforePhotos[0].date}</div></div>
-                        <div style="text-align:center;"><img src="${bioAfterPhotos[0].photo}" style="max-width:130px;border-radius:8px;border:1px solid var(--line);"><div style="font-size:11px;color:var(--muted);margin-top:2px;">بعد — ${bioAfterPhotos[0].date}</div></div>
+                <div class="card mt-3">
+                    <div class="subcard-title">🧽 آخر مقارنة قبل/بعد التنظيف والتطهير</div>
+                    <div class="bio-compare-wrap">
+                        <div class="bio-compare-item"><img src="${bioBeforePhotos[0].photo}" class="bio-compare-img"><div class="bio-compare-caption">قبل — ${bioBeforePhotos[0].date}</div></div>
+                        <div class="bio-compare-item"><img src="${bioAfterPhotos[0].photo}" class="bio-compare-img"><div class="bio-compare-caption">بعد — ${bioAfterPhotos[0].date}</div></div>
                     </div>
                 </div>` : '';
-            return `<p style="font-size:11px;color:var(--muted);margin:8px 0;">سجّل زيارة طبيب، دخول زوار/مركبة، أو حدث تطهير بضغطة واحدة.</p>
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-                    ${bioTypes.map((t,i) => `<button type="button" class="btn ghost sm bio-chip" data-idx="${i}" onclick="selectBioChip(${i})" style="border-radius:var(--radius-pill);">${t}</button>`).join('')}
+            return `<p class="daily-hint-note mt-2">سجّل زيارة طبيب، دخول زوار/مركبة، أو حدث تطهير بضغطة واحدة.</p>
+                <div class="chip-select mb-2">
+                    ${bioTypes.map((t,i) => `<button type="button" class="btn ghost sm bio-chip pill-btn" data-idx="${i}" onclick="selectBioChip(${i})">${t}</button>`).join('')}
                 </div>
                 <select id="bio_type" style="display:none;">${bioTypes.map(t => `<option>${t.replace(/^\S+\s/,'')}</option>`).join('')}</select>
                 <div id="bioExtraFields" style="display:none;">
-                    <div class="form-grid" style="margin-top:8px;">
+                    <div class="form-grid mt-2">
                         <div class="field"><label for="bio_date">التاريخ</label><input id="bio_date" type="date" value="${today}"></div>
                         <div class="field"><label for="bio_stage">المرحلة (لو تنظيف/تطهير)</label>
                             <select id="bio_stage"><option value="">غير محدد</option><option value="before">📷 قبل التنظيف</option><option value="after">📷 بعد التنظيف</option></select>
@@ -16911,12 +17356,12 @@
                         <div class="field full"><label for="bio_note">ملاحظة</label><input id="bio_note" placeholder="اختياري"></div>
                         <div class="field full"><label for="bio_photo_input">صورة توثيقية (اختياري)</label>
                             <input type="file" id="bio_photo_input" accept="image/*" capture="environment" onchange="handleBioPhotoUpload(event)">
-                            <div id="bio_photo_preview" style="margin-top:6px;"></div>
+                            <div id="bio_photo_preview" class="mt-1"></div>
                         </div>
                     </div>
-                    <button class="btn gold block" id="bioSaveBtn" style="margin-top:8px;" onclick="saveBiosecurity()">+ تسجيل الحدث</button>
+                    <button class="btn gold block mt-2" id="bioSaveBtn" onclick="saveBiosecurity()">+ تسجيل الحدث</button>
                 </div>
-                <div class="card scroll-x" style="margin-top:8px;">
+                <div class="card scroll-x mt-2">
                     ${bioRows ? `<table><thead><tr><th>التاريخ</th><th>النوع</th><th>ملاحظة</th><th></th></tr></thead><tbody>${bioRows}</tbody></table>`
                     : `<div class="empty"><div class="ico">🛡️</div>لا توجد سجلات أمان حيوي بعد.</div>`}
                     ${cleaningCompareHtml}
@@ -16959,32 +17404,54 @@
             </div>`;
         }
 
+        // ============ تحسين UX (تطبَّق على أكتر من تبويب فرعي جوه "الإنتاج"): كارت accordion قابل للطي
+        // بنفس شكل sec() المستخدم فى renderProductionTab، لكن كـ"طبقة تانية" جوه تبويب فرعي متداخل
+        // أصلاً (زي العلف والماء) حيث applySectionCollapsing العامة مبتوصلش. مشترك بدل تكراره فى كل تبويب. ============
+        function subTabSection(open, title, actionsHtml, bodyHtml) {
+            return `<details ${open ? 'open' : ''} style="border-bottom:1px solid var(--line);">
+                <summary style="padding:12px 14px;cursor:pointer;background:#faf8f2;font-weight:800;font-size:14px;">${title}</summary>
+                <div style="padding:10px 12px;">
+                    ${actionsHtml ? `<div class="row-actions mb-2">${actionsHtml}</div>` : ''}
+                    ${bodyHtml}
+                </div>
+            </details>`;
+        }
+
         // ============ Feed Tab (مجمّع): برنامج المراحل + الإضافات + التوقعات + المخزون — كل حاجة خاصة بالعلف مكان واحد ============
         // ============ برنامج التحويل التدريجي بين نوعين علف — منطقة العلف (تبويب الإنتاج) ============
         function renderFeedTransitionSection(b) {
-            return `<div class="section"><div class="section-head"><h2>🔄 برنامج التحويل بين الأعلاف${b ? ` — الدفعة النشطة (${expansionSpeciesLabel(b.species)})` : ''}</h2></div>
-                <div class="card">
-                    <p style="font-size:11px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
+            const title = `🔄 برنامج التحويل بين الأعلاف${b ? ` — الدفعة النشطة (${expansionSpeciesLabel(b.species)})` : ''}`;
+            const bodyHtml = `<div class="card">
+                    <p class="feed-transition-intro">
                         عرّف هنا مرة واحدة جدول التحويل من علف لآخر (بادئ→نامي، نامي→ناهي، أو أي علف لآخر)، بنسبة كل علف فى كل يوم من أيام التحويل. النسب دي هتتطبّق تلقائيًا فى "تسجيل بيانات اليوم" — هتقسّم كمية العلف اللي هتسجّلها بين الصنفين، وتخصمها من المخزن بنفس النسبة، من غير ما تحتاج تحسب حاجة يدويًا.
                     </p>
                     ${!b ? `<div class="empty p-4"><div class="ico">🔄</div>محتاج دفعة نشطة الأول عشان تقدر تدير جدول التحويل بتاعها.</div>` : `
                     ${(b.feedTransitions||[]).map(t => `
-                    <div class="card" style="margin-bottom:10px;background:var(--cream);">
-                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-                            <div style="font-weight:800;color:var(--barn-dark);">${esc(t.fromFeed)} ← → ${esc(t.toFeed)} <span style="font-weight:600;color:var(--muted);font-size:11.5px;">(بداية عمر ${t.startAge} يوم، ${t.days.length} يوم تحويل)</span></div>
+                    <div class="card feed-transition-card">
+                        <div class="row-between flex-wrap" style="gap:6px;">
+                            <div class="feed-transition-title">${esc(t.fromFeed)} ← → ${esc(t.toFeed)} <span class="feed-transition-meta">(بداية عمر ${t.startAge} يوم، ${t.days.length} يوم تحويل)</span></div>
                             <button class="btn danger sm" onclick="removeFeedTransition('${t.id}')">🗑️ حذف الجدول</button>
                         </div>
-                        <div class="scroll-x mt-2">
-                            <table><thead><tr><th>يوم التحويل</th><th>عمر القطيع</th><th>% ${esc(t.fromFeed)}</th><th>% ${esc(t.toFeed)}</th><th></th></tr></thead>
-                            <tbody>${t.days.map((d,i)=>`
-                                <tr><td>${i+1}</td><td>يوم ${t.startAge+i}</td>
-                                <td><input type="number" min="0" max="100" value="${d.fromPct}" style="width:64px;padding:6px;border:1.5px solid var(--line);border-radius:8px;" onchange="updateTransitionDayPct('${t.id}',${i},this.value)"></td>
-                                <td class="u-02">${100-d.fromPct}%</td>
-                                <td><button class="btn ghost sm" onclick="removeTransitionDay('${t.id}',${i})">🗑️</button></td></tr>`).join('')}</tbody></table>
-                        </div>
+                        <div class="mt-2">${t.days.map((d,i)=>`
+                            <div class="ftd-row">
+                                <div class="ftd-head">
+                                    <span class="ftd-day">يوم التحويل ${i+1}</span>
+                                    <span class="ftd-age">عمر القطيع: يوم ${t.startAge+i}</span>
+                                </div>
+                                <div class="ftd-pct-line">
+                                    <div class="ftd-pct-input">
+                                        <label class="sr-only" for="ftd_${t.id}_${i}">نسبة ${esc(t.fromFeed)} يوم التحويل ${i+1}</label>
+                                        <input id="ftd_${t.id}_${i}" type="number" min="0" max="100" value="${d.fromPct}" class="input-xs-inline" onchange="updateTransitionDayPct('${t.id}',${i},this.value)" aria-label="نسبة ${esc(t.fromFeed)}">
+                                        <span>% ${esc(t.fromFeed)}</span>
+                                    </div>
+                                    <span class="ftd-pct-arrow">←→</span>
+                                    <div class="ftd-pct-fixed"><b>${100-d.fromPct}%</b> ${esc(t.toFeed)}</div>
+                                    <button class="btn ghost sm" onclick="removeTransitionDay('${t.id}',${i})" aria-label="حذف يوم ${i+1}">🗑️</button>
+                                </div>
+                            </div>`).join('')}</div>
                         <button class="btn ghost sm mt-2" onclick="addTransitionDay('${t.id}')">+ إضافة يوم للجدول</button>
                     </div>`).join('') || '<div class="empty p-4"><div class="ico">🔄</div>لا توجد جداول تحويل بعد.</div>'}
-                    <div class="form-grid" style="margin-top:12px;border-top:1.5px solid var(--line);padding-top:12px;">
+                    <div class="form-grid section-divider-top">
                         <div class="field"><label for="ft_from">من علف (الحالي)</label><input id="ft_from" list="dl_invItems" placeholder="مثال: بادئ"></div>
                         <div class="field"><label for="ft_to">إلى علف (الجديد)</label><input id="ft_to" list="dl_invItems" placeholder="مثال: نامي"></div>
                         <div class="field"><label for="ft_startAge">عمر بداية التحويل (يوم)</label><input id="ft_startAge" type="number" inputmode="decimal" min="0" placeholder="مثال: 10"></div>
@@ -16992,8 +17459,8 @@
                     <button class="btn gold block mt-2" onclick="addFeedTransition()">+ إضافة جدول تحويل جديد</button>
                     <p class="u-25">💡 بيبدأ افتراضيًا بيومين (65%/35%) — عدّل النسب وأضف/احذف أيام حسب برنامجك بالظبط (مثال: يوم 1: 65%/35%، يوم 2: 50%/50%، يوم 3: 35%/65%...).</p>
                     `}
-                </div>
-            </div>`;
+                </div>`;
+            return { title, bodyHtml };
         }
 
         function renderFeedAdditiveListCard(b, m) {
@@ -17005,12 +17472,12 @@
                 const execBtn = !activeToday ? '' : execToday
                     ? `<span class="pill ok fs-2xs">✅ نُفّذ اليوم</span>`
                     : `<button class="btn gold sm" onclick="applyAdditiveToday('feed','${a.id}')">✅ تنفيذ اليوم</button>`;
-                return `<div class="check-row" style="${activeToday?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}">
+                return `<div class="check-row ${activeToday?'is-active-house':''}">
                     <input type="checkbox" ${a.active?'checked':''} onchange="toggleAdditive('feed','${a.id}')">
                     <div class="txt">
-                        <div style="font-weight:${activeToday?'800':'600'};">${esc(a.name)} ${activeToday?'<span class="pill ok fs-2xs">نشط اليوم ✓</span>':''}</div>
+                        <div class="${activeToday?'fw-800':'fw-600'}">${esc(a.name)} ${activeToday?'<span class="pill ok fs-2xs">نشط اليوم ✓</span>':''}</div>
                         <div class="day">${additiveDayLabel(a)} · ${additivePeriodLabel(a)}${timeLabel(a.time)} · الجرعة: <b>${a.dose} ${a.unit}/${a.per}</b></div>
-                        ${a.notes?`<div style="font-size:11px;color:var(--muted);">${esc(a.notes)}</div>`:''}
+                        ${a.notes?`<div class="text-muted fs-xs">${esc(a.notes)}</div>`:''}
                     </div>
                     ${execBtn}
                     <button class="btn ghost sm owner-only" onclick="editAdditiveDose('feed','${a.id}')">✏️ جرعة</button>
@@ -17032,32 +17499,40 @@
             const today = m.todayAge;
 
             // ===== مرحلة العلف الحالية (بادئ/نامي/ناهي) — قابلة للتعديل المباشر هنا لهذه الدفعة =====
+            // ============ تحسين UX (تبويب العلف، خطوة 2): كارت واحد بدل كارتين لنفس البيانات (عرض
+            // الحالة + تعديل الكميات المستهدفة). لو لسه معندناش استهلاك علف مسجَّل (fsi=null) بيبقى
+            // مفيش كارت "عرض" فاضي أصلاً — بنوضّح السبب بـ empty state ونوري حقول التعديل مباشرة،
+            // لأنها وقتها بتبقى هي المحتوى الوحيد المفيد. ============
             const fsi = getFeedStageInfo(b, m);
             const curStages = getFeedStages(b);
-            const stageEditHtml = `<div class="card" style="margin-top:${fsi?'8px':'0'};">
-                    <div style="font-weight:800;font-size:13px;margin-bottom:8px;">⚙️ كميات مراحل العلف لهذه الدفعة</div>
+            const stageEditFieldsHtml = `
                     <div class="form-grid">
                         <div class="field"><label for="fs_starterKg">إجمالي علف بادئ لكل طائر (كجم)</label><input id="fs_starterKg" type="number" inputmode="decimal" step="0.05" min="0" value="${curStages[0].targetKg ?? ''}"></div>
                         <div class="field"><label for="fs_growerKg">إجمالي علف نامي لكل طائر (كجم)</label><input id="fs_growerKg" type="number" inputmode="decimal" step="0.05" min="0" value="${curStages[1].targetKg ?? ''}"></div>
                     </div>
                     <p class="u-11">💡 مرحلة "ناهي" = باقي الدورة تلقائيًا. القيم دي خاصة بدفعة "${esc(b.name)}" بس — تقدر تظبطها مختلفة عن باقي دفعاتك.</p>
-                    <button class="btn gold sm mt-2" onclick="saveFeedStageForBatch()">💾 حفظ لهذه الدفعة</button>
-                </div>`;
-            const feedStageCard = `<div class="section mt-0"><div class="section-head"><h2>🌾 مرحلة العلف الحالية</h2></div>
-                ${!fsi ? '' : `<div class="card">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                        <span style="font-weight:900;font-size:15px;color:var(--barn-dark);">${fsi.stage.icon} ${fsi.stage.label}</span>
-                        <span style="font-size:11.5px;color:var(--muted);">استهلاك تقديري/طائر: ${fmt(fsi.cumPerBirdKg*1000,0)} جم</span>
+                    <button class="btn gold sm mt-2" onclick="saveFeedStageForBatch()">💾 حفظ لهذه الدفعة</button>`;
+            const feedStageBodyHtml = `<div class="card mt-0">
+                ${!fsi ? `
+                    <div class="empty p-2 mb-2"><div class="ico">🌾</div>لسه معندناش استهلاك علف مسجَّل لهذه الدفعة — سجّل أول يوم فى "📅 السجل اليومي" وهنا هتظهر المرحلة الحالية تلقائيًا.</div>
+                    <div class="subcard-title">⚙️ كميات مراحل العلف لهذه الدفعة</div>
+                    ${stageEditFieldsHtml}
+                ` : `
+                    <div class="row-between mb-1">
+                        <span class="feed-stage-name">${fsi.stage.icon} ${fsi.stage.label}</span>
+                        <span class="fs-xs text-muted">استهلاك تقديري/طائر: ${fmt(fsi.cumPerBirdKg*1000,0)} جم</span>
                     </div>
                     ${fsi.stage.targetKg != null ? `
-                    <div style="background:var(--line);border-radius:8px;height:10px;overflow:hidden;">
-                        <div style="background:var(--wheat);height:100%;width:${fsi.pctOfStage.toFixed(0)}%;"></div>
+                    <div class="feed-stage-progress-track">
+                        <div class="feed-stage-progress-fill" style="width:${fsi.pctOfStage.toFixed(0)}%;"></div>
                     </div>
-                    <div style="font-size:11px;color:var(--muted);margin-top:5px;">${fsi.pctOfStage.toFixed(0)}% من كمية ${fsi.stage.label} (${fsi.stage.targetKg} كجم/طائر) — ${fsi.nextStage ? `باقي ~${fmt(fsi.remainingKg*1000,0)} جم/طائر قبل التحويل لعلف ${fsi.nextStage.icon} ${fsi.nextStage.label}` : 'آخر مرحلة'}</div>
-                    ` : `<div style="font-size:11.5px;color:var(--muted);">آخر مرحلة فى برنامج العلف — تكمل بيها لحد البيع.</div>`}
-                    <p style="font-size:10.5px;color:var(--muted);margin:8px 2px 0;line-height:1.5;">💡 محسوبة من إجمالي العلف الفعلي المسجَّل ÷ متوسط عدد الطيور (تقديري).</p>
-                </div>`}
-                ${stageEditHtml}</div>`;
+                    <div class="feed-stage-note">${fsi.pctOfStage.toFixed(0)}% من كمية ${fsi.stage.label} (${fsi.stage.targetKg} كجم/طائر) — ${fsi.nextStage ? `باقي ~${fmt(fsi.remainingKg*1000,0)} جم/طائر قبل التحويل لعلف ${fsi.nextStage.icon} ${fsi.nextStage.label}` : 'آخر مرحلة'}</div>
+                    ` : `<div class="fs-xs text-muted">آخر مرحلة فى برنامج العلف — تكمل بيها لحد البيع.</div>`}
+                    <p class="u-14">💡 محسوبة من إجمالي العلف الفعلي المسجَّل ÷ متوسط عدد الطيور (تقديري).</p>
+                    <button type="button" class="btn ghost sm block mt-2" onclick="toggleFeedStageEdit()" id="feedStageEditToggleBtn">✏️ تعديل كميات المراحل</button>
+                    <div id="feedStageEditWrap" class="mt-2" style="display:none;">${stageEditFieldsHtml}</div>
+                `}
+                </div>`;
 
             // ===== إضافات العلف (مع تمييز النشط اليوم وزر تنفيذ يخصم من المخزن) =====
             const feedAddRows = renderFeedAdditiveListCard(b, m);
@@ -17081,7 +17556,7 @@
                 return `<div class="check-row"><div class="txt">
                         <div>🔮 توقع العلف حتى يوم ${targetAge}: <b>${fmt(targetRow.cumFeedKg,0)} كجم</b> بتكلفة تقديرية <b>${money(remainingCost)}</b></div>
                         <div class="day">${balanceTxt}${coverageTxt ? ' — ' + coverageTxt : ''}</div>
-                        <div class="day" style="margin-top:2px;">مبني على منحنى استهلاك السلالة × نسبة أداء الدفعة الفعلية (${fmt(ff.perfRatio*100,0)}% من معدل السلالة) وسعر علف ${fmt(priceInfo.price,2)} ج/كجم${priceInfo.source==='purchases'?' (فعلي من آخر مشتريات)':' (افتراضي، لا توجد مشتريات علف مسجَّلة بعد)'}</div>
+                        <div class="day tight">مبني على منحنى استهلاك السلالة × نسبة أداء الدفعة الفعلية (${fmt(ff.perfRatio*100,0)}% من معدل السلالة) وسعر علف ${fmt(priceInfo.price,2)} ج/كجم${priceInfo.source==='purchases'?' (فعلي من آخر مشتريات)':' (افتراضي، لا توجد مشتريات علف مسجَّلة بعد)'}</div>
                     </div></div>`;
             })();
 
@@ -17110,37 +17585,49 @@
             const feedStockRows = feedItems.map(it => {
                 const usedQty = feedTotalOut[it.name] || 0;
                 const levelBar = it.balance > 0 || usedQty > 0 ? stockLevelBarHtml(usedQty, Math.max(it.balance,0), it.unit) : '';
-                return `<div class="card" style="margin-bottom:8px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;">
+                return `<div class="card mb-2">
+                    <div class="feed-stock-row-head">
                         <span>${esc(it.name)}</span><span>${fmt(it.balance,1)} ${it.unit} متاح</span>
                     </div>${levelBar}</div>`;
             }).join('');
-            const feedStockSection = `<div class="section"><div class="section-head"><h2>📦 مخزون العلف</h2>
-                <button class="btn ghost sm" onclick="setTab('dashboard')">فتح المخزن الكامل →</button></div>
-                <div>${feedStockRows || '<div class="card empty">لا يوجد صنف "علف" مسجَّل بالمخزن بعد.</div>'}</div>
-            </div>`;
+            const feedStockBodyHtml = `<div>${feedStockRows || '<div class="card empty"><div class="ico">📦</div>لا يوجد صنف "علف" مسجَّل بالمخزن بعد.</div>'}</div>`;
 
             const forecastGroup = [feedForecastHtml, lotHtml].filter(Boolean).join('');
 
-            return `
-            <div class="section mt-0">
-                <div class="row-actions" style="margin:0 0 12px;">
-                    <button class="btn ghost sm owner-only flex-1" onclick="document.getElementById('feedCalcModalOverlay').classList.add('show')">🧮 حاسبة تكوين العلف</button>
-                    <button class="btn ghost sm owner-only flex-1" onclick="openProtocolModal()">🧬 بروتوكولات محفوظة</button>
+            // ============ تحسين UX (تبويب العلف، خطوة 1): الأدوات المساعدة (حاسبة/بروتوكولات/قاعدة
+            // معرفة) كانت أول حاجة يشوفها المستخدم فوق التبويب، قبل حالة الدفعة نفسها. المفروض حالة
+            // "دلوقتي" (المرحلة/المخزون) تيجي الأول، والأدوات دي تُستخدم من وقت للتاني بس فبقت مطوية
+            // تحت فى الآخر بدل ما تاخد أول مساحة بصرية فى التبويب. ============
+            // ملحوظة: التحكم فى الظهور للمالك فقط بقى على مستوى JS (مش كلاس owner-only) لأن
+            // .owner-only بتتحوّل لـ display:inline-flex فى وضع المالك — ده بيكسر شكل <details>
+            // الأصلي (المفروض تفضل block). العامل خالص مايشوفش الكارت ده بدل ما يتحط له display:none.
+            const feedToolsHtml = currentRole !== 'owner' ? '' : `<details class="card mt-3">
+                <summary class="u-15">🧰 أدوات إضافية (حاسبة العلف، البروتوكولات، قاعدة معرفة الحوادث)</summary>
+                <div class="row-actions mt-2">
+                    <button class="btn ghost sm flex-1" onclick="document.getElementById('feedCalcModalOverlay').classList.add('show')">🧮 حاسبة تكوين العلف</button>
+                    <button class="btn ghost sm flex-1" onclick="openProtocolModal()">🧬 بروتوكولات محفوظة</button>
                 </div>
-                <div class="row-actions" style="margin:0 0 12px;">
-                    <button class="btn ghost sm owner-only block" onclick="openIncidentKbModal()">🧠 قاعدة معرفة الحوادث</button>
-                </div>
+                <button class="btn ghost sm block mt-2" onclick="openIncidentKbModal()">🧠 قاعدة معرفة الحوادث</button>
+            </details>`;
+
+            // ============ تحسين UX (تبويب العلف، خطوة 6): التبويب ده أصلاً مطوي جوه أكوردين تبويب
+            // "الإنتاج" (renderProductionTab ← sec()) — فمفيش وصول للآلية العامة applySectionCollapsing
+            // هنا لأنها بتشتغل بس على أقسام مباشرة تحت #mainContent، والتبويب ده متداخل جواها بعمق.
+            // الحل: نفس نمط sec() نفسه (accordion) بس مستوى تاني جوه التبويب — "مرحلة العلف الحالية"
+            // مفتوحة افتراضيًا لأنها أهم حاجة، والباقي مطوي، وأي زرار فعل بيتنقل لأول سطر جوه الجسم
+            // مش جوه الـ<summary> نفسها (مينفعش تحط <button> جوه <summary> — HTML غير صحيح). ============
+            const ft = renderFeedTransitionSection(b);
+
+            return `<div class="card mt-0" style="padding:0;overflow:hidden;">
+                ${subTabSection(true, '🌾 مرحلة العلف الحالية', '', feedStageBodyHtml)}
+                ${subTabSection(false, ft.title, '', ft.bodyHtml)}
+                ${subTabSection(false, '🌾 برنامج إضافات العلف', `<button class="btn ghost sm owner-only" onclick="document.getElementById('feedAddModalOverlay').classList.add('show')">+ إضافة</button>`,
+                    `<div class="card p-0" id="feedAdditiveListBox">${feedAddRows||'<div class="empty p-4"><div class="ico">🌾</div>لا توجد إضافات علف.</div>'}</div>`)}
+                ${forecastGroup ? subTabSection(false, '🔮 توقعات وتتبع العلف', '', `<div class="card p-0">${forecastGroup}</div>`) : ''}
+                ${subTabSection(false, '📦 مخزون العلف', `<button class="btn ghost sm" onclick="setTab('dashboard')">فتح المخزن الكامل →</button>`, feedStockBodyHtml)}
             </div>
-            ${feedStageCard}
-            ${renderFeedTransitionSection(b)}
-            <div class="section"><div class="section-head"><h2>🌾 برنامج إضافات العلف</h2>
-                <button class="btn ghost sm owner-only" onclick="document.getElementById('feedAddModalOverlay').classList.add('show')">+ إضافة</button></div>
-                <div class="card p-0" id="feedAdditiveListBox">${feedAddRows||'<div class="empty p-4">لا توجد إضافات علف.</div>'}</div>
-            </div>
-            ${forecastGroup ? `<div class="section"><div class="section-head"><h2>🔮 توقعات وتتبع العلف</h2></div><div class="card p-0">${forecastGroup}</div></div>` : ''}
-            ${feedStockSection}
-            <p class="u-14">💡 التسجيل اليومي لكميات العلف (نهار/ليل) لسه فى تبويب "📅 السجل اليومي" زي ما هو — التبويب ده لإدارة البرنامج والمتابعة فقط.</p>`;
+            ${feedToolsHtml}
+            <p class="u-14" style="padding:0 2px;">💡 التسجيل اليومي لكميات العلف (نهار/ليل) لسه فى تبويب "📅 السجل اليومي" زي ما هو — التبويب ده لإدارة البرنامج والمتابعة فقط.</p>`;
         }
 
         // ============ Environment Tab (مجمّع): طقس + تهوية + فرشة/سبلة + معدات وأعطال — كل حاجة خاصة بالبيئة مكان واحد ============
@@ -17380,7 +17867,7 @@
 
                 if (status === 'current') {
                     return `
-                    <div class="timeline-node current" style="border-right:3px solid ${dotColor};">
+                    <div class="timeline-node current" style="border-inline-end:3px solid ${dotColor};">
                         <div style="display:flex;align-items:center;gap:8px;font-weight:900;color:var(--barn-dark);font-size:14px;">${dotIcon} ${row.stageLabel} <span class="pill info">المرحلة الحالية — يوم ${age}</span></div>
                         <div style="font-size:11px;color:var(--muted);margin:4px 0 8px;">${seasonIcon} موسم ${season} · نسبة تشغيل تهوية ليلية مرجعية: ${dutyLow}-${dutyHigh}%</div>
                         ${respRiskHtml}
@@ -17390,8 +17877,8 @@
                              أي فاصل، فتحس المستخدم وكأنها استمرار لنفس القائمة مش قسم مستقل. فاصل خفيف هنا
                              (خط + تسمية "حاسبة تفصيلية") يوضح إننا بنتنقل من "توصيات جاهزة" إلى "أرقام وأدوات
                              حساب" — قسمين مختلفين فى الغرض حتى لو جنب بعض فى المساحة. -->
-                        <div style="border-top:1px dashed var(--line);margin:12px 0 8px;padding-top:2px;text-align:center;">
-                            <span style="font-size:10px;color:var(--muted);background:inherit;padding:0 8px;">🧮 حاسبة تفصيلية</span>
+                        <div class="calc-divider">
+                            <span class="calc-divider-label">🧮 حاسبة تفصيلية</span>
                         </div>
                         ${renderVentilationCalcCard(b, m)}
                     </div>`;
@@ -17400,7 +17887,7 @@
                 const nextNote = status === 'upcoming' && idx > 0 && age >= minAge - 3
                     ? `<div style="font-size:10.5px;color:var(--wheat);margin-top:2px;">🔔 قربت — ابدأ تضبط الفتحات/الشفاطات تدريجيًا استعدادًا لهذه المرحلة</div>` : '';
                 return `
-                <div class="timeline-node ${status}" style="border-right:3px solid ${dotColor};">
+                <div class="timeline-node ${status}" style="border-inline-end:3px solid ${dotColor};">
                     <div style="display:flex;align-items:center;gap:8px;font-weight:700;color:var(--barn-dark);font-size:12.5px;">${dotIcon} ${row.stageLabel} <span style="font-size:10.5px;color:var(--muted);font-weight:600;">(${seasonIcon} ${dutyLow}-${dutyHigh}% تشغيل ليلي)</span></div>
                     ${nextNote}
                     ${treatRowsHtml ? `<div class="mt-2">${treatRowsHtml}</div>` : ''}
@@ -17409,7 +17896,7 @@
 
             return `
             <div class="section mt-0"><div class="card">
-                <h2 style="margin:0 0 4px;color:var(--barn-dark);">🌡️ مسار البيئة والتهوية</h2>
+                <h2 class="card-title">🌡️ مسار البيئة والتهوية</h2>
                 <p style="font-size:11px;color:var(--muted);margin:0 0 10px;">توصيات تتبع عمر القطيع تلقائيًا بدل جداول ومعادلات ثابتة — كل مرحلة بتتفتح بالتفصيل لما توصل ليها، والمراحل اللي فاتت أو الجاية بتظهر مختصرة.</p>
                 ${stagesHtml}
             </div></div>`;
@@ -17421,7 +17908,7 @@
 
             return `
             <div class="section mt-0"><div class="card">
-                <h2 style="margin:0 0 8px;color:var(--barn-dark);">🌦️ الطقس والإجهاد الحراري</h2>
+                <h2 class="card-title">🌦️ الطقس والإجهاد الحراري</h2>
                 ${renderWeatherWidget()}
             </div></div>
 
@@ -17445,7 +17932,7 @@
                 const execBtn = !activeToday ? '' : execToday
                     ? `<span class="pill info fs-2xs">✅ نُفّذ اليوم</span>`
                     : `<button class="btn gold sm" onclick="applyAdditiveToday('water','${a.id}')">✅ تنفيذ اليوم</button>`;
-                return `<div class="check-row" style="${activeToday?'background:rgba(46,110,142,.1);border-right:3px solid #2E6E8E;':''}">
+                return `<div class="check-row ${activeToday?'is-active-water':''}">
                     <input type="checkbox" ${a.active?'checked':''} onchange="toggleAdditive('water','${a.id}')">
                     <div class="txt">
                         <div style="font-weight:${activeToday?'800':'600'};">${esc(a.name)} ${activeToday?'<span class="pill info fs-2xs">نشط اليوم ✓</span>':''}</div>
@@ -17483,9 +17970,9 @@
                         <div class="txt">
                             <div style="font-weight:${done?'600':'800'};" class="${done?'done-strike':''}">🕐 ${formatHourRange(p.startHour, p.endHour)} <span class="pill fs-2xs">${p.hours} ساعة</span></div>
                             <div class="day">
-                                <input type="text" value="${esc(p.additiveName||'')}" placeholder="اسم الإضافة (اختياري)" oninput="updateWaterSchedulePeriod('${active.id}','${p.id}','additiveName',this.value)" style="width:110px;display:inline-block;font-size:11px;padding:3px 6px;margin-inline-end:4px;">
-                                ${hasAdditive ? `<input type="number" value="${p.dose||''}" placeholder="الجرعة" oninput="updateWaterSchedulePeriod('${active.id}','${p.id}','dose',this.value)" style="width:55px;display:inline-block;font-size:11px;padding:3px 6px;margin-inline-end:4px;">
-                                <select onchange="updateWaterSchedulePeriod('${active.id}','${p.id}','unit',this.value)" style="width:auto;display:inline-block;font-size:11px;padding:3px 4px;">
+                                <input type="text" class="water-sched-field-name" value="${esc(p.additiveName||'')}" placeholder="اسم الإضافة (اختياري)" oninput="updateWaterSchedulePeriod('${active.id}','${p.id}','additiveName',this.value)">
+                                ${hasAdditive ? `<input type="number" class="water-sched-field-num" value="${p.dose||''}" placeholder="الجرعة" oninput="updateWaterSchedulePeriod('${active.id}','${p.id}','dose',this.value)">
+                                <select class="water-sched-field-select" onchange="updateWaterSchedulePeriod('${active.id}','${p.id}','unit',this.value)">
                                     <option ${p.unit==='جم/لتر'?'selected':''}>جم/لتر</option>
                                     <option ${p.unit==='مل/لتر'?'selected':''}>مل/لتر</option>
                                     <option ${p.unit==='جم/1000 طائر'?'selected':''}>جم/1000 طائر</option>
@@ -17560,21 +18047,34 @@
                 </div></div>`;
             })();
 
-            return `
-            <div class="row-actions" style="margin:0 0 12px;">
-                <button class="btn ghost sm owner-only flex-1" onclick="openWaterCalcModal()">🧮 حاسبة احتياج الماء</button>
-                <button class="btn ghost sm owner-only flex-1" onclick="openProtocolModal()">🧬 بروتوكولات محفوظة</button>
+            const indicatorsHtml = waterQualityHtml || waterFeedRatioHtml || waterWasteHtml
+                ? `<div class="card p-0">${waterQualityHtml}${waterFeedRatioHtml}${waterWasteHtml}</div>`
+                : '';
+
+            // ============ تحسين UX (قسم الماء): نفس منهجية العلف بالظبط —
+            // ١) المؤشرات (📊) هي أقرب حاجة لـ"حالة دلوقتي" فبقت أول قسم مفتوح بدل ما تتحط آخر
+            //    حاجة تحت الجدولة والإضافات. لو معندهاش بيانات كفاية (قبل توفر 3 أيام قراءة)، الجدولة
+            //    بتبقى هي الافتراضي المفتوح بدلها لأنها أول حاجة لازم تتظبط فعليًا مع دفعة جديدة.
+            // ٢) صف الأدوات (حاسبة/بروتوكولات) اتنقل لكارت مطوي فى الآخر، زي 🧰 العلف بالظبط.
+            // ٣) توحيد أيقونة Empty State لقائمة إضافات الماء الفاضية. ============
+            const waterToolsHtml = currentRole !== 'owner' ? '' : `<details class="card mt-3">
+                <summary class="u-15">🧰 أدوات إضافية (حاسبة احتياج الماء، البروتوكولات)</summary>
+                <div class="row-actions mt-2">
+                    <button class="btn ghost sm flex-1" onclick="openWaterCalcModal()">🧮 حاسبة احتياج الماء</button>
+                    <button class="btn ghost sm flex-1" onclick="openProtocolModal()">🧬 بروتوكولات محفوظة</button>
+                </div>
+            </details>`;
+
+            return `<div class="card mt-0" style="padding:0;overflow:hidden;">
+                ${indicatorsHtml ? subTabSection(true, '📊 مؤشرات جودة واستهلاك المياه', '', indicatorsHtml) : ''}
+                ${subTabSection(!indicatorsHtml, '🕐 جدولة سقاية الماء بفترات اليوم', '',
+                    `<p style="font-size:10.5px;color:var(--muted);margin:0 0 8px;">قسّم الـ24 ساعة لفترات متساوية (زي 8+8+8 أو 6+6+6+6)، وحدّد لكل فترة إضافتها وجرعتها المستقلة — والجدول نفسه يقدر يتغيّر مع عمر الدفعة.</p>
+                    <div class="card p-0">${renderWaterScheduleCard(b)}</div>`)}
+                ${subTabSection(false, '💧 برنامج إضافات الماء', `<button class="btn ghost sm owner-only" onclick="document.getElementById('waterAddModalOverlay').classList.add('show')">+ إضافة</button>`,
+                    `<div class="card p-0" id="waterAdditiveListBox">${waterAddRows||'<div class="empty p-4"><div class="ico">💧</div>لا توجد إضافات ماء.</div>'}</div>`)}
             </div>
-            <div class="section mt-0"><div class="section-head"><h2>🕐 جدولة سقاية الماء بفترات اليوم</h2></div>
-                <p style="font-size:10.5px;color:var(--muted);margin:0 0 8px;">قسّم الـ24 ساعة لفترات متساوية (زي 8+8+8 أو 6+6+6+6)، وحدّد لكل فترة إضافتها وجرعتها المستقلة — والجدول نفسه يقدر يتغيّر مع عمر الدفعة.</p>
-                <div class="card p-0">${renderWaterScheduleCard(b)}</div>
-            </div>
-            <div class="section"><div class="section-head"><h2>💧 برنامج إضافات الماء</h2>
-                <button class="btn ghost sm owner-only" onclick="document.getElementById('waterAddModalOverlay').classList.add('show')">+ إضافة</button></div>
-                <div class="card p-0" id="waterAdditiveListBox">${waterAddRows||'<div class="empty p-4">لا توجد إضافات ماء.</div>'}</div>
-            </div>
-            ${(waterQualityHtml||waterFeedRatioHtml||waterWasteHtml) ? `<div class="section"><div class="section-head"><h2>📊 مؤشرات جودة واستهلاك المياه</h2></div><div class="card p-0">${waterQualityHtml}${waterFeedRatioHtml}${waterWasteHtml}</div></div>` : ''}
-            <p class="u-14">💡 التسجيل اليومي لكميات الماء وقراءات جودته لسه فى تبويب "📅 السجل اليومي" زي ما هو.</p>`;
+            ${waterToolsHtml}
+            <p class="u-14" style="padding:0 2px;">💡 التسجيل اليومي لكميات الماء وقراءات جودته لسه فى تبويب "📅 السجل اليومي" زي ما هو.</p>`;
         }
 
         // ============ Health Section (جزء من تبويب الإنتاج): تحصينات + بروتوكولات + تنبيهات مخصصة + سجل تنفيذ ============
@@ -19695,9 +20195,9 @@
             } else if (sug && !dismissed) {
                 const urgencyLabel = chosen.it.balance <= 0 ? 'نفد المخزون' : (chosen.daysLeft != null ? `أوشك على النفاذ (~${fmt(chosen.daysLeft,0)} يوم${chosen.forecastNote})` : 'محتاج إعادة طلب');
                 stockActionHtml = `
-                    <div style="margin-top:2px;"><span class="pill exp">${urgencyLabel}</span></div>
-                    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
-                        <button class="btn gold sm owner-only" style="flex:1;" onclick="quickReorderPurchase('${sug.name.replace(/'/g,"\\'")}', ${sug.qty}, '${sug.unit}')">🛒 إعادة شراء (${fmt(sug.qty,1)} ${sug.unit})</button>
+                    <div><span class="pill exp">${urgencyLabel}</span></div>
+                    <div class="row-actions mt-2">
+                        <button class="btn gold sm owner-only flex-1" onclick="quickReorderPurchase('${sug.name.replace(/'/g,"\\'")}', ${sug.qty}, '${sug.unit}')">🛒 إعادة شراء (${fmt(sug.qty,1)} ${sug.unit})</button>
                         <button class="btn ghost sm" onclick="dismissReorderSuggestion('${chosen.it.id}')">🙈 تجاهل</button>
                     </div>`;
             } else if (chosen.daysLeft != null && chosen.daysLeft <= 7) {
@@ -19707,14 +20207,14 @@
             // 🔧 إصلاح: صورة مرجعية للصنف (triggerItemPhotoUpload/removeItemPhoto) كانت شغالة بالكامل من غير
             // أي زرار أو عرض فى الواجهة — مضافة هنا جوه نفس صف إجراءات الصنف الظاهر حاليًا.
             const itemPhotoHtml = chosen.it.photo
-                ? `<div class="text-center"><img src="${chosen.it.photo}" style="max-width:70px;max-height:70px;border-radius:8px;border:1px solid var(--line);object-fit:cover;" onclick="triggerItemPhotoUpload('${chosen.it.id}')" title="اضغط لتغيير الصورة"><div><button class="btn ghost xs" style="margin-top:2px;color:var(--red);" onclick="removeItemPhoto('${chosen.it.id}')">🗑️ حذف الصورة</button></div></div>`
+                ? `<div class="inv-photo-wrap"><img src="${chosen.it.photo}" onclick="triggerItemPhotoUpload('${chosen.it.id}')" title="اضغط لتغيير الصورة"><div><button class="btn ghost xs inv-photo-remove" onclick="removeItemPhoto('${chosen.it.id}')">🗑️ حذف الصورة</button></div></div>`
                 : '';
             // زرارا تعديل/حذف للصنف الظاهر حاليًا — بيظهروا لما يدوس المستخدم على الدائرة نفسها
             const actionsRowHtml = dashInvActionsOpen ? `
                 <div class="row-actions mt-3">
                     <button class="btn ghost flex-1" onclick="quickStock('${chosen.it.id}','adjust')" title="تعديل/تصحيح رصيد الصنف (تلف، جرد، خطأ إدخال)">✏️ تعديل الرصيد</button>
                     <button class="btn ghost flex-1" onclick="triggerItemPhotoUpload('${chosen.it.id}')" title="حفظ صورة مرجعية لشكل المنتج">📷 ${chosen.it.photo ? 'تغيير الصورة' : 'إضافة صورة'}</button>
-                    <button class="btn ghost owner-only" style="flex:1;color:var(--red);" onclick="deleteInventoryItem('${chosen.it.id}')" title="⚠️ حذف الصنف نهائيًا من المخزن مع كل حركاته">🗑️ حذف الصنف</button>
+                    <button class="btn ghost owner-only flex-1 text-red" onclick="deleteInventoryItem('${chosen.it.id}')" title="⚠️ حذف الصنف نهائيًا من المخزن مع كل حركاته">🗑️ حذف الصنف</button>
                 </div>` : '';
 
             return `
@@ -19723,22 +20223,22 @@
                     <div class="row-actions mb-3">
                         <button class="btn gold flex-1" onclick="openPurchaseModal()">🛒 شراء</button>
                         <button class="btn danger flex-1" onclick="openSaleModal()">💰 بيع</button>
-                        <button class="btn ghost" style="flex:0.6;" onclick="showTransactionsLedger()" title="عرض/تعديل/حذف عمليات سابقة">🧾 السجل</button>
+                        <button class="btn ghost flex-narrow" onclick="showTransactionsLedger()" title="عرض/تعديل/حذف عمليات سابقة">🧾 السجل</button>
                     </div>
-                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                    <div class="inv-top-row">
                         ${itemPhotoHtml}
                         <div onclick="toggleDashInvActions()" title="اضغط لتعديل أو حذف هذا الصنف" class="cursor-pointer">${ringHtml}</div>
-                        <div style="flex:1;min-width:130px;">
-                            <select onchange="setDashInvItem(this.value)" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;margin-bottom:6px;">${itemPickerOptions}</select>
+                        <div class="inv-detail-col">
+                            <select class="inv-select" onchange="setDashInvItem(this.value)">${itemPickerOptions}</select>
                             <div class="fs-xs text-muted">مستهلك: ${fmt(chosen.usedQty,1)} ${chosen.it.unit}</div>
-                            <div style="margin-top:2px;">${stockActionHtml}</div>
+                            <div class="inv-stock-action">${stockActionHtml}</div>
                         </div>
                     </div>
                     ${actionsRowHtml}
-                    <p class="fs-2xs text-muted" style="margin:8px 2px 0">💡 اضغط على الدائرة لتعديل أو حذف الصنف الظاهر فيها. الصرف بيتسجل تلقائيًا من تنفيذ برامج العلف/الماء/التحصينات/العلاجات فى السجل اليومي.</p>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;background:linear-gradient(135deg,#2d4a5a,#1e323a);color:#fff;border-radius:10px;padding:10px 12px;">
-                        <div><div style="opacity:.85;font-size:10.5px;">💳 مستحق للموردين</div><div style="font-weight:900;font-size:15px;color:${payables.total>0?'#ffb4b4':'#fff'};">${money(payables.total)}</div></div>
-                        <div><div style="opacity:.85;font-size:10.5px;">💵 مستحق من العملاء</div><div style="font-weight:900;font-size:15px;color:${receivables.total>0?'#ffe08a':'#fff'};">${money(receivables.total)}</div></div>
+                    <p class="fs-2xs text-muted mt-2">💡 اضغط على الدائرة لتعديل أو حذف الصنف الظاهر فيها. الصرف بيتسجل تلقائيًا من تنفيذ برامج العلف/الماء/التحصينات/العلاجات فى السجل اليومي.</p>
+                    <div class="dash-inv-balances">
+                        <div><div class="lbl">💳 مستحق للموردين</div><div class="val ${payables.total>0?'has-due':''}">${money(payables.total)}</div></div>
+                        <div><div class="lbl">💵 مستحق من العملاء</div><div class="val ${receivables.total>0?'has-receivable':''}">${money(receivables.total)}</div></div>
                     </div>
                     <div class="row-actions mt-3">
                         <button class="btn ghost sm flex-1" onclick="mergeDuplicateInvItems()">🔗 دمج الأصناف المكررة</button>
@@ -19917,7 +20417,7 @@
 
             <!-- قسم الأداء الإنتاجي (أهم ملخص فى هذا التبويب، يفضل مفتوح افتراضيًا) -->
             <div class="section" id="rep-performance" data-default-open="true"><div class="section-head"><h2>🐔 ملخص الأداء الإنتاجي</h2></div><div class="card">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div class="grid-cols-2">
                     ${statLine(`عمر القطيع`, `${m.age} يوم`)}
                     ${statLine(`الأعداد الحية`, `${fmt(m.liveCount,0)} (${fmt(m.liveCountPct,1)}%)`)}
                     ${statLine(`متوسط الوزن${m.avgWeightIsEstimated?' (تقديري)':''}`, `${m.avgWeightIsEstimated?'~':''}${fmt(m.avgWeightG,0)} جم`)}
@@ -20848,7 +21348,7 @@
                 if (refTemp != null && cur && cur.temp != null && cur.temp - refTemp >= 6) {
                     heatWarning = `<div style="margin-top:6px;color:var(--red);font-weight:800;font-size:12px;">⚠️ الحرارة الآن أعلى من معياري عمر القطيع (${m.todayAge} يوم) بـ ${fmt(cur.temp - refTemp,1)}°م — جهّز التبريد/التهوية.</div>`;
                 } else if (refTemp != null && weatherResult.tempMax - refTemp >= 6) {
-                    heatWarning = `<div style="margin-top:6px;color:#e08a2b;font-weight:800;font-size:12px;">⚠️ إجهاد حراري متوقع لاحقًا اليوم — أعلى حرارة متوقعة أعلى من المعياري بـ ${fmt(weatherResult.tempMax - refTemp,1)}°م.</div>`;
+                    heatWarning = `<div style="margin-top:6px;color:var(--caution-text);font-weight:800;font-size:12px;">⚠️ إجهاد حراري متوقع لاحقًا اليوم — أعلى حرارة متوقعة أعلى من المعياري بـ ${fmt(weatherResult.tempMax - refTemp,1)}°م.</div>`;
                 }
             }
             return `<div class="card" style="margin-bottom:10px;padding:12px;">
@@ -20881,7 +21381,7 @@
                     if (refTemp != null && weatherResult.tempMax - refTemp >= 6) {
                         heatWarning = `<div style="margin-top:6px;color:var(--red);font-weight:800;">⚠️ إجهاد حراري متوقع: الحرارة المتوقعة أعلى من المعياري لعمر القطيع (${m.todayAge} يوم) بـ ${fmt(weatherResult.tempMax - refTemp,1)}°م — جهّز التهوية/التبريد${prepTime ? ` <u>الساعة ${clockLabel(prepTime)}</u> (قبل الذروة المتوقعة الساعة ${clockLabel(weatherResult.peakTimeToday)} بساعتين)` : ' الآن'}.</div>`;
                     } else if (weatherResult.humidityAtMax >= 80 && weatherResult.tempMax >= 28) {
-                        heatWarning = `<div style="margin-top:6px;color:#e08a2b;font-weight:800;">⚠️ حرارة ورطوبة مرتفعتان معًا — إجهاد حراري محتمل حتى لو الحرارة وحدها ضمن الحدود${weatherResult.peakTimeToday ? ` (الذروة الساعة ${clockLabel(weatherResult.peakTimeToday)})` : ''}.</div>`;
+                        heatWarning = `<div style="margin-top:6px;color:var(--caution-text);font-weight:800;">⚠️ حرارة ورطوبة مرتفعتان معًا — إجهاد حراري محتمل حتى لو الحرارة وحدها ضمن الحدود${weatherResult.peakTimeToday ? ` (الذروة الساعة ${clockLabel(weatherResult.peakTimeToday)})` : ''}.</div>`;
                     }
                 }
                 alertHtml = `<div style="font-size:12.5px;margin-top:8px;">🌡️ أعلى حرارة متوقعة اليوم: <b>${fmt(weatherResult.tempMax,1)}°م</b>${weatherResult.peakTimeToday ? ` (الساعة ${clockLabel(weatherResult.peakTimeToday)})` : ''} · 💧 الرطوبة وقتها: <b>${fmt(weatherResult.humidityAtMax,0)}%</b>${heatWarning}</div>`;
@@ -20890,7 +21390,7 @@
                     if (prep) {
                         const dayNames = ['غدًا','بعد غد','بعد 3 أيام'];
                         const rows = prep.map((r, i) => {
-                            const color = r.level === 'heat' ? 'var(--red)' : r.level === 'cold' ? '#2b6fe0' : r.level === 'watch' ? '#e08a2b' : 'var(--green)';
+                            const color = r.level === 'heat' ? 'var(--red)' : r.level === 'cold' ? '#2b6fe0' : r.level === 'watch' ? 'var(--caution-text)' : 'var(--green)';
                             const icon = r.level === 'heat' ? '🔥' : r.level === 'cold' ? '❄️' : r.level === 'watch' ? '👁️' : '✅';
                             return `<div class="check-row" style="padding:8px 0;"><div class="txt">
                                 <div class="u-02">${icon} ${dayNames[i] || ('بعد ' + r.offset + ' أيام')} — ${r.date}</div>
@@ -21501,11 +22001,10 @@
                 </div>
                 <button class="btn ghost sm owner-only text-red" onclick="deleteOutageLog('${o.id}')">🗑️</button></div>`;
             }).join('');
-            return `<div class="section"><div class="section-head"><h2>⚡ سجل انقطاع الكهرباء/أعطال المولد</h2></div>
-                <div class="card p-0">${rows || '<div class="empty p-4"><div class="ico">⚡</div>لا يوجد انقطاعات مسجّلة (الحمد لله).</div>'}</div>
-                <button class="btn ghost block mt-3" onclick="openOutageModal()">+ تسجيل انقطاع/عطل</button>
-                <p style="font-size:10.5px;color:var(--muted);margin-top:6px;">💡 النفوق المعروض بجانب كل انقطاع هو نفس رقم اليوم/اليوم التالي من سجلاتك اليومية العادية — مؤشر استرشادي سريع لمدى تأثر القطيع، مش تحليل إحصائي دقيق.</p>
-            </div>`;
+            const bodyHtml = `<div class="card p-0">${rows || '<div class="empty p-4"><div class="ico">⚡</div>لا يوجد انقطاعات مسجّلة (الحمد لله).</div>'}</div>
+                <p class="u-14">💡 النفوق المعروض بجانب كل انقطاع هو نفس رقم اليوم/اليوم التالي من سجلاتك اليومية العادية — مؤشر استرشادي سريع لمدى تأثر القطيع، مش تحليل إحصائي دقيق.</p>`;
+            return `<div class="section"><div class="card mt-0" style="padding:0;overflow:hidden;">${subTabSection(false, '⚡ سجل انقطاع الكهرباء/أعطال المولد',
+                '<button class="btn ghost sm owner-only" onclick="openOutageModal()">+ تسجيل انقطاع/عطل</button>', bodyHtml)}</div></div>`;
         }
         // ============ جهات الاتصال السريعة (مورد/طبيب بيطري...) — اتصال/واتساب مباشر من أي شاشة ============
         function cleanPhone(phone) { return String(phone || '').replace(/[^0-9]/g, ''); }
@@ -21661,7 +22160,7 @@
             const b = getActiveBatch();
             const allBatches = [...state.batches].sort((x,c)=> (x.status==='مؤرشفة'?1:0) - (c.status==='مؤرشفة'?1:0));
             const batchRows = allBatches.map(x => `
-                <div class="check-row" style="${x.id===state.activeId?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}">
+                <div class="check-row ${x.id===state.activeId?'is-active-house':''}">
                     <div class="txt">
                         <div class="u-02">${esc(x.name)} ${x.id===state.activeId?'<span class="pill ok fs-2xs">الدفعة الحالية</span>':''} ${x.status==='مؤرشفة'?'<span class="pill info fs-2xs">مؤرشفة</span>':''}</div>
                         <div class="day">${getSpeciesData(x.species).label} · ${x.startDate} · ${fmt(x.startCount,0)} كتكوت${x.location?' · 📍 '+esc(x.location):''}</div>
@@ -21677,7 +22176,7 @@
                 <div class="card p-0">
                     ${activeNow.map(x => {
                         const xm = computeMetrics(x);
-                        return `<div class="check-row" style="${x.id===state.activeId?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}"><div class="txt">
+                        return `<div class="check-row ${x.id===state.activeId?'is-active-house':''}"><div class="txt">
                             <div class="u-02">${esc(x.name)}${x.location?' — 📍 '+esc(x.location):''}</div>
                             <div class="day">${getSpeciesData(x.species).label} · عمر ${fmt(xm.todayAge,0)} يوم</div>
                             ${statLine(`أحياء`, `${fmt(xm.liveCount,0)}`, {lineStyle:`margin-top:4px;`})}
@@ -21718,9 +22217,9 @@
             const snippetDeviceAccess = isSourceDevice() ? `
                 <div id="accessReqListBox">${renderAccessRequestsListCard()}</div>
                 <div class="card mt-3">
-                    <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:4px;">🆔 معرّف جهازك (UID) — انسخه وحطّه فى Firestore Rules</label>
+                    <label class="label-strong">🆔 معرّف جهازك (UID) — انسخه وحطّه فى Firestore Rules</label>
                     <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px;">الكود ده لازم تحطه فى الـ Rules عشان الجهاز ده بس (جهازك المصدر) يقدر يوافق/يرفض على طلبات الناس. متسبيهوش لحد.</p>
-                    <div style="background:var(--cream, #f5efe0);border:1.5px solid var(--line);border-radius:10px;padding:12px;text-align:center;word-break:break-all;font-family:monospace;font-size:12.5px;font-weight:700;color:var(--barn-dark);">${esc(getFbUid() || (window._fbAuthErr ? ('❌ خطأ: ' + window._fbAuthErr) : (window.firebase ? 'لسه بيحاول يتصل...' : '❌ مكتبة فايربيز مش اتحمّلت خالص (تأكد من الإنترنت)')))}</div>
+                    <div class="code-box" style="word-break:break-all;font-family:monospace;font-size:12.5px;font-weight:700;color:var(--barn-dark);">${esc(getFbUid() || (window._fbAuthErr ? ('❌ خطأ: ' + window._fbAuthErr) : (window.firebase ? 'لسه بيحاول يتصل...' : '❌ مكتبة فايربيز مش اتحمّلت خالص (تأكد من الإنترنت)')))}</div>
                     <button class="btn ghost sm mt-2" onclick="copyDeviceUid()">📋 نسخ الـ UID</button>
                     <button class="btn ghost sm mt-2" onclick="toggleDeviceUidQR()">🔳 عرض كـQR</button>
                     <div id="deviceUidQrBox" style="display:none;margin-top:10px;flex-direction:column;align-items:center;gap:6px;">
@@ -21729,19 +22228,19 @@
                     </div>
                 </div>
                 <div class="card mt-3">
-                    <label for="genDeviceCodeInput" style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:4px;">🔑 توليد كود تفعيل يدوي (احتياطي بدون إنترنت)</label>
+                    <label for="genDeviceCodeInput" class="label-strong">🔑 توليد كود تفعيل يدوي (احتياطي بدون إنترنت)</label>
                     <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px;">الأفضل دايمًا إنك توافق من قسم "طلبات الدخول" فوق. الأداة دي بس احتياط لو حصل ومفيش نت وقت الموافقة — اكتب كود الجهاز اللي هيديهولك الشخص تليفونيًا.</p>
                     <div class="field full mb-2">
                         <input type="text" id="genDeviceCodeInput" placeholder="مثال: AB12-CD34" oninput="generateActivationForDevice()" style="text-align:center;letter-spacing:1px;">
                     </div>
-                    <div style="background:var(--cream, #f5efe0);border:1.5px solid var(--line);border-radius:10px;padding:12px;text-align:center;">
+                    <div class="code-box">
                         <div style="font-size:11px;color:var(--muted);">كود التفعيل</div>
                         <div id="genActivationCodeOutput" style="font-size:20px;font-weight:900;letter-spacing:2px;color:var(--barn-dark);min-height:26px;"></div>
                     </div>
                     <button class="btn ghost sm mt-2" onclick="copyGeneratedCode()">📋 نسخ كود التفعيل</button>
                 </div>
                 <div class="card mt-3">
-                    <label style="font-size:12px;font-weight:800;color:var(--barn-dark);display:block;margin-bottom:4px;">🛡️ تأمين حساب المالك (استرداد الوصول)</label>
+                    <label class="label-strong">🛡️ تأمين حساب المالك (استرداد الوصول)</label>
                     <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.7;">
                         صلاحية المالك (isOwner) على السيرفر مربوطة بمعرّف جهازك (UID) فوق. لو مسحت بيانات المتصفح، غيّرت الجهاز، أو مسحت التطبيق ورَكّبته تانى من غير ما تربط حساب استرداد — هتفقد صلاحية المالك على كل مزارعك نهائيًا ومفيش مسار رجوع.
                         ${hasRecoveryLinked() ? ` اتربط حساب استرداد بالفعل على: <b>${esc(getRecoveryEmail() || '')}</b>. احتفظ بالإيميل وكلمة المرور فى مكان آمن، ولو عايز تغيّر كلمة المرور استخدم الحقل تحت.` : ' اربط إيميل وكلمة مرور دلوقتي (مرة واحدة بس) عشان لو حصل وفقدت الوصول للجهاز ده، تقدر ترجع لنفس صلاحيتك من أي جهاز تانى عن طريق "أنا صاحب التطبيق وعندي حساب استرداد" فى شاشة إذن الاستخدام.'}
@@ -21910,7 +22409,7 @@
                         <div class="day">يعمل حتى لو إشعارات المتصفح غير مدعومة — يُشغَّل عند فتح التطبيق ووجود تنبيهات عاجلة</div></div>
                     </label>
                     <button class="btn ghost block" onclick="playAlertBeep()">🔊 تجربة الصوت الآن</button>
-                    <div style="font-size:11px;color:var(--muted);background:#f8f5ed;border-radius:8px;padding:8px;">
+                    <div style="font-size:11px;color:var(--muted);background:var(--cream);border-radius:8px;padding:8px;">
                         💡 لو ظهرت رسالة "المتصفح لا يدعم" لتحديد الموقع أو الإشعارات: ده غالبًا لأن الملف مفتوح مباشرة (file://) بدل رابط https، وده يمنع بعض المتصفحات/الواجهات من هذه الميزات لأسباب أمنية. الحل: افتح التطبيق من متصفح حقيقي (Chrome/Safari) بعد رفعه على استضافة (حتى مجانية)، أو استخدم البحث بالاسم لتحديد الموقع، وصوت التنبيه البديل أعلاه بدل الإشعارات.
                     </div>
                 </div>
@@ -21974,7 +22473,7 @@
                         if (!farms.length) return '';
                         return `<div style="display:grid;gap:6px;">
                             ${farms.map(f => `
-                                <div class="check-row" style="${f.id===farmId?'background:rgba(217,165,68,.12);border-right:3px solid var(--wheat);':''}">
+                                <div class="check-row ${f.id===farmId?'is-active-house':''}">
                                     <div class="txt">
                                         <div class="u-02">${esc(f.name || f.id)} ${f.id===farmId?'<span class="pill ok fs-2xs">المزرعة الحالية</span>':''}</div>
                                         <div class="day">رمز: ${esc(f.id)}</div>
@@ -22127,14 +22626,16 @@
             const hist = computeHistoricalSeries();
             const trendSection = hist.length >= 2 ? `
             <div class="section mt-0"><div class="section-head"><h2>📈 الأداء عبر كل الدورات (تاريخي)</h2></div>
-                <div class="card"><p style="font-size:11.5px;color:var(--muted);margin-top:0;">تطور معامل التحويل الغذائي FCR عبر ${hist.length} دورة مرتبة زمنيًا (الأقل أفضل)</p><canvas id="chartTrendFCR" height="160"></canvas></div>
-                <div class="card"><p style="font-size:11.5px;color:var(--muted);margin-top:0;">تطور العائد على التكلفة ROI %</p><canvas id="chartTrendROI" height="160"></canvas></div>
-                <div class="card"><p style="font-size:11.5px;color:var(--muted);margin-top:0;">تطور صافي الربح لكل دورة</p><canvas id="chartTrendProfit" height="160"></canvas></div>
+                <div class="card"><p class="compare-trend-caption">تطور معامل التحويل الغذائي FCR عبر ${hist.length} دورة مرتبة زمنيًا (الأقل أفضل)</p><canvas id="chartTrendFCR" height="160"></canvas></div>
+                <div class="card"><p class="compare-trend-caption">تطور العائد على التكلفة ROI %</p><canvas id="chartTrendROI" height="160"></canvas></div>
+                <div class="card"><p class="compare-trend-caption">تطور صافي الربح لكل دورة</p><canvas id="chartTrendProfit" height="160"></canvas></div>
             </div>` : '';
             const checks = all.map(b => {
                 const checked = state.compareIds.includes(b.id) ? 'checked' : '';
                 const running = b.status !== 'مؤرشفة';
-                const tag = running ? ' <span class="pill ok" style="font-size:9.5px;">🟢 شغّالة الآن</span>' : ' <span class="pill info" style="font-size:9.5px;">مؤرشفة</span>';
+                // ⚠️ إصلاح: كان فيه inline style="font-size:9.5px" يخلّي هذا الـ pill أصغر من كل الـpills التانية
+                // فى التطبيق (اللي بتاخد fs-xs=11px بشكل موحّد) — استغنينا عنه لتوحيد الحجم مع باقي الـpills.
+                const tag = running ? ' <span class="pill ok">🟢 شغّالة الآن</span>' : ' <span class="pill info">مؤرشفة</span>';
                 return `<label><input type="checkbox" ${checked} onchange="toggleCompare('${b.id}')"> ${esc(b.name)}${tag}</label>`;
             }).join('');
             const selected = all.filter(b => state.compareIds.includes(b.id));
@@ -22177,7 +22678,7 @@
                             const txt = md.fmt(md.get(r));
                             return `<td class="${txt.includes('🔴') ? 'worst' : (txt.includes('✅') ? 'best' : '')}">${txt}</td>`;
                         }).join('');
-                        return `<tr><td style="text-align:right;font-weight:800;">${md.label}</td>${cells}</tr>`;
+                        return `<tr><td class="label-cell">${md.label}</td>${cells}</tr>`;
                     }
                     const vals = rows.map(r => md.get(r));
                     const max = Math.max(...vals),
@@ -22192,12 +22693,12 @@
                         }
                         return `<td class="${cls}">${md.fmt(v)}</td>`;
                     }).join('');
-                    return `<tr><td style="text-align:right;font-weight:800;">${md.label}</td>${cells}</tr>`;
+                    return `<tr><td class="label-cell">${md.label}</td>${cells}</tr>`;
                 }).join('');
-                const liveNote = rows.some(r => r.b.status !== 'مؤرشفة') ? `<p style="font-size:11px;color:var(--green);margin:0 0 6px;font-weight:700;">🟢 = دورة شغّالة الآن — أرقامها تتحدّث لحظيًا مع كل سجل يومي جديد تُدخله.</p>` : '';
+                const liveNote = rows.some(r => r.b.status !== 'مؤرشفة') ? `<p class="compare-live-note">🟢 = دورة شغّالة الآن — أرقامها تتحدّث لحظيًا مع كل سجل يومي جديد تُدخله.</p>` : '';
                 tableHtml =
                     `${liveNote}<div class="card scroll-x"><table class="compare-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>
-                    <p style="font-size:11px;color:var(--muted);margin-top:8px;">🟢 القيمة الأفضل بين الدورات المختارة لكل مؤشر · 🔴 الأضعف. (الأقل أفضل بالنسبة للنفوق/FCR/التكاليف، والأعلى أفضل لباقي المؤشرات)</p>`;
+                    <p class="compare-note">🟢 القيمة الأفضل بين الدورات المختارة لكل مؤشر · 🔴 الأضعف. (الأقل أفضل بالنسبة للنفوق/FCR/التكاليف، والأعلى أفضل لباقي المؤشرات)</p>`;
             }
             // ============ تحليلات ذكية عبر الدورات — مبنية على كل الدفعات المؤرشفة، مش دفعة واحدة ============
             const activeSpecies = getActiveBatch() ? getActiveBatch().species : (all[0] && all[0].species);
@@ -22205,19 +22706,19 @@
             const chickSrcHtml = !chickSrc ? '' : `<div class="check-row"><div class="txt">
                     <div>🐣 أداء مصادر/مفارخ الكتاكيت عبر الدورات المؤرشفة</div>
                     <div class="day mt-1">${chickSrc.rows.map(r => `${statLine(`${esc(r.supplier)} (${r.cycles} دورة)`, `EPEF ${fmt(r.avgEpef,0)} · FCR ${r.avgFcr?fmt(r.avgFcr,2):'—'} · نفوق ${fmt(r.avgMort,2)}%`)}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">مرتبة من الأفضل EPEF للأقل — مؤشر استرشادي يحتاج عدد دورات كافٍ لكل مصدر ليكون موثوقًا</div>
+                    <div class="day tight">مرتبة من الأفضل EPEF للأقل — مؤشر استرشادي يحتاج عدد دورات كافٍ لكل مصدر ليكون موثوقًا</div>
                 </div></div>`;
             const protoEff = computeProtocolEffectiveness();
             const protoEffHtml = !protoEff ? '' : `<div class="check-row"><div class="txt">
                     <div>🧪 الكفاءة الاقتصادية للبروتوكولات المحفوظة (طبيعية/إضافات) عبر الدورات المؤرشفة</div>
                     <div class="day mt-1">${protoEff.rows.map(r => `${statLine(`${esc(r.name)}`, `مع (${r.withCount}): FCR ${r.withFcr?fmt(r.withFcr,2):'—'}، تكلفة ${r.withCost?fmt(r.withCost,2):'—'} ج · بدون (${r.withoutCount}): FCR ${r.withoutFcr?fmt(r.withoutFcr,2):'—'}، تكلفة ${r.withoutCost?fmt(r.withoutCost,2):'—'} ج`)}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">مقارنة الدورات اللي طُبِّق عليها البروتوكول مقابل التي لم يُطبَّق عليها — تحتاج عدد دورات كافٍ فى كل مجموعة لتكون النتيجة موثوقة</div>
+                    <div class="day tight">مقارنة الدورات اللي طُبِّق عليها البروتوكول مقابل التي لم يُطبَّق عليها — تحتاج عدد دورات كافٍ فى كل مجموعة لتكون النتيجة موثوقة</div>
                 </div></div>`;
             const seasonality = computeMarketPriceSeasonality();
             const seasonalityHtml = !seasonality ? '' : `<div class="check-row"><div class="txt">
                     <div>📅 موسمية سعر بورصة الدواجن (من كل سجلات الأسعار المُدخلة عبر دوراتك)</div>
                     <div class="day mt-1">${seasonality.rows.map(r => `${statLine(`${r.label}`, `${fmt(r.avg,2)} ج/كجم (${r.count} قراءة)`, {vStyle:`${r.month===seasonality.best.month?'color:var(--green);font-weight:800;':(r.month===seasonality.worst.month?'color:var(--red);':'')}`})}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">تاريخيًا أعلى الأسعار فى ${seasonality.best.label} — مؤشر استرشادي فقط، وليس تنبؤًا مضمونًا بحركة السوق القادمة</div>
+                    <div class="day tight">تاريخيًا أعلى الأسعار فى ${seasonality.best.label} — مؤشر استرشادي فقط، وليس تنبؤًا مضمونًا بحركة السوق القادمة</div>
                 </div></div>`;
             function renderCrossCycleVerdictCard(rows, opts) {
                 if (!rows) return '';
@@ -22233,7 +22734,7 @@
                         return `${statLine(`${esc(r.name)} (${r.cycles} دورة)`, `${r.verdictLabel}`, {vStyle:`color:${color};font-weight:800;`})}
                         <div style="font-size:10.5px;color:var(--muted);margin:-2px 0 4px;">${metricTxt.join(' · ')}</div>`;
                     }).join('')}</div>
-                    <div class="day" style="margin-top:2px;">${opts.footer}</div>
+                    <div class="day tight">${opts.footer}</div>
                 </div></div>`;
             }
             const crossVerdictFooter = '"تحسّن فى X/Y دورة" = فى كام دورة ظهر فرق ملحوظ فعليًا وقت السريان/التنفيذ مقابل خارجه. 🟢 دايم إيجابي = استمر عليه · 🔴 دايم سلبي = يُقترح إلغاؤه · ⚪ بدون تأثير = مرشّح للإلغاء توفيرًا للتكلفة · 🟡 متفاوت = محتاج مراقبة أكتر';
@@ -22257,7 +22758,7 @@
             const perfSeasonHtml = !perfSeason ? '' : `<div class="check-row"><div class="txt">
                     <div>📅🏆 موسمية الأداء الإنتاجي حسب شهر بدء التربية (من دوراتك الفعلية)</div>
                     <div class="day mt-1">${perfSeason.rows.map(r => `${statLine(`${r.label} (${r.count} دورة)`, `EPEF ${fmt(r.avgEpef,0)} · FCR ${r.avgFcr?fmt(r.avgFcr,2):'—'} · نفوق ${fmt(r.avgMort,2)}%`, {vStyle:`${r.month===perfSeason.best.month?'color:var(--green);font-weight:800;':(r.month===perfSeason.worst.month?'color:var(--red);':'')}`})}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">أفضل أداء تاريخيًا فى ${perfSeason.best.label} — هذا مؤشر أداء الإنتاج نفسه (تأثير الطقس)، منفصل عن موسمية سعر البيع بالأسفل</div>
+                    <div class="day tight">أفضل أداء تاريخيًا فى ${perfSeason.best.label} — هذا مؤشر أداء الإنتاج نفسه (تأثير الطقس)، منفصل عن موسمية سعر البيع بالأسفل</div>
                 </div></div>`;
             // ============ أثر وزن/تجانس الكتاكيت عند الاستلام على EPEF النهائي ============
             const arrivalQ = computeArrivalQualityAnalysis();
@@ -22278,7 +22779,7 @@
                 return `<div class="check-row"><div class="txt">
                     <div>⚖️📊 الكثافة المثلى تاريخيًا (أقصى كجم/م² وصلته كل دورة مقابل EPEF): <b style="color:${clear?(densityPerf.corr<0?'var(--red)':'var(--green)'):'var(--muted)'};">${corrTxt}</b></div>
                     <div class="day mt-1">${densityPerf.rows.map(r => `${statLine(`${esc(r.name)}`, `${fmt(r.maxDensity,1)} كجم/م² · EPEF ${fmt(r.epef,0)}`)}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">مرتبة من أقل كثافة لأعلى — قارن أفضل EPEF عندك اترافق مع أي مستوى كثافة فعليًا، بدل الاعتماد على الحد الأقصى النظري لنظام التهوية فقط</div>
+                    <div class="day tight">مرتبة من أقل كثافة لأعلى — قارن أفضل EPEF عندك اترافق مع أي مستوى كثافة فعليًا، بدل الاعتماد على الحد الأقصى النظري لنظام التهوية فقط</div>
                 </div></div>`;
             })();
             // ============ ربط الالتزام بتشيك ليست العمليات/الأمان الحيوي بمعدل النفوق النهائي عبر الدورات ============
@@ -22289,7 +22790,7 @@
                 return `<div class="check-row"><div class="txt">
                     <div>✅🛡️ الالتزام بتشيك ليست العمليات ومعدل النفوق النهائي: <b style="color:${clear?(compliance.corr<0?'var(--green)':'var(--red)'):'var(--muted)'};">${corrTxt}</b></div>
                     <div class="day mt-1">${compliance.rows.slice(0,6).map(r => `${statLine(`${esc(r.name)} (التزام ${fmt(r.checklistAvgPct,0)}%)`, `نفوق ${fmt(r.mortRate,2)}%${r.bioActionsPerWeek!=null?` · أمان حيوي ${fmt(r.bioActionsPerWeek,1)}/أسبوع`:''}`)}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">متوسط الالتزام محسوب على كامل الدورة (وليس آخر 3 أيام فقط كما فى التنبيهات اليومية)</div>
+                    <div class="day tight">متوسط الالتزام محسوب على كامل الدورة (وليس آخر 3 أيام فقط كما فى التنبيهات اليومية)</div>
                 </div></div>`;
             })();
             // ============ ربط سجل الطقس الداخلي الفعلي (المُسجَّل يوميًا) بالنفوق تاريخيًا حسب الشهر ============
@@ -22297,14 +22798,14 @@
             const weatherHistHtml = !weatherHist ? '' : `<div class="check-row"><div class="txt">
                     <div>🌡️📅 النفوق حسب شهر السجل الفعلي (من قراءات الحرارة الداخلية المُسجَّلة عبر كل الدورات)</div>
                     <div class="day mt-1">${weatherHist.rows.map(r => `${statLine(`${r.label}${r.avgTemp!=null?` (${fmt(r.avgTemp,1)}°م)`:''}`, `نفوق ${fmt(r.avgMortPerDay,2)} طائر/يوم`, {vStyle:`${r.month===weatherHist.worst.month?'color:var(--red);font-weight:800;':(r.month===weatherHist.best.month?'color:var(--green);':'')}`})}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">أعلى نفوق تاريخيًا فى ${weatherHist.worst.label} — مؤشر خاص بمزرعتك تحديدًا (تهوية/تصميم العنبر)، مبني على القراءات الداخلية الفعلية وليس توقعات الطقس الخارجية</div>
+                    <div class="day tight">أعلى نفوق تاريخيًا فى ${weatherHist.worst.label} — مؤشر خاص بمزرعتك تحديدًا (تهوية/تصميم العنبر)، مبني على القراءات الداخلية الفعلية وليس توقعات الطقس الخارجية</div>
                 </div></div>`;
             // ============ الأسبوع الحرج — أعلى تفاوت (عدم استقرار) فى نفوق كل أسبوع عمري عبر دوراتك المؤرشفة لنفس النوع ============
             const criticalWeek = computeCriticalWeekAnalysis(activeSpecies);
             const criticalWeekHtml = !criticalWeek ? '' : `<div class="check-row"><div class="txt">
                     <div>⚠️📆 الأسبوع الحرج فى مزرعتك: <b class="text-red">الأسبوع ${criticalWeek.worst.week}</b> (أعلى تفاوت فى النفوق بين دوراتك، مش بس أعلى متوسط)</div>
                     <div class="day mt-1">${criticalWeek.rows.slice(0,6).map(r => `${statLine(`الأسبوع ${r.week} (${r.count} دورة)`, `متوسط نفوق ${fmt(r.meanMort,2)}%${r.cv!=null?` · تفاوت ${fmt(r.cv*100,0)}%`:''}`, {vStyle:`${r.week===criticalWeek.worst.week?'color:var(--red);font-weight:800;':''}`})}`).join('')}</div>
-                    <div class="day" style="margin-top:2px;">التفاوت العالي معناه إن نتيجة الأسبوع ده أقل قابلية للتنبؤ فى مزرعتك تحديدًا — ركّز مراقبتك (تهوية/تغذية/برنامج صحي) خصوصًا وقت وصولك للأسبوع ده فى الدورة الجايه</div>
+                    <div class="day tight">التفاوت العالي معناه إن نتيجة الأسبوع ده أقل قابلية للتنبؤ فى مزرعتك تحديدًا — ركّز مراقبتك (تهوية/تغذية/برنامج صحي) خصوصًا وقت وصولك للأسبوع ده فى الدورة الجايه</div>
                 </div></div>`;
             // ============ ترتيب أهم العوامل المؤثرة على ربح الطائر (انحدار متعدد عبر الدورات المؤرشفة) ============
             const profitAttr = computeProfitAttributionAnalysis();
@@ -22314,7 +22815,7 @@
                 return `<div class="check-row"><div class="txt">
                     <div>🏆📈 أهم العوامل المؤثرة على ربح الطائر عبر دوراتك (${profitAttr.n} دورة مؤرشفة، دقة النموذج R²=${fmt((profitAttr.r2||0)*100,0)}%)</div>
                     <div class="day mt-1">${rowsHtml}</div>
-                    <div class="day" style="margin-top:2px;">متوسط ربح الطائر فى دوراتك: <b>${money(profitAttr.avgProfitPerBird)}</b> — الترتيب هنا بعد فصل أثر كل عامل عن الباقي إحصائيًا (انحدار متعدد)، مش مجرد ترتيب مبني على ارتباط منفرد ممكن يكون مضلِّل</div>
+                    <div class="day tight">متوسط ربح الطائر فى دوراتك: <b>${money(profitAttr.avgProfitPerBird)}</b> — الترتيب هنا بعد فصل أثر كل عامل عن الباقي إحصائيًا (انحدار متعدد)، مش مجرد ترتيب مبني على ارتباط منفرد ممكن يكون مضلِّل</div>
                 </div></div>`;
             })();
             // ============ مصفوفة ارتباط موحّدة — تجمع كل الارتباطات المتفرقة أعلاه فى جدول واحد بنظرة سريعة ============
@@ -22332,7 +22833,7 @@
                         const color = !med ? 'var(--muted)' : (r.val > 0 ? 'var(--green)' : 'var(--red)');
                         const arrow = r.val > 0 ? '↑' : '↓';
                         const strengthTxt = strong ? 'قوي' : (med ? 'متوسط' : 'ضعيف');
-                        return `<tr><td class="text-right">${esc(r.factor)}</td><td style="font-size:11px;">${esc(r.outcome)}</td><td style="color:${color};font-weight:800;">${arrow} ${strengthTxt} (${fmt(Math.abs(r.val)*100,0)}%)</td><td style="font-size:11px;color:var(--muted);">${r.n} دورة</td></tr>`;
+                        return `<tr><td class="text-right">${esc(r.factor)}</td><td class="corr-cell-sm">${esc(r.outcome)}</td><td style="color:${color};font-weight:800;">${arrow} ${strengthTxt} (${fmt(Math.abs(r.val)*100,0)}%)</td><td class="corr-cell-muted">${r.n} دورة</td></tr>`;
                     }).join('')}
                     </tbody></table></div>
                     <div class="day mt-2">💡 الأسهم للأعلى = زيادة العامل مرتبطة بنتيجة أفضل، وللأسفل = مرتبطة بنتيجة أسوأ. راجع التفاصيل الكاملة لكل تحليل بالأسفل.</div>
@@ -24559,10 +25060,11 @@
             cv: { t: 'CV% — معامل تجانس القطيع', d: 'الانحراف المعياري لعينة أوزان فردية مقسومًا على متوسطها. كل ما قلّ الرقم كل ما كان القطيع أكثر تجانسًا. الهدف الصناعي المعتاد أقل من 8%.' },
             dailyEfficiency: { t: 'مؤشر كفاءة اليوم', d: 'رقم مركّب من 0 إلى 100 يلخّص أداء اليوم الحالي (الانحراف عن الوزن المعياري، معدل النفوق اليومي، استقرار استهلاك العلف/الماء) فى رقم واحد سريع للمتابعة.' },
             density: { t: 'الكثافة (كجم/م²)', d: 'إجمالي وزن الطيور الحية مقسومًا على مساحة العنبر. تجاوز الحد الآمن يزيد الإجهاد الحراري ومشاكل الأمونيا والنفوق.' },
-            healthScore: { t: 'درجة صحة الدفعة', d: 'رقم من 100 يلخّص الحالة العامة للدفعة الآن: الانحراف عن المعيار، معدل النفوق، الالتزام بتشيك ليست العمليات، والأمان الحيوي.' },
+            healthScore: { t: 'درجة صحة الدفعة', d: 'رقم من 100 يلخّص الحالة العامة للدفعة الآن: الانحراف عن المعيار، معدل النفوق، الالتزام بتشيك ليست العمليات، والأمان الحيوي. الكارت بيجمع 4 زوايا لنفس القصة: الدرجة (الوضع الآن) + الترتيب (مقابل تاريخك) + التوقع (لو استمر الأداء الحالي) + احتمالية مشكلة قادمة (إشارات مبكرة). "🎯 أهم فعل عليك اتخاذه الآن" فوق الداشبورد مبني على نفس المصادر دي بالظبط.' },
             mortRate: { t: 'نسبة النفوق التراكمية', d: 'إجمالي الطيور النافقة منذ بداية الدورة مقسومًا على عدد الكتاكيت المستلمة، كنسبة مئوية.' },
             waterFeedRatio: { t: 'معدل الماء:العلف', d: 'كمية الماء المستهلكة مقسومة على كمية العلف. القيمة الطبيعية تقريبًا 1.8-2 وترتفع فى الجو الحار — انحراف كبير قد يدل على مشكلة صحية أو بيئية.' },
             biomass: { t: 'الكتلة الحيوية', d: 'إجمالي وزن كل الطيور الحية الآن (متوسط الوزن × عدد الأحياء) — أساس حساب الكثافة واحتياجات التهوية.' },
+            feedPerBird: { t: 'استهلاك العلف لكل فرخ', d: 'إجمالي العلف المستهلك منذ بداية الدورة مقسومًا على عدد الطيور الحية الآن، بالكيلوجرام. مؤشر سريع لكفاءة الاستهلاك على مستوى الطائر الواحد — للمقارنة الدقيقة بمعيار السلالة حسب العمر، راجع FCR وتوقع العلف.' },
             envStress: { t: 'مؤشر الإجهاد البيئي المركّب', d: 'يجمع أثر الحرارة والرطوبة والأمونيا معًا على النفوق بدل النظر لكل عامل منفردًا — بعض المشاكل تظهر فقط عند ارتفاع أكثر من عامل معًا.' },
             costPerKg: { t: 'تكلفة كيلو اللحم', d: 'إجمالي تكاليف الدورة (كتاكيت + علف + أدوية + تشغيل...) مقسومة على إجمالى كيلوجرامات اللحم المُنتَج حتى الآن.' },
         };
@@ -25277,7 +25779,7 @@
                 const actionBtn = it.action
                     ? (() => { const idx = registerKatkotAction(it.action); return `<button type="button" class="btn gold xs" style="flex-shrink:0;" onclick="closeDailyBrief(); runKatkotAction(${idx});" title="ينفّذ الإجراء المناسب فورًا">${esc(it.action.label || '⚡ نفّذ')}</button>`; })()
                     : '';
-                return `<div class="alert-item ${level}" style="margin-bottom:6px;justify-content:space-between;">
+                return `<div class="alert-item ${level}" style="margin-bottom:6px;">
                     <span style="flex:1;">${it.icon} ${esc(it.text)}${it.recurringNote ? `<br><span style="font-size:10.5px;font-weight:600;opacity:.85;">${it.recurringNote}</span>` : ''}</span>
                     ${actionBtn}
                 </div>`;
