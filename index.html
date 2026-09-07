@@ -199,6 +199,9 @@
         .subcard-success { background: var(--success-bg); border-color: #c8e0d5; }
         .subcard-success .subcard-title { color: var(--success-text); }
         .subcard-info { background: #f8f5ed; border-color: var(--line); }
+        /* -- نص شرح جوه subcard-info (زي مؤشرات فحص التهوية الميدانية) — كان font-size:12px مباشر
+           (مش من سلم --fs-*) مكرر فى كل عنصر checklist -- */
+        .subcard-info .subcard-text { font-size: var(--fs-sm); line-height: 1.7; color: var(--barn-dark); }
         /* -- نهار/ليل: لونين هوية ثابتين (مش حالة/تحذير) — يميّزوا أي صندوق تابع لفترة نهار أو ليل
            بشكل عام فى الفورم، بدل تكرار نفس الـhex فى كل صندوق (dayBox كان بيكرره 3 مرات، nightBox 4 مرات) -- */
         .subcard-day { background: #fff6df; border-color: #e8d9ad; }
@@ -235,12 +238,12 @@
         .predict-card .predict-history { font-size: var(--fs-xs); color: var(--barn-dark); margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px dashed var(--line); }
         /* -- تحذير "استرشاد أولي مش تشخيص نهائي" كان بيتكرر نصه كامل فى 3 أماكن مختلفة (معاينة حية،
            تفاصيل السجل، تنبيه ما بعد الحفظ) — دلوقتي سطر واحد ثابت قابل للتوسّع بدل التكرار المرئي -- */
-        .predict-disclaimer { margin-top: var(--space-2); font-size: var(--fs-2xs); color: var(--muted); }
-        .predict-disclaimer summary { cursor: pointer; list-style: none; font-weight: 700; }
-        .predict-disclaimer summary::-webkit-details-marker { display: none; }
-        .predict-disclaimer summary::before { content: '›'; display: inline-block; margin-inline-end: 4px; transition: transform .15s; }
-        .predict-disclaimer[open] summary::before { transform: rotate(90deg); }
-        .predict-disclaimer .predict-disclaimer-body { padding-top: var(--space-1); line-height: 1.5; }
+        .predict-disclaimer, .micro-disclosure { margin-top: var(--space-2); font-size: var(--fs-2xs); color: var(--muted); }
+        .predict-disclaimer summary, .micro-disclosure summary { cursor: pointer; list-style: none; font-weight: 700; }
+        .predict-disclaimer summary::-webkit-details-marker, .micro-disclosure summary::-webkit-details-marker { display: none; }
+        .predict-disclaimer summary::before, .micro-disclosure summary::before { content: '›'; display: inline-block; margin-inline-end: 4px; transition: transform .15s; }
+        .predict-disclaimer[open] summary::before, .micro-disclosure[open] summary::before { transform: rotate(90deg); }
+        .predict-disclaimer .predict-disclaimer-body, .micro-disclosure .micro-disclosure-body { padding-top: var(--space-1); line-height: 1.5; }
         /* صندوق تفاصيل قابل للطي بنفس منطق .adv-fields لكن بلون subcard خلفه (للأقسام الثانوية زي
            الفحص السريري وتصنيف سبب النفوق — تفاصيل مهمة بس مش لازم تظهر بالكامل من أول فتحة للفورم) */
         .subcard-details summary { cursor: pointer; font-weight: 800; padding: var(--space-2); list-style: none; }
@@ -260,6 +263,31 @@
             background: rgba(217,165,68,.08); border-radius: 0 var(--radius-md) var(--radius-md) 0;
             padding: var(--space-3); margin-bottom: var(--space-3);
         }
+        /* -- عنوان المحطة (الحالية بخط أكبر fs-base، الفاتت/الجاية بخط أصغر fs-sm عبر .sm) — كانا
+           inline بقيم px مطابقة لسلم --fs-* أصلاً (14px و12.5px) بدل استخدامه مباشرة -- */
+        .timeline-node-title { display: flex; align-items: center; gap: var(--space-2); font-weight: 900; color: var(--barn-dark); font-size: var(--fs-base); }
+        .timeline-node-title.sm { font-weight: 700; font-size: var(--fs-sm); }
+        .timeline-node-meta { font-size: var(--fs-xs); color: var(--muted); margin: var(--space-1) 0 var(--space-2); }
+        .timeline-node-substage { font-size: var(--fs-2xs); color: var(--muted); font-weight: 600; }
+        .timeline-next-note { font-size: var(--fs-2xs); color: var(--wheat); margin-top: 2px; }
+        /* -- عنوان فرعي جوه subcard-body (معادلة شتوية/صيفية، خطة تشغيل الشفاطات) -- */
+        .subcard-body-title { font-size: var(--fs-sm); font-weight: 900; color: var(--barn-dark); margin-bottom: var(--space-1); }
+        /* -- ملحوظة توضيحية صغيرة تحت الأرقام (كانت هنا كفقرة ثابتة الظهور دايمًا؛ بقت جوه .micro-disclosure
+           قابلة للطي بدل ما تطوّل الكارت بشرح نصي مفتوح طول الوقت — شوف renderVentilationCalcCard) -- */
+        /* -- شريط "الخلاصة السريعة" أعلى كارت حاسبة التهوية — كان بيستخدم rgba() يدوي بدل tokens
+           الحالة الموجودة أصلاً (--success-bg/--danger-bg/--info-bg)، فمكنش بيتوافق مع الوضع الليلي
+           (شوف تعريفات هذي الـtokens تحت data-theme dark) -- */
+        .vent-verdict { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); margin-bottom: var(--space-3); }
+        .vent-verdict .icon { font-size: var(--fs-lg); }
+        .vent-verdict .txt { font-size: var(--fs-sm); font-weight: 700; }
+        .vent-verdict.ok { background: var(--success-bg); border: 1px solid var(--green); }
+        .vent-verdict.ok .txt { color: var(--green); }
+        .vent-verdict.warn { background: var(--danger-bg); border: 1px solid var(--red); }
+        .vent-verdict.warn .txt { color: var(--red); }
+        .vent-verdict.caution { background: var(--warning-bg); border: 1px solid var(--wheat); }
+        .vent-verdict.caution .txt { color: #8a5a34; }
+        .vent-verdict.info { background: var(--info-bg); border: 1px solid var(--blue); }
+        .vent-verdict.info .txt { color: var(--info-text); }
         /* ============ ✨ فاصل "حاسبة تفصيلية" (renderEnvironmentTimeline): كان خط منقط + span كله inline
            style، ومتكرر باحتمال حاجة له تاني فى تبويبات أخرى فيها "توصيات جاهزة" + "أدوات حساب تفصيلية"
            جنب بعض — بقى كلاس عام قابل لإعادة الاستخدام بدل نسخ/لصق. ============ */
@@ -943,6 +971,12 @@
             transition: transform .2s ease;
             margin-inline-start: 4px;
         }
+        /* ============ ✨ توحيد "خطة التوسع" (renderExpansionTab): شريط روابط القفز بين الأقسام (6 روابط)
+           وصف نقاط "حالة إكمال الخطوة" كانا بنفس نمط "صف قابل للتمرير أفقي" مكرر مرتين، وعنوان كل خطوة
+           (رقم + عنوان + بادچ إجباري/اختياري) كان نفس تركيبة الـflex مكررة 5 مرات — بقوا كلاسات. ============ */
+        .scroll-row-x { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+        .jump-link { white-space: nowrap; text-decoration: none; }
+        .step-header-row { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; }
         .section.section-collapsed .section-toggle-ic {
             transform: rotate(-90deg);
         }
@@ -1797,6 +1831,12 @@
         }
         .stat-line .v.success {
             color: var(--green);
+        }
+        /* -- قيمة "مُبرَزة" محايدة (مش نجاح/فشل، مجرد رقم مهم زي "الحد الأدنى المطلوب الآن") — كانت
+           بتتكرر كـ vStyle:'color:var(--barn-dark);font-size:14px' يدوي فى أكتر من استدعاء statLine
+           (حاسبة التهوية)، رغم إن font-size:14px أصلاً هو fs-base الافتراضي لـ.stat-line -- */
+        .stat-line .v.highlight {
+            color: var(--barn-dark);
         }
         .feas-wrap {
             border: 1.5px solid var(--wheat);
@@ -2773,8 +2813,11 @@
                         <option value="mixed">🔀 مختلط (فتحات جانبية + مراوح مساعدة)</option>
                     </select>
                 </div>
-                <div class="field" id="b_fancapacitywrap"><label for="b_fancapacity">قدرة الشفاط الواحد (م³/ساعة)</label><input id="b_fancapacity" type="number" inputmode="decimal" placeholder="مثال: 17000 لشفاط 36 بوصة قياسي" min="0"></div>
-                <div class="field" id="b_fancountwrap"><label for="b_fancount">عدد الشفاطات العاملة حاليًا</label><input id="b_fancount" type="number" inputmode="decimal" placeholder="مثال: 4" min="0"></div>
+                <div class="field" id="b_fansWrap" style="grid-column:1/-1;">
+                    <label>مجموعات الشفاطات (سجّل كل قدرة مختلفة فى سطر مستقل)</label>
+                    <div id="b_fansListWrap"></div>
+                    <button type="button" class="btn ghost sm" style="margin-top:6px;" onclick="addFanGroupRow()">➕ إضافة مجموعة شفاطات</button>
+                </div>
                 <div class="field" id="b_housewidthwrap"><label for="b_housewidth">عرض العنبر (م) — لحساب مساحة المقطع</label><input id="b_housewidth" type="number" inputmode="decimal" step="0.1" placeholder="مثال: 12" min="0"></div>
                 <div class="field" id="b_househeightwrap"><label for="b_househeight">ارتفاع العنبر عند الشفاطات (م)</label><input id="b_househeight" type="number" inputmode="decimal" step="0.1" placeholder="مثال: 2.2" min="0"></div>
                 <div class="field"><label for="b_floortype">نظام التربية / الأرضية</label>
@@ -5191,6 +5234,12 @@
                             ${asField('as_seasonFactorAutumn','معامل الخريف','seasonFactorAutumn','0.05')}
                         </div></details>
 
+                        <details style="margin-top:10px;"><summary class="u-15">🪵 الفرشة (الأرضية)</summary>
+                        <div class="form-grid" style="margin-top:8px;">
+                            ${asField('as_beddingKgPerM2','معدل الفرشة لكل م² (كجم)','beddingKgPerM2','0.5')}
+                        </div>
+                        <p style="font-size:11px;color:var(--muted);margin:8px 2px 0;line-height:1.6;">💡 مستخدم فى قائمة مشتريات الدفعة لتقدير كمية الفرشة (نشارة/تبن) المطلوبة لأرضية العنبر — يظهر بس لو نظام التربية "أرضي بفرشة". غيّره حسب نوع المادة وسمك الطبقة اللي تستخدمها فعليًا.</p></details>
+
                         <details style="margin-top:10px;"><summary class="u-15">🔔 حدود التنبيهات</summary>
                         <div class="form-grid" style="margin-top:8px;">
                             ${asField('as_vaccGraceDays','أيام السماح قبل "فاتك تحصين" (يوم)','vaccGraceDays','1')}
@@ -5449,17 +5498,41 @@
         }
 
 
-        // ============ بروتوكول توصيات التهوية اليومي — يجمع كل العوامل المرتبطة (العمر/الفصل/نوع النظام/المساحة/الكثافة/القراءات الفعلية مقابل المعيار/الطقس) ============
+        // ============ بروتوكول توصيات التهوية — نظامان فقط، بيغطوا السنة كلها: التهوية الشتوية (وزن حيوي) شتاءً، والتهوية الصيفية (سرعة هواء) باقي الفصول ============
         function seasonLabelOf(month) {
             if ([12,1,2].includes(month)) return 'شتاء';
             if ([6,7,8].includes(month)) return 'صيف';
             if ([3,4,5].includes(month)) return 'ربيع';
             return 'خريف';
         }
-        // الحد الأدنى القياسي للتهوية (تجديد الهواء/التحكم فى الرطوبة، أجواء باردة إلى معتدلة) بوحدة قدم³/دقيقة لكل طائر، حسب أسبوع العمر (١-٨) — مصدر: إرشادات جامعة Mississippi State Extension.
-        const MIN_VENT_CFM_PER_BIRD_BY_WEEK = [0.10, 0.25, 0.35, 0.50, 0.65, 0.70, 0.80, 0.90];
-        const CFM_TO_M3H = 1.699; // 1 قدم³/دقيقة = 1.699 م³/ساعة
-        const STANDARD_FAN_M3H = 17000; // مروحة قياسية 36 بوصة، سعة تقريبية 10,000 قدم³/دقيقة
+        // ============ ✏️ اختيار معادلة التهوية: الأقرب للشتاء يوزن حيوي، الأقرب للصيف يسرعة هواء ============
+        // كان القرار قبل كده ثابت على تصنيف الفصول الأربعة (شتاء=معادلة شتوية، أي حاجة تانية=معادلة صيفية)،
+        // يعني ربيع وخريف كلهم بياخدوا معادلة الصيف رغم إن أكتوبر/نوفمبر مثلاً جو بارد فعليًا أقرب للشتاء.
+        // هنا بنحسب المسافة الدائرية (بتلف آخر السنة على أولها) من كل شهر لمركز الشتاء (يناير) ومركز
+        // الصيف (يوليو)، ونطبّق المعادلة الأقرب فعليًا — مش تصنيف فصل ثابت. الناتج: نوفمبر وديسمبر ويناير
+        // وفبراير ومارس هتاخد المعادلة الشتوية، ومايو ويونيو ويوليو وأغسطس وسبتمبر هتاخد الصيفية.
+        // أبريل وأكتوبر بس بيقعوا فى نص المسافة بالظبط (تعادل تام) — شهور "حياد" فعلية مناخيًا، فبدل
+        // ما نرجّح واحدة تحكيميًا، بنفرّقها بالنهار/الليل: النهار حرارته أقرب للصيف فياخد المعادلة
+        // الصيفية، والليل برودته أقرب للشتاء فياخد المعادلة الشتوية.
+        function ventSeasonModeForMonth(month) {
+            const circularDist = (m, center) => Math.min(Math.abs(m - center), 12 - Math.abs(m - center));
+            const dWinter = circularDist(month, 1);
+            const dSummer = circularDist(month, 7);
+            if (dWinter === dSummer) return 'mixed'; // أبريل/أكتوبر
+            return dWinter < dSummer ? 'winter' : 'summer';
+        }
+        // النهار من ٦ص لـ٦م والليل الباقي — نفس تقسيم النهار/الليل المستخدم فى تسجيل القراءات البيئية
+        // اليومية (tempDay/tempNight) فى باقي التطبيق، مطبّق هنا على توقيت الجهاز الحالي.
+        function isNowDaytime() {
+            const h = new Date().getHours();
+            return h >= 6 && h < 18;
+        }
+        // القرار النهائي المستخدم فعليًا فى الحاسبة والتنبيهات: شتاء/صيف ثابتين طول الشهر، وفى شهور
+        // الحياد (mixed) القرار بيتغيّر بين نهار وليل حسب وقت فتح التطبيق دلوقتي.
+        function isWinterVentNow(month) {
+            const mode = ventSeasonModeForMonth(month);
+            return mode === 'mixed' ? !isNowDaytime() : mode === 'winter';
+        }
         // ============ 💧 جدولة سقاية الماء بفترات اليوم (Water Period Scheduling) ============
         // الفكرة: بدل إضافة ماء واحدة تغطي الـ24 ساعة، اليوم بينقسم لعدد فترات يحدده المربي (2/3/4/6...)
         // بعدد ساعات متساوٍ لكل فترة، وكل فترة ليها إضافة/جرعة مستقلة تمامًا عن باقي الفترات. الجدول
@@ -5490,21 +5563,12 @@
             return schedules.reduce((best, s) => (s.startAge > best.startAge ? s : best));
         }
 
-        function computeMinVentTarget(age, liveCount) {
-            if (!(liveCount > 0)) return null;
-            const weekIdx = Math.min(8, Math.max(1, Math.ceil(age / 7))) - 1;
-            const cfmPerBird = MIN_VENT_CFM_PER_BIRD_BY_WEEK[weekIdx];
-            const totalCfm = cfmPerBird * liveCount;
-            const totalM3h = totalCfm * CFM_TO_M3H;
-            const fanEquivalent = totalM3h / STANDARD_FAN_M3H;
-            return { cfmPerBird, totalCfm, totalM3h, fanEquivalent };
-        }
-        // ============ ✨ التهوية الشتوية المبنية على الوزن الحيوي (بيانات المربي) ============
-        // بدل معدل ثابت لكل طائر بغض النظر عن وزنه (زي MIN_VENT_CFM_PER_BIRD_BY_WEEK)، الشتاء بيتحسب هنا
-        // بمعدل م³/كجم وزن حي/ساعة يتصاعد أسبوعيًا (١←١، ٢←٢، ٣←٣، ٤←٤، ٥←٥)، مضروبًا فى وزن نهاية الأسبوع
+        // ============ ✨ النظام الأول: التهوية الشتوية المبنية على الوزن الحيوي (بيانات المربي) ============
+        // معدل م³/كجم وزن حي/ساعة يتصاعد أسبوعيًا (١←١، ٢←٢، ٣←٣، ٤←٤، ٥←٥)، مضروبًا فى وزن نهاية الأسبوع
         // (مش وزن اليوم نفسه) — يعني الأسبوع كله بياخد نفس معدل التهوية المحسوب على الوزن المستهدف/الفعلي
-        // فى آخر يوم منه. ⚠️ ملحوظة: الجدول متاح لحد الأسبوع ٥ فقط من بيانات المربي — الأسابيع ٦+ (لو الدورة
-        // طالت) بتفضل عند نفس معدل الأسبوع ٥ كنقطة انطلاق مؤقتة لحد ما يتحدد رقم مختلف.
+        // فى آخر يوم منه، مضروبًا فى عدد الطيور. الناتج (م³/ساعة) بيتقسم على 60 فى computeVentilationPlan
+        // للحصول على كمية الهواء المطلوبة بالدقيقة، وبعدين بنشوف أنهى شفاط/شفاطات هيحققوها.
+        // ⚠️ ملحوظة: الجدول متاح لحد الأسبوع ٥ فقط — الأسابيع ٦+ بتفضل عند نفس معدل الأسبوع ٥.
         const WINTER_VENT_M3_PER_KG_PER_HOUR_BY_WEEK = [1, 2, 3, 4, 5];
         function computeWinterVentTarget(b, m) {
             const age = m.todayAge;
@@ -5523,220 +5587,109 @@
             if (!(weightAtWeekEndG > 0)) return null;
             const weightAtWeekEndKg = weightAtWeekEndG / 1000;
             const totalM3h = rateM3PerKg * weightAtWeekEndKg * m.liveCount;
-            const fanEquivalent = totalM3h / STANDARD_FAN_M3H;
-            return { weekIdx, rateM3PerKg, weekEndDay, weightAtWeekEndG, weightSource, totalM3h, fanEquivalent };
+            return { weekIdx, rateM3PerKg, weekEndDay, weightAtWeekEndG, weightSource, totalM3h };
         }
-        // موزِّع: شتاءً نستخدم معادلة الوزن الحيوي، وباقي الفصول تفضل على المعادلة العامة لكل طائر لحد ما يتحدد رقم مختلف لها كمان
-        function computeSeasonalMinVentTarget(b, m, season) {
-            if (season === 'شتاء') {
-                const winter = computeWinterVentTarget(b, m);
-                if (winter) return { ...winter, mode: 'winter' };
-            }
-            const generic = computeMinVentTarget(m.todayAge, m.liveCount);
-            return generic ? { ...generic, mode: 'generic' } : null;
-        }
-        // ============ ✨ التهوية الصيفية (النفقية) المبنية على سرعة الهواء عبر مقطع العنبر (بيانات المربي) ============
-        // سرعة الهواء المطلوبة (م/ثانية) تتصاعد أسبوعيًا (١←٠.٢٥، ٢←٠.٥، ٣←١، ٤←١.٥، ٥←٢.٥، ٦←٣) — عدد الشفاطات اللازم
-        // تشغيله = (سرعة الهواء × مساحة مقطع العنبر [عرض×ارتفاع]) ÷ قدرة الشفاط الواحد بالدقيقة، مقرَّب لأعلى
-        // (نفس منطق ROUND UP دايمًا فى حسابات الشفاطات — شفاط جزئي معناه شفاط كامل لازم يشتغل). ⚠️ ملحوظة: الجدول
-        // متاح لحد الأسبوع ٦ فقط من بيانات المربي — الأسابيع ٧+ بتفضل عند نفس معدل الأسبوع ٦ كنقطة انطلاق مؤقتة.
-        const SUMMER_AIRSPEED_MS_BY_WEEK = [0.25, 0.5, 1, 1.5, 2.5, 3];
+        // ============ ✨ النظام الثاني: التهوية الصيفية المبنية على سرعة الهواء عبر مقطع العنبر (بيانات المربي) ============
+        // سرعة الهواء المطلوبة (م/ثانية) تتصاعد أسبوعيًا (١←٠.٢٥، ٢←٠.٥، ٣←١، ٤←١.٥، ٥←٢) — المعادلة: سرعة
+        // الهواء بالثانية × 60 × مساحة مقطع العنبر (عرض×ارتفاع بالمتر) = كمية الهواء المطلوبة بالدقيقة، وهذه
+        // مضروبة فى 60 كمان بتدّي المطلوب بالساعة. الأسابيع بعد ٥ بتفضل عند نفس معدل الأسبوع ٥.
+        const SUMMER_AIRSPEED_MS_BY_WEEK = [0.25, 0.5, 1, 1.5, 2];
         function computeSummerVentTarget(b, m) {
             const age = m.todayAge;
             const width = b.houseWidthM || 0, height = b.houseHeightM || 0;
-            const fanCapacity = b.fanCapacityM3h || 0;
-            if (!(width > 0) || !(height > 0) || !(fanCapacity > 0)) return null;
+            if (!(width > 0) || !(height > 0)) return null;
             const weekIdx = Math.max(1, Math.ceil(age / 7));
             const requiredAirspeedMs = SUMMER_AIRSPEED_MS_BY_WEEK[Math.min(weekIdx, SUMMER_AIRSPEED_MS_BY_WEEK.length) - 1];
             const crossSectionAreaM2 = width * height;
-            const requiredM3PerSecond = requiredAirspeedMs * crossSectionAreaM2;
-            const requiredM3PerMinute = requiredM3PerSecond * 60;
-            const fanCapacityM3Min = fanCapacity / 60;
-            const fansNeeded = Math.ceil(requiredM3PerMinute / fanCapacityM3Min);
-            return { weekIdx, requiredAirspeedMs, crossSectionAreaM2, requiredM3PerMinute, fanCapacityM3Min, fansNeeded };
+            const requiredM3PerMinute = requiredAirspeedMs * 60 * crossSectionAreaM2;
+            const requiredM3PerHour = requiredM3PerMinute * 60;
+            return { weekIdx, requiredAirspeedMs, crossSectionAreaM2, requiredM3PerMinute, requiredM3PerHour, totalM3h: requiredM3PerHour };
         }
-        // معدل التهوية الانتقالية الموصى به وقت الحر (م³/دقيقة لكل م² من مساحة أرضية العنبر) — مصدر: دليل Cobb لإدارة التهوية النفقية/الانتقالية.
-        const HOT_VENT_M3MIN_PER_M2_LOW = 1.2;
-        const HOT_VENT_M3MIN_PER_M2_HIGH = 1.8;
-        // نسبة تشغيل التهوية الليلية (% من كل دورة 5 دقائق) حسب مرحلة العمر والموسم — نقطة انطلاق عملية للتايمر/الضبط اليدوي، تُستخدم فى بروتوكول اليوم وفى الكارت المرجعي معًا (مصدر واحد لتفادي التعارض)
-        const NIGHT_VENT_DUTY_TABLE = [
-            { maxAge: 7,        stageLabel: '١-٧ أيام',   winter: [10,15], mild: [15,20], summer: [20,25] },
-            { maxAge: 14,       stageLabel: '٨-١٤ يوم',   winter: [15,20], mild: [20,30], summer: [30,40] },
-            { maxAge: 21,       stageLabel: '١٥-٢١ يوم',  winter: [20,30], mild: [30,40], summer: [40,55] },
-            { maxAge: 28,       stageLabel: '٢٢-٢٨ يوم',  winter: [30,40], mild: [40,55], summer: [55,75] },
-            { maxAge: 35,       stageLabel: '٢٩-٣٥ يوم',  winter: [35,50], mild: [55,70], summer: [75,100] },
-            { maxAge: Infinity, stageLabel: '٣٦+ يوم',    winter: [45,60], mild: [70,90], summer: [100,100] },
+        // ============ 🌀 ترجمة الرقم المطلوب (م³/ساعة) لتوصية تشغيل فعلية على شفاطات الدفعة المسجَّلة ============
+        // بنبدأ بالشفاط الأصغر قدرة (تحكّم أدق فى المعدل الأدنى بدل تشغيل شفاط كبير زيادة عن الحاجة)، ونضيف
+        // شفاطات أكبر تباعًا لحد ما نغطي المطلوب. آخر شفاط فى الترتيب ممكن ميحتاجش يشتغل 100% من الوقت،
+        // فبنحسب له دورة تشغيل (Duty Cycle) بدل ما نفترض إنه لازم يشتغل بالكامل أو نضيف شفاط تانى مش لازم.
+        function planFanOperation(fans, requiredM3h) {
+            const units = [];
+            (fans || []).forEach(g => { for (let i = 0; i < (g.count || 0); i++) units.push(g.capacityM3h || 0); });
+            units.sort((a, b) => a - b);
+            const totalCapacity = units.reduce((s, c) => s + c, 0);
+            if (!units.length || !(requiredM3h > 0)) return null;
+            let running = 0, count = 0;
+            for (const cap of units) {
+                if (running >= requiredM3h) break;
+                running += cap;
+                count++;
+            }
+            const lastFanCap = units[count - 1] || 0;
+            const capacityBeforeLast = running - lastFanCap;
+            const remainder = Math.max(0, requiredM3h - capacityBeforeLast);
+            const dutyPct = lastFanCap > 0 ? Math.min(100, (remainder / lastFanCap) * 100) : 0;
+            const fullFansCount = Math.max(0, count - 1);
+            const coversFully = running >= requiredM3h - 0.01;
+            return { totalUnits: units.length, totalCapacity, fullFansCount, lastFanCap, dutyPct, coversFully, unitsUsed: count };
+        }
+        // ============ مراحل عمرية لعرض "مسار البيئة" فى تبويب البيئة (تجميع بصري وتجميع معاملات الفرشة فقط — لا علاقة له بحسابات التهوية) ============
+        const VENT_AGE_STAGES = [
+            { maxAge: 7,        stageLabel: '١-٧ أيام' },
+            { maxAge: 14,       stageLabel: '٨-١٤ يوم' },
+            { maxAge: 21,       stageLabel: '١٥-٢١ يوم' },
+            { maxAge: 28,       stageLabel: '٢٢-٢٨ يوم' },
+            { maxAge: 35,       stageLabel: '٢٩-٣٥ يوم' },
+            { maxAge: Infinity, stageLabel: '٣٦+ يوم' },
         ];
-        function getNightVentDutyRow(age, season) {
-            const row = NIGHT_VENT_DUTY_TABLE.find(r => age <= r.maxAge) || NIGHT_VENT_DUTY_TABLE[NIGHT_VENT_DUTY_TABLE.length - 1];
-            const key = season === 'شتاء' ? 'winter' : season === 'صيف' ? 'summer' : 'mild';
-            return { low: row[key][0], high: row[key][1], stageLabel: row.stageLabel };
-        }
+        // ============ نظامان فقط، يتفعّل الأقرب لشهر بداية الدفعة (مش تصنيف فصل ثابت) — نتيجة كل واحد رقم مطلوب (م³/ساعة) بيتحوّل لتوصية تشغيل مباشرة على الشفاطات الفعلية ============
         function computeVentilationPlan(b, m) {
             if (!b) return [];
             const age = m.todayAge;
-            const refs = getRefsForDay(b, age);
             const month = b.startmonth || (new Date().getMonth() + 1);
-            const season = seasonLabelOf(month);
             const ventType = b.ventType || 'natural';
-            const ventLabel = { natural: 'الطبيعي (فتحات جانبية)', tunnel: 'النفقي (مراوح وبادات)', mixed: 'المختلط' }[ventType];
-            const floorType = b.floorType || 'litter';
-            const floorInfo = getFloorInfo(b);
-            const fanCapacity = b.fanCapacityM3h || 0;
-            const fanCount = b.fanCount || 0;
-            const totalFanCapacity = fanCapacity * fanCount; // إجمالي قدرة الشفاطات المُركَّبة فعليًا عند المربي (م³/ساعة)
             const items = []; // { level: 'info'|'warn'|'danger', text }
-            const lastEnv = m.lastEnv || {}; // ⬆️ نُقلت لأعلى الدالة (كانت فى قسم 3) عشان نقدر نربط بيها توصية الليل فى قسم 1ب كمان — نفس القيمة، بلا تكرار حساب
+            if (!(m.liveCount > 0)) return items;
 
-            // ===== 0) الرقم المستهدف: الحد الأدنى الفعلي المطلوب من تجديد الهواء لعدد الطيور والعمر الحاليين =====
-            // ✨ شتاءً: معادلة الوزن الحيوي (م³/كجم/ساعة تتصاعد أسبوعيًا) — باقي الفصول: المعادلة العامة لكل طائر
-            const target = computeSeasonalMinVentTarget(b, m, season);
-            const winterBasisNote = (target && target.mode === 'winter')
-                ? ` (أسبوع ${target.weekIdx} × ${target.rateM3PerKg} م³/كجم/ساعة، على وزن ${fmt(target.weightAtWeekEndG,0)} جم نهاية الأسبوع — ${target.weightSource})`
-                : '';
-            if (target) {
-                if (totalFanCapacity > 0) {
-                    // عندنا قدرة شفاطات فعلية مُدخَلة — نحسب نسبة التشغيل المطلوبة أو النقص الفعلي بالأرقام
-                    const dutyPct = (target.totalM3h / totalFanCapacity) * 100;
-                    if (dutyPct > 100) {
-                        const deficit = target.totalM3h - totalFanCapacity;
-                        items.push({ level: 'danger', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) أقل من الحد الأدنى المطلوب الآن (${fmt(m.liveCount,0)} طائر، عمر ${age} يوم): <b>~${fmt(target.totalM3h,0)} م³/ساعة</b>${winterBasisNote} — نقص حوالي ${fmt(deficit,0)} م³/ساعة. فكّر فى إضافة شفاط إضافي بقدرة مماثلة أو تشغيل الموجود بأقصى سرعة باستمرار.` });
-                    } else {
-                        const runMinutesPer5 = (dutyPct / 100) * 5;
-                        items.push({ level: 'info', text: `🎯 قدرة شفاطاتك الحالية (${fanCount} شفاط × ${fmt(fanCapacity,0)} = <b>${fmt(totalFanCapacity,0)} م³/ساعة</b>) تكفي الحد الأدنى المطلوب الآن (~${fmt(target.totalM3h,0)} م³/ساعة لـ ${fmt(m.liveCount,0)} طائر، عمر ${age} يوم)${winterBasisNote} — شغّلها بدورة تشغيل حوالي <b>${fmt(dutyPct,0)}%</b> من الوقت (مثلاً ${fmt(runMinutesPer5,1)} دقيقة تشغيل من كل 5 دقائق) بدل التشغيل المستمر.` });
-                    }
-                } else {
-                    const fanPct = Math.min(100, target.fanEquivalent * 100);
-                    const fanTxt = target.fanEquivalent >= 1
-                        ? `ما يعادل ${fmt(target.fanEquivalent,1)} مروحة قياسية 36 بوصة (سعة ~17,000 م³/س لكل مروحة) تعمل باستمرار`
-                        : `ما يعادل تشغيل مروحة قياسية 36 بوصة (سعة ~17,000 م³/س) لمدة ${fmt(fanPct,0)}% من الوقت (مثلاً ${fmt(fanPct*3/100,1)} دقيقة تشغيل من كل 5 دقائق)`;
-                    items.push({ level: 'info', text: `🎯 الحد الأدنى المطلوب لتجديد الهواء الآن (${fmt(m.liveCount,0)} طائر، عمر ${age} يوم): <b>~${fmt(target.totalM3h,0)} م³/ساعة</b>${winterBasisNote} — ${ventType==='natural'?`بنظامك الطبيعي، افتح الفتحات الجانبية تدريجيًا واستخدم سرعة الهواء المقاسة كمؤشر لتقريب هذا المعدل`:fanTxt}${ventType!=='natural'?' (أدخل قدرة/عدد الشفاطات فى بيانات الدفعة عشان نحسب لك دورة التشغيل بالظبط)':''}. هذا حد أدنى للرطوبة وجودة الهواء فقط — وقت الحر يُحتاج معدل أعلى بكثير للتبريد.` });
-                }
+            // ===== النظام المفعّل الآن: أقرب المعادلتين لشهر بداية الدفعة (شتوية وزن حيوي / صيفية سرعة هواء) — وفى شهور الحياد (أبريل/أكتوبر) نهارًا صيفية وليلًا شتوية =====
+            const seasonMode = ventSeasonModeForMonth(month);
+            const isWinter = isWinterVentNow(month);
+            if (seasonMode === 'mixed') {
+                items.push({ level: 'info', text: `🌗 الشهر ده حياد مناخي بين الشتاء والصيف — المعادلة بتتبدّل تلقائيًا: نهارًا (٦ص-٦م) صيفية، وليلًا شتوية. المعروض دلوقتي: ${isWinter ? 'شتوية (ليل)' : 'صيفية (نهار)'}.` });
+            }
+            const target = isWinter ? computeWinterVentTarget(b, m) : computeSummerVentTarget(b, m);
+            if (!target) {
+                items.push({ level: 'info', text: isWinter
+                    ? `❄️ أدخل وزن الدفعة (سجل يومي) لحساب معادلة التهوية الشتوية (م³/كجم وزن حي/ساعة).`
+                    : `☀️ أدخل عرض وارتفاع العنبر فى بيانات الدفعة لحساب معادلة التهوية الصيفية (سرعة الهواء عبر مقطع العنبر).` });
+                return items;
             }
 
-            // ===== 0ب) معدل التهوية الانتقالية الموصى به وقت الحر — محسوب من مساحة العنبر فعليًا =====
-            if (b.area > 0 && (season === 'صيف' || age > 21)) {
-                const hotLow = b.area * HOT_VENT_M3MIN_PER_M2_LOW * 60;
-                const hotHigh = b.area * HOT_VENT_M3MIN_PER_M2_HIGH * 60;
-                if (totalFanCapacity > 0) {
-                    if (totalFanCapacity < hotLow) {
-                        items.push({ level: season === 'صيف' ? 'danger' : 'warn', text: `☀️ لتهوية كافية وقت الحر لمساحة عنبرك (${fmt(b.area,0)} م²): المطلوب بين <b>${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة</b>، وقدرتك الحالية ${fmt(totalFanCapacity,0)} م³/ساعة أقل من ذلك بوضوح — فكّر جديًا فى زيادة عدد/سعة الشفاطات قبل ذروة الصيف.` });
-                    } else {
-                        items.push({ level: 'info', text: `☀️ قدرة شفاطاتك الحالية (${fmt(totalFanCapacity,0)} م³/ساعة) تغطي المعدل الانتقالي الموصى به وقت الحر لمساحة عنبرك (${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة) — حافظ على صيانتها الدورية (نظافة الشفرات والستائر) لضمان الأداء الفعلي.` });
-                    }
-                } else if (ventType === 'natural') {
-                    items.push({ level: 'info', text: `☀️ مرجع استرشادي لمساحة عنبرك (${fmt(b.area,0)} م²) وقت الحر: هدف تهوية انتقالي حوالي <b>${fmt(hotLow,0)}-${fmt(hotHigh,0)} م³/ساعة</b> — بنظامك الطبيعي هذا يعني فتح الفتحات الجانبية بالكامل مع الاستعانة بمراوح مساعدة لو استمرت درجة الحرارة أعلى من المعياري رغم الفتح الكامل.` });
-                }
-                // ✨ صيفًا (نفقي/مختلط + عرض وارتفاع العنبر مُدخَلين): عدد الشفاطات الدقيق اللازم تشغيله فعليًا،
-                // مبني على سرعة الهواء المطلوبة لهذا الأسبوع عبر مقطع العنبر — أدق من مدى المساحة العام فوق
-                if (season === 'صيف' && (ventType === 'tunnel' || ventType === 'mixed')) {
-                    const sv = computeSummerVentTarget(b, m);
-                    if (sv) {
-                        const short = sv.fansNeeded - fanCount;
-                        if (fanCount > 0 && short > 0) {
-                            items.push({ level: 'danger', text: `🌀 الأسبوع ${sv.weekIdx}: سرعة الهواء المطلوبة <b>${sv.requiredAirspeedMs} م/ثانية</b> × مساحة مقطع العنبر (${fmt(sv.crossSectionAreaM2,1)} م²) = محتاج تشغيل <b>${sv.fansNeeded} شفاط</b> (قدرة الشفاط ${fmt(sv.fanCapacityM3Min,0)} م³/دقيقة) — عندك ${fanCount} بس، ناقص ${short} شفاط لتحقيق السرعة المطلوبة.` });
-                        } else {
-                            items.push({ level: 'info', text: `🌀 الأسبوع ${sv.weekIdx}: سرعة الهواء المطلوبة <b>${sv.requiredAirspeedMs} م/ثانية</b> × مساحة مقطع العنبر (${fmt(sv.crossSectionAreaM2,1)} م²) = شغّل <b>${sv.fansNeeded} شفاط</b> من أصل ${fanCount || sv.fansNeeded} (قدرة الشفاط ${fmt(sv.fanCapacityM3Min,0)} م³/دقيقة).` });
-                        }
-                    } else if (!(b.houseWidthM > 0) || !(b.houseHeightM > 0)) {
-                        items.push({ level: 'info', text: `🌀 أدخل عرض وارتفاع العنبر فى بيانات الدفعة عشان نحسب لك بالظبط عدد الشفاطات اللازم تشغيله صيفًا حسب سرعة الهواء المطلوبة لعمر دفعتك.` });
-                    }
-                }
+            const totalM3h = target.totalM3h, totalM3min = totalM3h / 60;
+            const basisNote = isWinter
+                ? `أسبوع ${target.weekIdx} × ${target.rateM3PerKg} م³/كجم/ساعة على وزن ${fmt(target.weightAtWeekEndG,0)} جم نهاية الأسبوع (${target.weightSource}) × ${fmt(m.liveCount,0)} طائر`
+                : `أسبوع ${target.weekIdx} × سرعة هواء مطلوبة ${target.requiredAirspeedMs} م/ث × مساحة مقطع العنبر ${fmt(target.crossSectionAreaM2,1)} م²`;
+            items.push({ level: 'info', text: `${isWinter ? '❄️ التهوية الشتوية' : '☀️ التهوية الصيفية'} (عمر ${age} يوم): ${basisNote} = <b>${fmt(totalM3h,0)} م³/ساعة</b> (${fmt(totalM3min,1)} م³/دقيقة).` });
+
+            if (ventType === 'natural') {
+                items.push({ level: 'info', text: `بنظامك الطبيعي: افتح الفتحات الجانبية تدريجيًا لتحقيق هذا المعدل، وتأكد بجهاز قياس سرعة الهواء.` });
+                return items;
             }
 
-            // ===== 1) توصية المرحلة العمرية الأساسية =====
-            if (age <= 7) {
-                items.push({ level: 'info', text: `🐣 المرحلة الأولى (١-٧ أيام): تهوية دنيا فقط لتجديد الهواء دون سحب حرارة الفرخة — أبقِ الفتحات الجانبية شبه مغلقة وشغّل التهوية على فترات قصيرة متقطعة بدل التشغيل المستمر، مع تجنّب أي تيار هواء مباشر على مستوى الفرشة.` });
-            } else if (age <= 21) {
-                items.push({ level: 'info', text: `📈 المرحلة الثانية (٨-٢١ يوم): زد معدل التهوية تدريجيًا مع نمو الطائر — افتح الفتحات الجانبية أكثر تباعًا لحرارة العنبر، بهدف الوصول لسرعة هواء قريبة من ${refs.airspeed?fmt(refs.airspeed,1):'المعيار'} م/ث.` });
+            if (!sumFanCount(b.fans)) {
+                items.push({ level: 'info', text: `أدخل مجموعات الشفاطات فى بيانات الدفعة لمعرفة توصية التشغيل بالظبط (عدد الشفاطات أو مدة تشغيلها).` });
+                return items;
+            }
+
+            const plan = planFanOperation(b.fans, totalM3h);
+            if (!plan.coversFully) {
+                items.push({ level: 'danger', text: `حتى بتشغيل كل شفاطاتك (${plan.totalUnits} شفاط، إجمالي ${fmt(plan.totalCapacity,0)} م³/ساعة) لسه ناقص حوالي ${fmt(totalM3h - plan.totalCapacity,0)} م³/ساعة — فكّر فى شفاط إضافي.` });
+            } else if (plan.dutyPct >= 98) {
+                const runningCount = plan.fullFansCount + 1;
+                items.push({ level: 'info', text: runningCount > 1
+                    ? `شغّل <b>${runningCount} شفاط</b> باستمرار (من أصل ${plan.totalUnits}) لتغطية المطلوب.`
+                    : `شغّل <b>شفاط واحد</b> (قدرته ${fmt(plan.lastFanCap,0)} م³/ساعة) باستمرار.` });
             } else {
-                if (ventType === 'tunnel') {
-                    items.push({ level: 'info', text: `🌀 المرحلة الثالثة (٢٢+ يوم) — نظام نفقي: فعّل التشغيل التدريجي للمراوح (Staged Fans) وارفع عدد المراوح العاملة كلما زادت الكتلة الحيوية، مع تشغيل البادات وقت الذروة الحرارية.` });
-                } else if (season === 'صيف') {
-                    items.push({ level: 'warn', text: `☀️ المرحلة الثالثة صيفًا بنظام ${ventLabel}: خطر إجهاد حراري مرتفع فى هذا العمر — فكّر فى تركيب مراوح مساعدة أو التحويل لتهوية نفقية جزئية، وافتح الفتحات الجانبية بالكامل مع تظليل السقف لو ممكن.` });
-                } else if (season === 'شتاء') {
-                    items.push({ level: 'info', text: `❄️ المرحلة الثالثة شتاءً بنظام ${ventLabel}: حافظ على تهوية انتقالية متوازنة — لا تُغلق الفتحات كليًا رغم البرودة لتفادي تراكم الرطوبة والأمونيا، وزد الفتح تدريجيًا صباحًا.` });
-                } else {
-                    items.push({ level: 'info', text: `🍂 المرحلة الثالثة (${season}) بنظام ${ventLabel}: تهوية انتقالية متوازنة، راقب القراءات يوميًا واضبط الفتحات حسب حرارة الظهيرة.` });
-                }
-            }
-
-            // ===== 1ب) توصية تايمر التهوية الليلية الليلة — ديناميكية حسب العمر والموسم الحاليين بالظبط (بدل جدول ثابت لازم تدوّر عليه) =====
-            {
-                const nd = getNightVentDutyRow(age, season);
-                // ✨ تحسين: لو عندنا قراءة أمونيا فعلية حديثة، نربطها بالنسبة الموصى بها بدل ما تفضل رقم من جدول ثابت بس —
-                // لو الأمونيا لسه مرتفعة رغم إنك ماشي على أعلى حد فى الجدول، ده معناه المشكلة مش فى نسبة التشغيل نفسها
-                // (مساحة الفتحات/عدد الشفاطات غير كافية)، فنوجّهك للحاسبة التفصيلية بدل ما نقولك "زوّد" فى فراغ.
-                const nh3Now = avgOf(lastEnv.nh3Day, lastEnv.nh3Night) ?? lastEnv.nh3;
-                let dutyLow = nd.low, dutyHigh = nd.high, tuneNote = '';
-                if (nh3Now != null && nh3Now >= 20) {
-                    if (nd.high >= 95) {
-                        tuneNote = ` ⚠️ ملحوظة: أنت أصلًا قريب من أقصى نسبة تشغيل فى الجدول والأمونيا لسه مرتفعة (${fmt(nh3Now,0)} ppm) — المشكلة على الأغلب مش فى نسبة التشغيل، افحص مساحة فتحات الدخول وعدد/قدرة الشفاطات فعليًا (راجع الحاسبة التفصيلية تحت).`;
-                    } else {
-                        dutyLow = Math.min(100, nd.low + 10);
-                        dutyHigh = Math.min(100, nd.high + 15);
-                        tuneNote = ` ⬆️ آخر قراءة أمونيا عندك (${fmt(nh3Now,0)} ppm) أعلى من المعدل المثالي (أقل من 20 ppm)، فرفعنا لك النسبة المقترحة أعلى من الجدول القياسي — راقب الأمونيا تاني بعد يوم-يومين من الضبط الجديد.`;
-                    }
-                }
-                const runLow = fmt(dutyLow * 5 / 100, 1), runHigh = fmt(dutyHigh * 5 / 100, 1);
-                items.push({ level: (nh3Now != null && nh3Now >= 20) ? 'warn' : 'info', text: `🌙 توصية الليلة (عمر ${age} يوم، ${nd.stageLabel}، موسم ${season}): شغّل التهوية بنسبة تشغيل تقريبية <b>${dutyLow}-${dutyHigh}%</b> من الوقت — يعني تقريبًا ${runLow}-${runHigh} دقيقة تشغيل من كل 5 دقائق.${tuneNote || ' اضبطها لأعلى أو لأقل حسب قراءات الأمونيا/الرطوبة الفعلية المسجّلة عندك.'}` });
-            }
-
-            // ===== 1ج) تنبيه بداية مرحلة عمرية جديدة — نقطة تحوّل تحتاج ضبط فوري بدل الاستمرار على إعدادات المرحلة السابقة =====
-            if ([1, 8, 15, 22, 29, 36].includes(age)) {
-                items.push({ level: 'warn', text: `🔔 اليوم بداية مرحلة عمرية جديدة (${age} يوم) — راجع واضبط معدل ونسبة تشغيل التهوية (نهارًا وليلاً) والفتحات الجانبية على المعدل الجديد الآن، بدل ما تفضل شغّال بإعدادات المرحلة اللي فاتت.` });
-            }
-
-            // ===== 1د) تذكيرات دورية للفحص الميداني — تظهر تلقائيًا فى موعدها بدل ما تكون مرجع ثابت لازم تفتحه بنفسك =====
-            if (age > 0 && age % 7 === 0) {
-                items.push({ level: 'info', text: `🌫️ اليوم موعد فحص توزيع الأمونيا فى 4-5 نقاط (الزوايا البعيدة + منتصف العنبر + قرب الخروج) عند مستوى أنف الطائر — قارن بين النقاط لرصد أي مناطق ميتة (Dead spots) محتاجة توزيع تهوية أفضل.` });
-            }
-            if (age > 0 && age % 14 === 0) {
-                const pressureNote = ventType !== 'natural' ? ' وموعد قياس الضغط الساكن بالمانومتر عند أبعد نقطة عن الشفاطات (المعدل الشائع 0.05-0.15 بوصة ماء)' : '';
-                items.push({ level: 'info', text: `🕯️ اليوم موعد اختبار الشمعة/الدخان لفحص انسياب الهواء من فتحات الدخول لكل الأركان بانتظام${pressureNote}.` });
-            }
-
-            // ===== 2) الكثافة (كجم حيوي/م²) =====
-            if (b.area > 0 && m.density > 0) {
-                let maxDensity = ventType === 'tunnel' ? 35 : ventType === 'mixed' ? 30 : 26;
-                if (floorType === 'slat') maxDensity += 2; // تصريف أفضل للزرق يسمح عادة بكثافة أعلى قليلاً من الفرشة التقليدية
-                const densityNote = floorType === 'cage' ? ` (محسوبة على أساس ${b.cageTiers || 1} دور × مساحة العنبر)` : '';
-                if (m.density >= maxDensity) {
-                    items.push({ level: 'danger', text: `⚖️ الكثافة الحالية ${fmt(m.density,1)} كجم/م²${densityNote} وصلت أو تجاوزت الحد الأقصى الموصى به لنظام ${ventLabel} (${floorInfo.label}) (~${maxDensity} كجم/م²) — زد معدل التهوية فورًا أو فكّر فى تخفيف الكثافة.` });
-                } else if (m.density >= maxDensity * 0.85) {
-                    items.push({ level: 'warn', text: `⚖️ الكثافة الحالية ${fmt(m.density,1)} كجم/م²${densityNote} تقترب من الحد الأقصى لنظام ${ventLabel} (${floorInfo.label}) (~${maxDensity} كجم/م²) — راقب التهوية عن قرب فى الأيام القادمة مع زيادة الوزن.` });
-                }
-                if (floorType === 'cage') {
-                    items.push({ level: 'info', text: `🔲 هذا متوسط عام على مستوى كل الأدوار — تأكد كمان إن التوزيع بين الأقفاص متساوٍ، لأن الدور السفلي أو الأقفاص المزدحمة ممكن تتجاوز الحد الآمن حتى لو المتوسط سليم.` });
-                }
-            }
-
-            // ===== 3) القراءات الفعلية الأخيرة مقابل المعيار =====
-            const actualAirspeed = avgOf(lastEnv.airspeedDay, lastEnv.airspeedNight) ?? lastEnv.airspeed;
-            if (actualAirspeed != null && refs.airspeed) {
-                if (actualAirspeed < refs.airspeed * 0.7) {
-                    items.push({ level: 'warn', text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أقل من المعيار لعمر ${age} يوم (${fmt(refs.airspeed,1)} م/ث) — زد عدد/سرعة المراوح أو اتساع الفتحات.` });
-                } else if (age <= 14 && actualAirspeed > refs.airspeed * 1.6) {
-                    items.push({ level: 'warn', text: `💨 آخر سرعة هواء مسجّلة (${fmt(actualAirspeed,1)} م/ث) أعلى من اللازم فى هذا العمر الصغير — قد تسبب تيارات باردة مباشرة على الكتاكيت، قلّل معدل التهوية أو غيّر اتجاه الفتحات بعيدًا عن مستوى الفرشة.` });
-                }
-            }
-            const actualCo2 = avgOf(lastEnv.co2Day, lastEnv.co2Night) ?? lastEnv.co2;
-            if (actualCo2 != null && actualCo2 >= 3000) {
-                items.push({ level: 'danger', text: `🌫️ ثاني أكسيد الكربون مرتفع جدًا (${fmt(actualCo2,0)} ppm) — زد التهوية فورًا، المعدل الآمن أقل من 3000 ppm.` });
-            }
-            const actualNh3 = avgOf(lastEnv.nh3Day, lastEnv.nh3Night) ?? lastEnv.nh3;
-            if (actualNh3 != null && actualNh3 >= 20) {
-                const nh3Advice = floorType === 'cage' ? 'راجع انتظام إزالة الزرق وتهوية أسفل الأقفاص'
-                    : floorType === 'slat' ? 'راجع تجمّع الزرق أسفل الأرضية الشبكية وتهوية الحيز السفلي'
-                    : 'راجع رطوبة الفرشة';
-                items.push({ level: actualNh3 >= 25 ? 'danger' : 'warn', text: `🌫️ الأمونيا مرتفعة (${fmt(actualNh3,0)} ppm) — زد معدل التهوية و${nh3Advice}، المعدل المثالي أقل من 20 ppm.` });
-            }
-
-            // ===== 4) الطقس المتوقع (لو مفعّل تحديد الموقع) — تنبيه استباقي =====
-            if (state.farmLocation && weatherResult && !weatherResult.error) {
-                if (weatherResult.tempMax != null && refs.temp != null && weatherResult.tempMax - refs.temp >= 6 && ventType !== 'tunnel') {
-                    items.push({ level: 'warn', text: `🌡️ الطقس المتوقع اليوم (${fmt(weatherResult.tempMax,1)}°م) أعلى من معيار العمر بفارق كبير، ونظامك الحالي ${ventLabel} — جهّز مراوح/بادات مساعدة استباقيًا قبل ذروة الحرارة.` });
-                }
+                const cycleMinutes = 5;
+                const runMinutes = fmt(plan.dutyPct * cycleMinutes / 100, 1);
+                const contPart = plan.fullFansCount > 0 ? `شغّل <b>${plan.fullFansCount} شفاط</b> باستمرار، بالإضافة إلى ` : 'شغّل ';
+                items.push({ level: 'info', text: `${contPart}شفاط قدرته ${fmt(plan.lastFanCap,0)} م³/ساعة بدورة تشغيل ~${fmt(plan.dutyPct,0)}% (${runMinutes} دقيقة تشغيل من كل ${cycleMinutes} دقائق).` });
             }
 
             return items;
@@ -5862,6 +5815,7 @@
             seasonFactorWinter: 1.5, seasonFactorSpring: 0.9, seasonFactorSummer: 0.35, seasonFactorAutumn: 1.1,
             heatTempDiffMultiplier: 0.05,
             defaultAreaM2: 100,
+            beddingKgPerM2: 3, // معدل فرشة تقديري (نشارة/تبن) لطبقة قياسية عند بداية الدورة — قابل للتعديل حسب نوع المادة المستخدمة فعليًا فى مزرعتك
             vaccGraceDays: 2, vaccAdvanceDays: 2, treatGraceDays: 2,
             targetAgeAdvanceDays: 3, humidityDiffThreshold: 10, fcrCompareWindowDays: 5,
             mortCompareMinRate: 0.3, mortCompareHighMult: 1.4, mortCompareLowMult: 0.6,
@@ -7889,8 +7843,11 @@
             if (!b.ventType) b.ventType = 'natural';
             if (!b.floorType) b.floorType = 'litter';
             if (!b.cageTiers) b.cageTiers = 1;
-            if (b.fanCapacityM3h === undefined) b.fanCapacityM3h = 0;
-            if (b.fanCount === undefined) b.fanCount = 0;
+            // 🌀 هجرة الشفاطات: النموذج القديم كان قدرة واحدة × عدد (يفترض كل الشفاطات متطابقة).
+            // b.fans الجديدة = مصفوفة مجموعات {capacityM3h, count} تدعم قدرات مختلفة فى نفس الدفعة.
+            if (!Array.isArray(b.fans)) {
+                b.fans = (b.fanCapacityM3h > 0 && b.fanCount > 0) ? [{ id: uid(), capacityM3h: b.fanCapacityM3h, count: b.fanCount }] : [];
+            }
             if (b.houseWidthM === undefined) b.houseWidthM = 0;
             if (b.houseHeightM === undefined) b.houseHeightM = 0;
             if (b.heatprice === undefined) b.heatprice = 0;
@@ -8069,8 +8026,8 @@
             document.getElementById('b_heattype').value = 'gas';
             onHeatTypeChange();
             document.getElementById('b_venttype').value = 'natural';
-            document.getElementById('b_fancapacity').value = '';
-            document.getElementById('b_fancount').value = '';
+            tempFanGroups = [];
+            renderFanGroupsEditor();
             onVentTypeChange();
             document.getElementById('b_floortype').value = 'litter';
             document.getElementById('b_cagetiers').value = '1';
@@ -8109,8 +8066,10 @@
             onHeatTypeChange();
             document.getElementById('b_heatprice').value = b.heatprice || '';
             document.getElementById('b_venttype').value = b.ventType || 'natural';
-            document.getElementById('b_fancapacity').value = b.fanCapacityM3h || '';
-            document.getElementById('b_fancount').value = b.fanCount || '';
+            // هجرة: لو الدفعة قديمة ومسجَّل فيها fanCapacityM3h/fanCount القديمين بدل b.fans، نحوّلهم لمجموعة واحدة
+            tempFanGroups = Array.isArray(b.fans) ? b.fans.map(g => ({ capacityM3h: g.capacityM3h, count: g.count })) :
+                (b.fanCapacityM3h && b.fanCount ? [{ capacityM3h: b.fanCapacityM3h, count: b.fanCount }] : []);
+            renderFanGroupsEditor();
             document.getElementById('b_housewidth').value = b.houseWidthM || '';
             document.getElementById('b_househeight').value = b.houseHeightM || '';
             onVentTypeChange();
@@ -8189,11 +8148,56 @@
             else { wrap.style.display = 'none'; }
         }
 
+        // ============ 🌀 مجموعات الشفاطات (قدرات مختلفة) ============
+        // بدل حقلين ثابتين (قدرة واحدة × عدد)، بنسمح بتسجيل أكتر من "مجموعة" شفاطات بقدرات مختلفة —
+        // كل مجموعة = {capacityM3h, count} لشفاطات متطابقة القدرة. لو كل الشفاطات نفس القدرة، هتكون
+        // مجموعة واحدة بس (نفس السلوك القديم بالظبط). tempFanGroups مصفوفة مؤقتة أثناء فتح مودال الدفعة،
+        // بتتحول لـ b.fans النهائية وقت الحفظ فى saveBatch().
+        let tempFanGroups = [];
+
+        function renderFanGroupsEditor() {
+            const wrap = document.getElementById('b_fansListWrap');
+            if (!wrap) return;
+            if (!tempFanGroups.length) {
+                wrap.innerHTML = `<p class="fs-2xs text-muted" style="margin:4px 0;">مفيش شفاطات مسجَّلة — اضغط "إضافة مجموعة شفاطات" لو نظامك نفقي/مختلط.</p>`;
+                return;
+            }
+            wrap.innerHTML = tempFanGroups.map((g, i) => `
+                <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+                    <input type="number" inputmode="decimal" min="0" placeholder="القدرة (م³/ساعة) — مثال: 17000" value="${g.capacityM3h || ''}"
+                        style="flex:2;" oninput="updateFanGroupField(${i},'capacityM3h',this.value)">
+                    <input type="number" inputmode="decimal" min="0" placeholder="العدد بنفس القدرة" value="${g.count || ''}"
+                        style="flex:1;" oninput="updateFanGroupField(${i},'count',this.value)">
+                    <button type="button" class="btn ghost sm" style="padding:6px 10px;" onclick="removeFanGroupRow(${i})">🗑️</button>
+                </div>`).join('');
+        }
+        function addFanGroupRow() { tempFanGroups.push({ capacityM3h: null, count: null }); renderFanGroupsEditor(); }
+        function removeFanGroupRow(i) { tempFanGroups.splice(i, 1); renderFanGroupsEditor(); }
+        function updateFanGroupField(i, field, value) {
+            if (!tempFanGroups[i]) return;
+            tempFanGroups[i][field] = field === 'count' ? (parseInt(value) || null) : (parseFloat(value) || null);
+        }
+        // إجمالي القدرة والعدد من مصفوفة مجموعات الشفاطات — نفس فكرة "قدرة × عدد" القديمة لكن بتجمع كل المجموعات المختلفة
+        function sumFanCapacity(fans) { return (fans || []).reduce((s, g) => s + (g.capacityM3h || 0) * (g.count || 0), 0); }
+        function sumFanCount(fans) { return (fans || []).reduce((s, g) => s + (g.count || 0), 0); }
+        // اختيار أنسب مجموعة شفاطات تشغيلها لتغطية قدرة مطلوبة (بالم³/ساعة) — بيبدأ بالأعلى قدرة أولًا
+        // عشان نوصل للهدف بأقل عدد شفاطات شغالة (أوفر كهرباء)، مهم بالذات لما القدرات متفاوتة.
+        function selectFanGroupsForTarget(fans, requiredM3h) {
+            const units = [];
+            (fans || []).forEach(g => { for (let i = 0; i < (g.count || 0); i++) units.push(g.capacityM3h || 0); });
+            units.sort((x, y) => y - x);
+            let sum = 0, usedCount = 0;
+            for (const cap of units) {
+                if (sum >= requiredM3h) break;
+                sum += cap; usedCount++;
+            }
+            return { usedCount, usedCapacity: sum, totalCount: units.length, totalCapacity: units.reduce((s, c) => s + c, 0) };
+        }
+
         function onVentTypeChange() {
             const vt = document.getElementById('b_venttype').value;
             const showFans = (vt === 'tunnel' || vt === 'mixed');
-            document.getElementById('b_fancapacitywrap').style.display = showFans ? '' : 'none';
-            document.getElementById('b_fancountwrap').style.display = showFans ? '' : 'none';
+            document.getElementById('b_fansWrap').style.display = showFans ? '' : 'none';
             document.getElementById('b_housewidthwrap').style.display = showFans ? '' : 'none';
             document.getElementById('b_househeightwrap').style.display = showFans ? '' : 'none';
         }
@@ -9493,8 +9497,8 @@
             const heattype = document.getElementById('b_heattype').value || 'gas';
             const heatprice = parseFloat(document.getElementById('b_heatprice').value) || 0;
             const ventType = document.getElementById('b_venttype').value || 'natural';
-            const fanCapacityM3h = parseFloat(document.getElementById('b_fancapacity').value) || 0;
-            const fanCount = parseInt(document.getElementById('b_fancount').value) || 0;
+            // فلترة الصفوف الفاضية أو الناقصة (لازم قدرة وعدد أكبر من صفر عشان تُحسب فعليًا)
+            const fans = tempFanGroups.filter(g => g.capacityM3h > 0 && g.count > 0).map(g => ({ id: uid(), capacityM3h: g.capacityM3h, count: g.count }));
             const houseWidthM = parseFloat(document.getElementById('b_housewidth').value) || 0;
             const houseHeightM = parseFloat(document.getElementById('b_househeight').value) || 0;
             const floorType = document.getElementById('b_floortype').value || 'litter';
@@ -9507,7 +9511,7 @@
             if (editingBatchId) {
                 const eb = state.batches.find(x => x.id === editingBatchId);
                 if (!eb) { editingBatchId = null; closeModal('batchModalOverlay'); return; }
-                Object.assign(eb, { name, location, species, breed, startDate: date, startCount: count, startweight, chickprice, feedprice, area, targetAge, targetWeight, heattype, heatprice, ventType, fanCapacityM3h, fanCount, houseWidthM, houseHeightM, floorType, cageTiers, startmonth, feedStageStarterKg, feedStageGrowerKg });
+                Object.assign(eb, { name, location, species, breed, startDate: date, startCount: count, startweight, chickprice, feedprice, area, targetAge, targetWeight, heattype, heatprice, ventType, fans, houseWidthM, houseHeightM, floorType, cageTiers, startmonth, feedStageStarterKg, feedStageGrowerKg });
                 editingBatchId = null;
                 persist();
                 closeModal('batchModalOverlay');
@@ -9534,8 +9538,7 @@
                 heattype,
                 heatprice,
                 ventType,
-                fanCapacityM3h,
-                fanCount,
+                fans,
                 houseWidthM,
                 houseHeightM,
                 floorType,
@@ -9591,7 +9594,7 @@
             showToast('تم إنشاء الدفعة بنجاح 🐣 — تم تجهيز برنامج التحصينات القياسي لهذا النوع تلقائيًا' + protocolMsg);
             if (!applyProtocolId) {
                 // مفيش بروتوكول اتطبّق — نعرض على الأقل قائمة مشتريات التحصينات القياسية المُحمَّلة تلقائيًا للنوع
-                setTimeout(() => showInfo('🛒 قائمة مشتريات مبدئية (تحصينات)', renderPurchaseListHtml(computeBatchPurchaseList(batch), batch)), 600);
+                setTimeout(() => showInfoHtml('🛒 قائمة مشتريات مبدئية (تحصينات)', renderPurchaseListHtml(computeBatchPurchaseList(batch), batch)), 600);
             }
             setTimeout(() => offerInventoryCarryOver(batch), 1400);
         }
@@ -11755,9 +11758,12 @@
         // افتراضي النوع لو مفيش بروتوكول)، بناءً على عدد طيور الدفعة وتوقع استهلاك العلف/الماء لكامل الدورة
         // (بنفس منحنى المرجع المُستخدم فى كل توقعات المخزون بالتطبيق — بما فيه مزج بيانات مزرعتك الفعلية).
         // الهدف: تجهيز قائمة شراء جاهزة قبل تنفيذ البرنامج فعليًا على الدفعة، من غير ما تتحسب يدويًا بند بند.
-        function additiveConsumptionOverCycle(b, a, key, cycleLen, count) {
+        // ملحوظة (تحديث "الباقي فعليًا"): بارامتر fromDay بيسمح نبدأ الجمع من بكرة (عمر الدفعة النهاردة + 1)
+        // بدل يوم 1 دايمًا — عشان الأيام اللي فاتت وانستهلكت بالفعل ما تتحسبش تاني فى قائمة الشراء
+        // لدفعة شغالة فعلاً. لباقي الاستخدامات (مفيش غيرها حاليًا) الافتراضي fromDay=1 بيحافظ على نفس السلوك القديم.
+        function additiveConsumptionOverCycle(b, a, key, cycleLen, count, fromDay = 1) {
             let totalConsumption = 0, activeDays = 0;
-            for (let d = 1; d <= cycleLen; d++) {
+            for (let d = fromDay; d <= cycleLen; d++) {
                 if (!additiveActiveOnDay(a, d)) continue;
                 const perBirdUnit = getRefsForDay(b, d)[key] || 0; // جم أو مل لكل طائر
                 totalConsumption += (perBirdUnit * count) / 1000; // كجم علف أو لتر ماء
@@ -11771,6 +11777,104 @@
             return { qty, unit };
         }
         const PURCHASE_LIST_SAFETY_MARGIN = 1.05; // هامش أمان 5% لتغطية فروق الاستهلاك الفعلي عن المنحنى المرجعي
+
+        // ============ 🌾 احتياج العلف المتبقي لقائمة المشتريات ============
+        // بنعتمد على نفس محرك توقع العلف المستخدم فى تنبيهات نفاد المخزون (computeFeedForecast)
+        // بدل ما نعيد كتابة حساب استهلاك منفصل — عشان أي تحسين مستقبلي فى منحنى التوقع (أداء فعلي،
+        // نفوق متوقع...) ينعكس تلقائيًا هنا كمان من غير تكرار منطق.
+        // الفرق عن الاستخدام التاني للدالة: هنا بنحدد الأفق (horizon) = "باقي أيام برنامج الدفعة" (cycleLen)
+        // مش عمر الاستهداف targetAge بس، عشان يتماشى مع باقي بنود القائمة (تحصينات/إضافات) المحسوبة لنفس المدى.
+        // الكمية المطلوب شراؤها = الاحتياج الكلي حتى نهاية البرنامج ناقص رصيد مخزون العلف الفعلي الحالي
+        // (يعني "الباقي فعليًا"، مش الاحتياج الكلي من الصفر — لو جزء اتشرى واتسجل بالفعل مبنحسبوش تاني).
+        function computeBatchFeedNeed(b, m, cycleLen) {
+            const todayAge = m.todayAge || 0;
+            const horizonDays = Math.max(cycleLen - todayAge, 0);
+            if (horizonDays <= 0) return null; // الدفعة وصلت أصلاً لعمر نهاية البرنامج — مفيش علف إضافي مطلوب حسب الحسبة
+            const forecast = computeFeedForecast(b, m, horizonDays);
+            const totalNeededKg = forecast.rows.length ? forecast.rows[forecast.rows.length - 1].cumFeedKg : 0;
+            const currentBalanceKg = forecast.currentBalanceKg || 0;
+            const shortfallKg = Math.max(totalNeededKg - currentBalanceKg, 0);
+            const priceInfo = computeActualFeedPrice(b);
+            return {
+                feedItemName: forecast.feedItem ? forecast.feedItem.name : 'علف',
+                totalNeededKg, currentBalanceKg, shortfallKg,
+                price: priceInfo.price, priceSource: priceInfo.source,
+            };
+        }
+
+        // ============ 🔥 احتياج وقود التدفئة المتبقي لقائمة المشتريات ============
+        // بنستخدم نفس دالة التقدير اليومي estimateHeatFuel المستخدمة فى نموذج التسجيل اليومي،
+        // ونجمعها على باقي أيام البرنامج (من بعد النهاردة لحد نهاية cycleLen) — من غير تمرير حرارة فعلية
+        // (actualTemp = null) لأننا بنخطط لأيام مستقبلية لسه محصلش فيها تسجيل حرارة حقيقي، فبترجع
+        // للتقدير القياسي حسب عمر القطيع/الموسم بس (نفس فلسفة باقي بنود القائمة).
+        // مفيش رصيد مخزون متابَع للوقود زي العلف (الشراء بيتسجل كتكلفة مش ككمية فى المخزن)،
+        // فالكمية المطلوبة هنا = كامل احتياج الأيام الباقية، من غير خصم أي رصيد سابق.
+        function computeBatchFuelNeed(b, m, cycleLen) {
+            if (!b.heattype || b.heattype === 'none' || b.heattype === 'electric') return null; // بدون تدفئة أو كهرباء — مفيش وقود يُشترى
+            const todayAge = m.todayAge || 0;
+            let totalFuel = 0;
+            for (let day = todayAge + 1; day <= cycleLen; day++) {
+                const refs = getRefsForDay(b, day);
+                const est = estimateHeatFuel(b, day, null, refs);
+                if (est != null) totalFuel += est;
+            }
+            const isGas = b.heattype === 'gas';
+            // الغاز بيتباع أنبوبة كاملة (تقريب لأعلى)، السولار ممكن يتشترى بأي كمية لتر
+            const qty = isGas ? Math.ceil(totalFuel) : totalFuel;
+            const price = b.heatprice || 0;
+            const cost = totalFuel * price; // التكلفة على الاستهلاك التقديري الفعلي، مش على عدد الأنابيب المقرَّب لأعلى
+            return { unit: isGas ? 'أنبوبة' : 'لتر', isGas, rawFuel: totalFuel, qty, price, cost };
+        }
+
+        // ============ 💰 سعر الوحدة لبند قائمة مشتريات (تحصين/دواء/إضافة/معاملة) من المشتريات الفعلية ============
+        // بنطابق اسم البند مع وصف المشتريات (مطابقة نصية مرنة عبر normalizeArabicName، نفس أسلوب
+        // additiveCostLookup فى تحليل الإضافات) بدل ما نطلب من المستخدم يربط كل بند يدويًا بصنف مخزون.
+        // زي سعر العلف بالظبط: متوسط مرجّح لآخر 3 عمليات شراء مطابقة (يعكس سعر السوق الحالي)، مش كل التاريخ.
+        // لو وحدة الشراء المسجّلة مختلفة عن وحدة البند (مثال: اشتريت "لتر" والبند محسوب بـ"مل")، بنحاول
+        // نحوّلها بـ convertUnitQty؛ ولو الوحدتين من عائلتين مختلفتين تمامًا (زي "عبوة" مقابل "مل") بترجع
+        // null ونعتبر مفيش سعر معروف بدل ما نحسب رقم غلط.
+        function lookupUnitPrice(b, name, targetUnit, purchaseTypes) {
+            const norm = normalizeArabicName(name);
+            if (!norm || !targetUnit) return null;
+            const matches = (b.purchases || [])
+                .filter(p => purchaseTypes.includes(p.type) && p.desc && p.qty > 0 && p.total > 0 && normalizeArabicName(p.desc).includes(norm))
+                .map(p => ({ ...p, convQty: p.unit === targetUnit ? p.qty : convertUnitQty(p.qty, p.unit, targetUnit) }))
+                .filter(p => p.convQty != null && p.convQty > 0)
+                .sort((a, c) => a.date.localeCompare(c.date));
+            if (!matches.length) return null;
+            const recent = matches.slice(-3);
+            const totalQty = recent.reduce((s, p) => s + p.convQty, 0);
+            const totalCost = recent.reduce((s, p) => s + p.total, 0);
+            return totalQty > 0 ? { price: totalCost / totalQty, asOf: recent[recent.length - 1].date } : null;
+        }
+
+        // ============ 🪵 احتياج الفرشة (نشارة/تبن) لقائمة المشتريات ============
+        // بيحسب كمية تقديرية واحدة (مش يومية زي العلف/الوقود) لتغطية أرضية العنبر بطبقة قياسية،
+        // بناءً على مساحة الدفعة × معدل كجم/م² القابل للتعديل من "معايير متقدمة". بيظهر فقط لو نظام
+        // التربية "أرضي بفرشة" (floorType === 'litter') — الأرضية الشبك والبطاريات مالهاش فرشة أصلاً.
+        // السعر: متوسط مرجّح لآخر 3 مشتريات من تصنيف "فرشة وتدفئة" — بدون مطابقة اسم صنف بعينه
+        // (على عكس التحصينات/الإضافات) لأن هذا التصنيف أكثر تجانسًا وغالبًا صنف واحد بيتكرر.
+        function computeBatchBeddingNeed(b) {
+            if ((b.floorType || 'litter') !== 'litter') return null;
+            const s = AS();
+            const area = b.area || s.defaultAreaM2;
+            const qtyKg = area * (s.beddingKgPerM2 || 0);
+            if (qtyKg <= 0) return null;
+            const beddingPur = (b.purchases || []).filter(p => p.type === 'فرشة وتدفئة' && p.total > 0 && p.qty > 0)
+                .map(p => ({ date: p.date, kg: convertUnitQty(p.qty, p.unit, 'كجم'), total: p.total }))
+                .filter(p => p.kg != null && p.kg > 0)
+                .sort((a, c) => a.date.localeCompare(c.date));
+            let price = 0, priceSource = 'default';
+            if (beddingPur.length) {
+                const recent = beddingPur.slice(-3);
+                const totalKg = recent.reduce((s, p) => s + p.kg, 0);
+                const totalCost = recent.reduce((s, p) => s + p.total, 0);
+                price = totalKg > 0 ? totalCost / totalKg : 0;
+                priceSource = 'purchases';
+            }
+            return { qtyKg, price, priceSource, cost: price > 0 ? qtyKg * price : null };
+        }
+
         function computeBatchPurchaseList(b) {
             const count = b.startCount || 0;
             if (!count) return null;
@@ -11781,8 +11885,17 @@
             (b.treatmentLog || []).forEach(t => allDays.push(t.day || 0));
             const maxProgramDay = Math.max(...allDays);
             const cycleLen = Math.max(b.targetAge || 0, maxProgramDay, 1);
+            const m = computeMetrics(b); // مطلوبة لحساب احتياج العلف المتبقي (عمر الدفعة الحالي + رصيد المخزن)
+            const todayAge = m.todayAge || 0;
+            const feed = computeBatchFeedNeed(b, m, cycleLen);
+            const fuel = computeBatchFuelNeed(b, m, cycleLen);
+            const bedding = computeBatchBeddingNeed(b);
 
-            const vaccines = (b.vaccineLog || []).map(v => {
+            // ============ "الباقي فعليًا" ============
+            // التحصينات والمعاملات ليها فلاج تنفيذ صريح (done) — لو اتنفَّذت خلاص فمن المفترض إنها
+            // اتشرت بالفعل، فمنعرضهاش تاني فى قائمة الشراء (كانت قبل كده بتتحسب كاملة من الصفر دايمًا
+            // حتى لو الدفعة في نص عمرها ونصف البرنامج خلص فعليًا).
+            const vaccines = (b.vaccineLog || []).filter(v => !v.done).map(v => {
                 let qty, unit, note;
                 if (v.doseMode === 'perBirds' && v.birdsPerGroup > 0 && v.ampoulesPerGroup > 0) {
                     qty = Math.ceil(count / v.birdsPerGroup) * v.ampoulesPerGroup;
@@ -11793,67 +11906,227 @@
                     unit = v.unit || 'عبوة';
                     note = 'كمية تقديرية ثابتة — راجع نشرة المنتج لعدد الجرعات بالعبوة وطابقها مع عدد طيورك';
                 }
-                return { day: v.day || 0, name: v.name, qty, unit, note };
+                const priceInfo = lookupUnitPrice(b, v.name, unit, ['تحصينات', 'أدوية ولقاحات']);
+                return { day: v.day || 0, name: v.name, qty, unit, note, price: priceInfo ? priceInfo.price : null, cost: priceInfo ? priceInfo.price * qty : null };
             }).sort((x, y) => x.day - y.day);
 
+            // إضافات العلف/الماء: مفيش فلاج "done" لأنها برنامج ممتد (مش حدث لحظي زي التحصين)، فبدل
+            // ما نلغي البند كله، بنبدأ حساب الاستهلاك من "بكرة" (todayAge + 1) مش يوم 1 — يعني لو نص
+            // مدة الإضافة فات بالفعل، الكمية المطلوب شراؤها بتبقى بس الباقي من الأيام النشطة.
             const feedAdditives = (b.feedAdditives || []).map(a => {
-                const { totalConsumption, activeDays } = additiveConsumptionOverCycle(b, a, 'feed', cycleLen, count);
+                const { totalConsumption, activeDays } = additiveConsumptionOverCycle(b, a, 'feed', cycleLen, count, todayAge + 1);
                 const qty = computeAdditiveDoseQty('feed', a.dose, a.per, totalConsumption, activeDays);
                 const norm = normalizePurchaseUnit(qty * PURCHASE_LIST_SAFETY_MARGIN, a.unit);
-                return { name: a.name, dayLabel: additiveDayLabel(a), qty: norm.qty, unit: norm.unit };
-            });
+                const priceInfo = lookupUnitPrice(b, a.name, norm.unit, ['إضافات', 'أدوية ولقاحات']);
+                return { name: a.name, dayLabel: additiveDayLabel(a), qty: norm.qty, unit: norm.unit, price: priceInfo ? priceInfo.price : null, cost: priceInfo ? priceInfo.price * norm.qty : null };
+            }).filter(a => a.qty > 0); // الإضافة اللي مدتها خلصت بالكامل قبل النهاردة بترجع qty=0 — نستبعدها بدل ما تظهر بصفر
 
             const waterAdditives = (b.waterAdditives || []).map(a => {
-                const { totalConsumption, activeDays } = additiveConsumptionOverCycle(b, a, 'water', cycleLen, count);
+                const { totalConsumption, activeDays } = additiveConsumptionOverCycle(b, a, 'water', cycleLen, count, todayAge + 1);
                 const qty = computeAdditiveDoseQty('water', a.dose, a.per, totalConsumption, activeDays);
                 const norm = normalizePurchaseUnit(qty * PURCHASE_LIST_SAFETY_MARGIN, a.unit);
-                return { name: a.name, dayLabel: additiveDayLabel(a), qty: norm.qty, unit: norm.unit };
+                const priceInfo = lookupUnitPrice(b, a.name, norm.unit, ['إضافات', 'أدوية ولقاحات']);
+                return { name: a.name, dayLabel: additiveDayLabel(a), qty: norm.qty, unit: norm.unit, price: priceInfo ? priceInfo.price : null, cost: priceInfo ? priceInfo.price * norm.qty : null };
+            }).filter(a => a.qty > 0);
+
+            const treatments = (b.treatmentLog || []).filter(t => !t.done).map(t => {
+                const priceInfo = t.qty && t.unit ? lookupUnitPrice(b, t.name, t.unit, ['فرشة وتدفئة', 'أدوية ولقاحات', 'إضافات']) : null;
+                return { day: t.day || 0, name: t.name, qty: t.qty || null, unit: t.unit || '', price: priceInfo ? priceInfo.price : null, cost: priceInfo ? priceInfo.price * t.qty : null };
+            }).sort((x, y) => x.day - y.day);
+
+            // إجمالي التكلفة التقديرية الكلي = مجموع كل بند له سعر معروف (علف + وقود + بنود لها تاريخ شراء مطابق)
+            // + عدّاد للبنود اللي مالهاش سعر معروف، عشان يبان فى الملخص إن الإجمالي ده جزئي مش كامل 100%.
+            const priceableItems = [...vaccines, ...feedAdditives, ...waterAdditives, ...treatments];
+            let totalKnownCost = (feed && feed.shortfallKg > 0) ? feed.shortfallKg * feed.price : 0;
+            if (fuel && fuel.rawFuel > 0 && fuel.price > 0) totalKnownCost += fuel.cost;
+            if (bedding && bedding.cost != null) totalKnownCost += bedding.cost;
+            let unknownPriceCount = (fuel && fuel.rawFuel > 0 && !(fuel.price > 0)) ? 1 : 0;
+            if (bedding && bedding.cost == null) unknownPriceCount++;
+            priceableItems.forEach(it => {
+                if (it.cost != null) totalKnownCost += it.cost;
+                else unknownPriceCount++;
             });
 
-            const treatments = (b.treatmentLog || []).map(t => ({ day: t.day || 0, name: t.name, qty: t.qty || null, unit: t.unit || '' }))
-                .sort((x, y) => x.day - y.day);
-
-            return { count, cycleLen, vaccines, feedAdditives, waterAdditives, treatments };
+            return { count, cycleLen, feed, fuel, bedding, vaccines, feedAdditives, waterAdditives, treatments, totalKnownCost, unknownPriceCount };
         }
+
+        // سياق آخر قائمة مشتريات اتعرضت — بيتحفظ هنا عشان زراير المشاركة/الطباعة جوه المودال تقدر
+        // توصل لنفس البيانات بالظبط اللي المستخدم شايفها، من غير ما تعيد افتراض "الدفعة النشطة"
+        // (ممكن القائمة تتفتح من سياق تاني زي "بعد تطبيق بروتوكول" مش بالضرورة نفس الدفعة النشطة حاليًا).
+        let _purchaseListModalCtx = null;
 
         function renderPurchaseListHtml(list, b) {
             if (!list) return '<p>لا يوجد عدد طيور مسجّل لهذه الدفعة بعد.</p>';
-            const isEmpty = !list.vaccines.length && !list.feedAdditives.length && !list.waterAdditives.length && !list.treatments.length;
+            _purchaseListModalCtx = { list, b };
+            const hasFeedNeed = list.feed && list.feed.shortfallKg > 0;
+            const hasFuelNeed = list.fuel && list.fuel.rawFuel > 0;
+            const hasBeddingNeed = list.bedding && list.bedding.qtyKg > 0;
+            const isEmpty = !list.vaccines.length && !list.feedAdditives.length && !list.waterAdditives.length && !list.treatments.length && !hasFeedNeed && !hasFuelNeed && !hasBeddingNeed;
             let html = `<div style="font-size:12.5px;line-height:1.85;">`;
-            html += `<p>قائمة مشتريات تقديرية لدفعة "<b>${esc(b.name)}</b>" — <b>${fmt(list.count, 0)}</b> طائر، لتغطية البرنامج حتى يوم <b>${list.cycleLen}</b> تقريبًا. الكميات محسوبة من منحنى استهلاك العلف/الماء المرجعي لنوع الطائر (مع مزج بيانات مزرعتك الفعلية لو متوفرة) + هامش أمان 5%.</p>`;
+            html += `<div class="no-print" style="display:flex;gap:8px;margin-bottom:12px;">` +
+                `<button class="btn ghost sm" style="flex:1;color:#25D366;" onclick="shareBatchPurchaseListWhatsapp()">💬 مشاركة واتساب</button>` +
+                `<button class="btn ghost sm" style="flex:1;" onclick="printBatchPurchaseList()">🖨️ طباعة</button>` +
+                `</div>`;
+            html += `<p>قائمة مشتريات تقديرية لدفعة "<b>${esc(b.name)}</b>" — <b>${fmt(list.count, 0)}</b> طائر، لتغطية <b>الباقي فعليًا</b> من البرنامج حتى يوم <b>${list.cycleLen}</b> تقريبًا (البنود المنفَّذة بالفعل مُستبعدة، ورصيد العلف الحالي مخصوم). الكميات محسوبة من منحنى استهلاك العلف/الماء المرجعي لنوع الطائر (مع مزج بيانات مزرعتك الفعلية لو متوفرة) + هامش أمان 5%.</p>`;
             if (isEmpty) {
                 html += `<p style="color:var(--muted);">لا يوجد برنامج تحصينات/إضافات محمَّل على هذه الدفعة حاليًا — طبّق بروتوكولًا محفوظًا أولًا أو أضف الإضافات يدويًا.</p>`;
             }
+            if (hasFeedNeed) {
+                const f = list.feed;
+                const balanceNote = f.currentBalanceKg > 0
+                    ? ` <span style="color:var(--muted);">(من إجمالي احتياج ${fmt(f.totalNeededKg, 1)} كجم، بعد خصم رصيد المخزن الحالي ${fmt(f.currentBalanceKg, 1)} كجم)</span>`
+                    : '';
+                const priceNote = f.priceSource === 'purchases'
+                    ? 'فعلي من آخر مشتريات'
+                    : 'افتراضي من إعدادات الدفعة — لا توجد مشتريات علف مسجَّلة بعد، حدّثه لو مختلف عن سعر السوق الحالي';
+                html += `<h4 style="margin:12px 0 4px;">🌾 علف (${esc(f.feedItemName)})</h4><ul style="margin:0;padding-right:18px;">` +
+                    `<li>الاحتياج المتبقي حتى نهاية البرنامج: <b>${fmt(f.shortfallKg, 1)} كجم</b>${balanceNote}` +
+                    `<br><span class="u-17">بسعر تقديري ${fmt(f.price, 2)} ج/كجم (${priceNote}) ← إجمالي تقريبي: <b>${money(f.shortfallKg * f.price)}</b></span></li>` +
+                    `</ul>`;
+            } else if (list.feed) {
+                html += `<p style="color:var(--muted);">✅ رصيد العلف الحالي كافٍ لتغطية باقي البرنامج تقريبًا — مفيش احتياج شراء علف إضافي دلوقتي.</p>`;
+            }
+            if (list.fuel && list.fuel.rawFuel > 0) {
+                const fu = list.fuel;
+                const priceNote = fu.price > 0
+                    ? `بسعر ${fmt(fu.price, 2)} ج/${esc(fu.unit)} ← إجمالي تقريبي: <b>${money(fu.cost)}</b>`
+                    : `⚠️ سعر ${esc(fu.unit)} غير مسجَّل فى بيانات الدفعة — أدخله من تعديل الدفعة لحساب التكلفة التقديرية`;
+                const gasNote = fu.isGas ? ` <span style="color:var(--muted);">(الاستهلاك التقديري ${fmt(fu.rawFuel, 2)} أنبوبة، مقرَّب لأعلى لأقرب أنبوبة كاملة للشراء)</span>` : '';
+                html += `<h4 style="margin:12px 0 4px;">🔥 وقود التدفئة</h4><ul style="margin:0;padding-right:18px;">` +
+                    `<li>الاحتياج المتبقي حتى نهاية البرنامج: <b>${fmt(fu.qty, fu.isGas ? 0 : 1)} ${esc(fu.unit)}</b>${gasNote}` +
+                    `<br><span class="u-17">${priceNote}</span></li>` +
+                    `</ul>`;
+            }
+            if (hasBeddingNeed) {
+                const bd = list.bedding;
+                const priceNote = bd.cost != null
+                    ? `بسعر ${fmt(bd.price, 2)} ج/كجم (${bd.priceSource === 'purchases' ? 'فعلي من آخر مشتريات' : 'افتراضي'}) ← إجمالي تقريبي: <b>${money(bd.cost)}</b>`
+                    : `⚠️ لا توجد مشتريات فرشة مسجَّلة بعد لتقدير السعر — أضِفه يدويًا`;
+                html += `<h4 style="margin:12px 0 4px;">🪵 فرشة (نشارة/تبن)</h4><ul style="margin:0;padding-right:18px;">` +
+                    `<li>الكمية التقديرية لتغطية أرضية العنبر: <b>${fmt(bd.qtyKg, 1)} كجم</b>` +
+                    `<br><span class="u-17">${priceNote}</span></li>` +
+                    `</ul>`;
+            }
+            // وسم صغير يعرض تكلفة البند لو سعره معروف من مشتريات سابقة، أو تنبيه واضح لو مش معروف
+            // (بدل ما نسيب البند من غير أي إشارة للتكلفة أو نختلق سعر افتراضي مالوش أساس).
+            const costTag = (it) => it.cost != null
+                ? ` — <b style="color:var(--barn);">${money(it.cost)}</b>`
+                : ` <span style="color:var(--muted);">(سعر غير معروف — سجّل شراء سابق بنفس الاسم أو أضِفه يدويًا)</span>`;
             if (list.vaccines.length) {
                 html += `<h4 style="margin:12px 0 4px;">💉 تحصينات وأدوية</h4><ul style="margin:0;padding-right:18px;">` +
-                    list.vaccines.map(v => `<li>يوم ${v.day} — ${esc(v.name)}: <b>${fmt(v.qty, 2)} ${esc(v.unit)}</b><br><span class="u-17">${esc(v.note)}</span></li>`).join('') +
+                    list.vaccines.map(v => `<li>يوم ${v.day} — ${esc(v.name)}: <b>${fmt(v.qty, 2)} ${esc(v.unit)}</b>${costTag(v)}<br><span class="u-17">${esc(v.note)}</span></li>`).join('') +
                     `</ul>`;
             }
             if (list.feedAdditives.length) {
                 html += `<h4 style="margin:12px 0 4px;">🌾 إضافات علف</h4><ul style="margin:0;padding-right:18px;">` +
-                    list.feedAdditives.map(a => `<li>${esc(a.name)} <span style="color:var(--muted);">(${esc(a.dayLabel)})</span>: <b>${fmt(a.qty, 2)} ${esc(a.unit)}</b></li>`).join('') +
+                    list.feedAdditives.map(a => `<li>${esc(a.name)} <span style="color:var(--muted);">(${esc(a.dayLabel)})</span>: <b>${fmt(a.qty, 2)} ${esc(a.unit)}</b>${costTag(a)}</li>`).join('') +
                     `</ul>`;
             }
             if (list.waterAdditives.length) {
                 html += `<h4 style="margin:12px 0 4px;">💧 إضافات مائية</h4><ul style="margin:0;padding-right:18px;">` +
-                    list.waterAdditives.map(a => `<li>${esc(a.name)} <span style="color:var(--muted);">(${esc(a.dayLabel)})</span>: <b>${fmt(a.qty, 2)} ${esc(a.unit)}</b></li>`).join('') +
+                    list.waterAdditives.map(a => `<li>${esc(a.name)} <span style="color:var(--muted);">(${esc(a.dayLabel)})</span>: <b>${fmt(a.qty, 2)} ${esc(a.unit)}</b>${costTag(a)}</li>`).join('') +
                     `</ul>`;
             }
             if (list.treatments.length) {
                 html += `<h4 style="margin:12px 0 4px;">🪣 معاملات فرشة/سبلة</h4><ul style="margin:0;padding-right:18px;">` +
-                    list.treatments.map(t => `<li>يوم ${t.day} — ${esc(t.name)}${t.qty ? `: <b>${fmt(t.qty, 2)} ${esc(t.unit)}</b>` : ` <span style="color:var(--muted);">(كمية غير محددة فى البرنامج — أضفها يدويًا)</span>`}</li>`).join('') +
+                    list.treatments.map(t => `<li>يوم ${t.day} — ${esc(t.name)}${t.qty ? `: <b>${fmt(t.qty, 2)} ${esc(t.unit)}</b>${costTag(t)}` : ` <span style="color:var(--muted);">(كمية غير محددة فى البرنامج — أضفها يدويًا)</span>`}</li>`).join('') +
                     `</ul>`;
+            }
+            if (list.totalKnownCost > 0 || list.unknownPriceCount > 0) {
+                html += `<div style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--line-dashed, #ccc);font-size:13px;">` +
+                    `<b>💰 الإجمالي التقريبي (البنود المعروف سعرها فقط): ${money(list.totalKnownCost)}</b>` +
+                    (list.unknownPriceCount > 0 ? `<br><span style="color:var(--muted);font-size:11px;">+ ${list.unknownPriceCount} بند بدون سعر معروف (مفيش شراء سابق بنفس الاسم) — مش داخل فى الإجمالي أعلاه.</span>` : '') +
+                    `</div>`;
             }
             html += `<p style="font-size:10.5px;color:var(--muted);margin-top:12px;">⚠️ كميات تقديرية للتخطيط والشراء المسبق فقط — قرّب الشراء الفعلي حسب حجم عبوة كل منتج فى السوق، وراجع "التحصينات" و"الإضافات" بالتطبيق أول بأول لمطابقتها مع الاستهلاك الفعلي.</p>`;
             html += `</div>`;
             return html;
         }
 
+        // ============ نسخة نصية بسيطة من قائمة المشتريات لمشاركتها واتساب ============
+        // نفس ترتيب وبنود renderPurchaseListHtml بالظبط، لكن من غير أي وسم HTML — بولد/نجمة (*) لتمييز
+        // العناوين والأرقام زي تنسيق واتساب القياسي (نفس أسلوب shareWhatsapp() الموجود فعليًا للملخص اليومي).
+        function buildPurchaseListWhatsappText(list, b) {
+            const lines = [`🛒 *قائمة مشتريات — ${b.name}*`, `${fmt(list.count, 0)} طائر · الباقي حتى يوم ${list.cycleLen} من البرنامج`, ''];
+            if (list.feed && list.feed.shortfallKg > 0) {
+                const f = list.feed;
+                lines.push(`🌾 *علف (${f.feedItemName})*: ${fmt(f.shortfallKg, 1)} كجم — ${money(f.shortfallKg * f.price)}`);
+            }
+            if (list.fuel && list.fuel.rawFuel > 0) {
+                const fu = list.fuel;
+                lines.push(`🔥 *وقود التدفئة*: ${fmt(fu.qty, fu.isGas ? 0 : 1)} ${fu.unit}` + (fu.price > 0 ? ` — ${money(fu.cost)}` : ' — (سعر غير معروف)'));
+            }
+            if (list.bedding && list.bedding.qtyKg > 0) {
+                const bd = list.bedding;
+                lines.push(`🪵 *فرشة*: ${fmt(bd.qtyKg, 1)} كجم` + (bd.cost != null ? ` — ${money(bd.cost)}` : ' — (سعر غير معروف)'));
+            }
+            const itemLine = (icon, it) => `${icon} ${it.name}: ${fmt(it.qty, 2)} ${it.unit}` + (it.cost != null ? ` — ${money(it.cost)}` : ' — (سعر غير معروف)');
+            if (list.vaccines.length) { lines.push('', '💉 *تحصينات وأدوية*'); list.vaccines.forEach(v => lines.push(itemLine('•', v))); }
+            if (list.feedAdditives.length) { lines.push('', '🌾 *إضافات علف*'); list.feedAdditives.forEach(a => lines.push(itemLine('•', a))); }
+            if (list.waterAdditives.length) { lines.push('', '💧 *إضافات مائية*'); list.waterAdditives.forEach(a => lines.push(itemLine('•', a))); }
+            if (list.treatments.length) { lines.push('', '🪣 *معاملات فرشة/سبلة*'); list.treatments.forEach(t => lines.push(t.qty ? itemLine('•', t) : `• ${t.name}: (كمية غير محددة)`)); }
+            lines.push('', `💰 *الإجمالي التقريبي: ${money(list.totalKnownCost)}*`);
+            if (list.unknownPriceCount > 0) lines.push(`(+ ${list.unknownPriceCount} بند بدون سعر معروف، مش داخل الإجمالي)`);
+            lines.push('', '📱 تم الإنشاء بواسطة كتكوت Pro');
+            return lines.join('\n');
+        }
+
+        function shareBatchPurchaseListWhatsapp() {
+            const ctx = _purchaseListModalCtx;
+            if (!ctx) { showToast('افتح قائمة المشتريات أولاً'); return; }
+            const text = buildPurchaseListWhatsappText(ctx.list, ctx.b);
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // ============ نسخة HTML مبسّطة للطباعة (ألوان ثابتة بغض النظر عن الوضع الليلي — نفس أسلوب
+        // buildInvestorReport، لأن الاعتماد على متغيرات CSS الخاصة بالثيم ممكن يطلّع طباعة غامقة/غير مقروءة
+        // لو الوضع الليلي مفعّل وقت الطباعة) ============
+        function buildPurchaseListPrintHtml(list, b) {
+            const row = (label, qty, unit, cost, note) => `<tr>
+                <td style="padding:6px;border:1px solid #ddd;">${esc(label)}${note ? `<div style="font-size:9.5px;color:#888;">${esc(note)}</div>` : ''}</td>
+                <td style="padding:6px;border:1px solid #ddd;text-align:center;">${fmt(qty, 2)} ${esc(unit)}</td>
+                <td style="padding:6px;border:1px solid #ddd;text-align:center;">${cost != null ? money(cost) : '—'}</td></tr>`;
+            let rows = '';
+            if (list.feed && list.feed.shortfallKg > 0) rows += row(`🌾 علف (${list.feed.feedItemName})`, list.feed.shortfallKg, 'كجم', list.feed.shortfallKg * list.feed.price);
+            if (list.fuel && list.fuel.rawFuel > 0) rows += row('🔥 وقود التدفئة', list.fuel.qty, list.fuel.unit, list.fuel.price > 0 ? list.fuel.cost : null);
+            if (list.bedding && list.bedding.qtyKg > 0) rows += row('🪵 فرشة (نشارة/تبن)', list.bedding.qtyKg, 'كجم', list.bedding.cost);
+            list.vaccines.forEach(v => rows += row(`💉 ${v.name} (يوم ${v.day})`, v.qty, v.unit, v.cost, v.note));
+            list.feedAdditives.forEach(a => rows += row(`🌾 ${a.name} (${a.dayLabel})`, a.qty, a.unit, a.cost));
+            list.waterAdditives.forEach(a => rows += row(`💧 ${a.name} (${a.dayLabel})`, a.qty, a.unit, a.cost));
+            list.treatments.forEach(t => t.qty && (rows += row(`🪣 ${t.name} (يوم ${t.day})`, t.qty, t.unit, t.cost)));
+            return `<div style="font-family:'Tajawal','Cairo',sans-serif;max-width:100%;margin:0 auto;padding:24px;background:white;direction:rtl;font-size:12px;color:#222;">
+                <div style="text-align:center;border-bottom:4px solid #2F4538;padding-bottom:12px;margin-bottom:18px;">
+                    <h1 style="margin:0;color:#2F4538;font-size:22px;">🛒 قائمة مشتريات دفعة</h1>
+                    <p style="margin:6px 0 0;color:#555;font-size:14px;font-weight:bold;">${esc(b.name)} — ${fmt(list.count, 0)} طائر</p>
+                    <p style="margin:2px 0 0;color:#888;font-size:11px;">الباقي فعليًا حتى يوم ${list.cycleLen} من البرنامج · تاريخ الطباعة: ${todayStr()}</p>
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+                    <thead><tr style="background:#f2f0e9;"><th style="padding:6px;border:1px solid #ddd;">الصنف</th><th style="padding:6px;border:1px solid #ddd;">الكمية</th><th style="padding:6px;border:1px solid #ddd;">التكلفة التقديرية</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div style="margin-top:14px;text-align:left;font-size:14px;font-weight:800;color:#2F4538;">💰 الإجمالي التقريبي: ${money(list.totalKnownCost)}</div>
+                ${list.unknownPriceCount > 0 ? `<div style="font-size:10.5px;color:#888;">+ ${list.unknownPriceCount} بند بدون سعر معروف — غير محتسَب أعلاه.</div>` : ''}
+                <div style="margin-top:24px;font-size:9.5px;color:#888;text-align:center;border-top:1px solid #ddd;padding-top:8px;">
+                    كميات تقديرية للتخطيط فقط — قرّب الشراء الفعلي حسب حجم العبوة فى السوق. تم الإنشاء بواسطة تطبيق "كتكوت Pro".
+                </div>
+            </div>`;
+        }
+
+        function printBatchPurchaseList() {
+            const ctx = _purchaseListModalCtx;
+            if (!ctx) { showToast('افتح قائمة المشتريات أولاً'); return; }
+            const el = document.getElementById('printableReport');
+            if (!el) return;
+            el.innerHTML = buildPurchaseListPrintHtml(ctx.list, ctx.b);
+            el.style.display = 'block';
+            requestAnimationFrame(() => setTimeout(() => window.print(), 60));
+        }
+
         function showBatchPurchaseList() {
             const b = getActiveBatch();
             if (!b) { showToast('أضف دفعة أولاً'); return; }
             const list = computeBatchPurchaseList(b);
-            showInfo('🛒 قائمة مشتريات الدفعة الحالية', renderPurchaseListHtml(list, b));
+            showInfoHtml('🛒 قائمة مشتريات الدفعة الحالية', renderPurchaseListHtml(list, b));
         }
 
         function saveProtocol() {
@@ -12124,7 +12397,7 @@
                     closeModal('protocolModalOverlay');
                     render();
                     showToast(`✅ تم تطبيق بروتوكول "${p.name}" على دفعة "${b.name}"`);
-                    setTimeout(() => showInfo('🛒 قائمة مشتريات الدفعة بعد تطبيق البروتوكول', renderPurchaseListHtml(computeBatchPurchaseList(b), b)), 500);
+                    setTimeout(() => showInfoHtml('🛒 قائمة مشتريات الدفعة بعد تطبيق البروتوكول', renderPurchaseListHtml(computeBatchPurchaseList(b), b)), 500);
                 }
             );
         }
@@ -17170,7 +17443,7 @@
             ${insightsSection}
             <div class="section"><div class="section-head"><h2>📈 الرسوم البيانية</h2></div>
                 <details class="card" style="padding:0;overflow:hidden;" ontoggle="if(this.open) redrawDashboardChartsIfNeeded()">
-                    <summary style="padding:10px 12px;cursor:pointer;background:#faf8f2;font-weight:800;font-size:13px;">📊 اضغط لعرض منحنيات النمو والنفوق والتجانس والأسعار والعلف</summary>
+                    <summary style="padding:10px 12px;cursor:pointer;background:var(--cream);font-weight:800;font-size:13px;">📊 اضغط لعرض منحنيات النمو والنفوق والتجانس والأسعار والعلف</summary>
                     <div style="padding:10px 12px;">
                         <div class="mb-4">
                             <div class="u-23">📈 منحنى نمو الوزن (فعلي مقابل المعياري)</div>
@@ -17409,7 +17682,7 @@
         // أصلاً (زي العلف والماء) حيث applySectionCollapsing العامة مبتوصلش. مشترك بدل تكراره فى كل تبويب. ============
         function subTabSection(open, title, actionsHtml, bodyHtml) {
             return `<details ${open ? 'open' : ''} style="border-bottom:1px solid var(--line);">
-                <summary style="padding:12px 14px;cursor:pointer;background:#faf8f2;font-weight:800;font-size:14px;">${title}</summary>
+                <summary style="padding:12px 14px;cursor:pointer;background:var(--cream);font-weight:800;font-size:14px;">${title}</summary>
                 <div style="padding:10px 12px;">
                     ${actionsHtml ? `<div class="row-actions mb-2">${actionsHtml}</div>` : ''}
                     ${bodyHtml}
@@ -17657,109 +17930,86 @@
         function refreshTreatmentListBox() {
             render();
         }
-        // ============ حاسبة ومرجع التهوية التفصيلي: معادلات مطبّقة على بيانات الدفعة الفعلية + تايمر ليلي موسمي + سرعة هواء/ضغط ساكن + فحص ميداني ============
+        // ============ حاسبة ومرجع التهوية التفصيلي: أقرب معادلة لشهر بداية الدفعة (شتوي وزن حيوي / صيفي سرعة هواء) + خطة تشغيل الشفاطات + سرعة هواء/ضغط ساكن + فحص ميداني ============
         function renderVentilationCalcCard(b, m) {
             m = m || computeMetrics(b);
             const age = m.todayAge;
             const liveCount = m.liveCount || 0;
-            const area = b.area || 0;
-            const fanCapacity = b.fanCapacityM3h || 0;
-            const fanCount = b.fanCount || 0;
-            const totalFanCapacity = fanCapacity * fanCount;
+            const fanCount = sumFanCount(b.fans);
+            const totalFanCapacity = sumFanCapacity(b.fans);
             const month = b.startmonth || (new Date().getMonth() + 1);
-            const season = seasonLabelOf(month);
-            const target = computeSeasonalMinVentTarget(b, m, season);
-            const weekIdx = Math.min(8, Math.max(1, Math.ceil(age / 7)));
+            const seasonMode = ventSeasonModeForMonth(month);
+            const isWinter = isWinterVentNow(month);
+            const target = isWinter ? computeWinterVentTarget(b, m) : computeSummerVentTarget(b, m);
+            const plan = (target && fanCount > 0) ? planFanOperation(b.fans, target.totalM3h) : null;
+            // ✨ شهور الحياد (أبريل/أكتوبر): المعادلة بتتبدّل نهار/ليل تلقائيًا حسب وقت فتح الصفحة — لازم
+            // نوضّح ده هنا وإلا هيفتكر المستخدم إن الرقم اتغيّر لوحده لو رجع فتح الصفحة فى وقت تاني من نفس اليوم
+            const mixedMonthNote = seasonMode !== 'mixed' ? '' : `<div class="vent-verdict info">
+                <span class="icon">🌗</span>
+                <span class="txt">شهر حياد مناخي — المعادلة بتتبدّل تلقائيًا: نهارًا (٦ص-٦م) صيفية وليلًا شتوية. المعروض دلوقتي حسب توقيت جهازك: ${isWinter ? 'شتوية (ليل)' : 'صيفية (نهار)'}.</span>
+            </div>`;
 
-            // ===== 1) المعادلات مطبّقة على بياناتك الفعلية =====
-            // ✨ شتاءً: معادلة الوزن الحيوي (م³/كجم/ساعة × وزن نهاية الأسبوع) — باقي الفصول: معدل ثابت لكل طائر
-            // ✨ تحسين UX (اتساق): كانت المعادلة فقرة نص واحدة متصلة بـ<br> — بدّلناها لصفوف statLine
-            // (تسمية: قيمة) زي باقي شاشات التطبيق (خطة التوسع مثلاً)، فالعين تلقط كل رقم لوحده بسرعة
-            // بدل ما تفكّ جملة طويلة. النص التحذيري/التوضيحي المصاحب فضل فقرة عادية لأنه مش رقم.
-            let eq1 = `<div class="empty p-3">أدخل عدد الطيور الحي (من السجل اليومي) لحساب المعادلة على بياناتك.</div>`;
-            if (target && target.mode === 'winter') {
+            // ===== 1) المعادلة المُفعّلة الآن (حسب الموسم) مطبّقة على بياناتك الفعلية =====
+            let eq1 = `<div class="empty p-3">${isWinter ? 'أدخل وزن الدفعة (سجل يومي)' : 'أدخل عرض وارتفاع العنبر فى بيانات الدفعة'} لحساب المعادلة على بياناتك.</div>`;
+            if (target && isWinter) {
                 eq1 = `<div>
-                    <div style="font-size:12.5px;font-weight:900;color:var(--barn-dark);margin-bottom:4px;">❄️ معادلة التهوية الشتوية (وزن حيوي — أسبوع ${target.weekIdx})</div>
+                    <div class="subcard-body-title">❄️ معادلة التهوية الشتوية (وزن حيوي — أسبوع ${target.weekIdx})</div>
                     ${statLine('معدل الأسبوع', `${target.rateM3PerKg} م³/كجم/ساعة`)}
                     ${statLine(`وزن نهاية الأسبوع (${target.weightSource})`, `${fmt(target.weightAtWeekEndG,0)} جم`)}
                     ${statLine('عدد الطيور الحي', fmt(liveCount,0))}
-                    ${statLine('= الحد الأدنى المطلوب الآن', `${fmt(target.totalM3h,0)} م³/ساعة`, {vStyle:'color:var(--barn-dark);font-size:14px;'})}
-                    <p style="font-size:10.5px;color:var(--muted);margin:6px 0 0;">هذا حد أدنى لرطوبة/جودة هواء فقط، مش تبريد. المعدل بيتصاعد أسبوعيًا (١←١، ٢←٢، ٣←٣، ٤←٤، ٥←٥ م³/كجم)، ويُحسب على وزن نهاية الأسبوع طول الأسبوع (مش الوزن اليومي المتغيّر). الأسابيع بعد ٥ بتفضل مؤقتًا عند نفس معدل الأسبوع ٥.</p>
+                    ${statLine('= الحد الأدنى المطلوب الآن', `${fmt(target.totalM3h,0)} م³/ساعة (${fmt(target.totalM3h/60,1)} م³/دقيقة)`, {vClass:'highlight'})}
+                    <details class="micro-disclosure">
+                        <summary>ليه المعدل بيتغيّر كل أسبوع؟</summary>
+                        <div class="micro-disclosure-body">المعدل بيتصاعد أسبوعيًا (١←١، ٢←٢، ٣←٣، ٤←٤، ٥←٥ م³/كجم)، ويُحسب على وزن نهاية الأسبوع طول الأسبوع (مش الوزن اليومي المتغيّر). الأسابيع بعد ٥ بتفضل عند نفس معدل الأسبوع ٥.</div>
+                    </details>
                 </div>`;
             } else if (target) {
-                const m3hPerBird = target.cfmPerBird * CFM_TO_M3H;
                 eq1 = `<div>
-                    <div style="font-size:12.5px;font-weight:900;color:var(--barn-dark);margin-bottom:4px;">معادلة الحد الأدنى لتجديد الهواء (أسبوع ${weekIdx})</div>
-                    ${statLine('معدل الطائر الواحد', `${fmt(m3hPerBird,2)} م³/ساعة`)}
-                    ${statLine('عدد الطيور الحي', fmt(liveCount,0))}
-                    ${statLine('= الحد الأدنى المطلوب الآن', `${fmt(target.totalM3h,0)} م³/ساعة`, {vStyle:'color:var(--barn-dark);font-size:14px;'})}
-                    <p style="font-size:10.5px;color:var(--muted);margin:6px 0 0;">هذا حد أدنى لرطوبة/جودة هواء فقط، مش تبريد.</p>
+                    <div class="subcard-body-title">☀️ معادلة التهوية الصيفية (سرعة هواء — أسبوع ${target.weekIdx})</div>
+                    ${statLine('سرعة الهواء المطلوبة', `${target.requiredAirspeedMs} م/ثانية`)}
+                    ${statLine('مساحة مقطع العنبر', `${fmt(b.houseWidthM,1)}×${fmt(b.houseHeightM,1)} = ${fmt(target.crossSectionAreaM2,1)} م²`)}
+                    ${statLine('= الحد الأدنى المطلوب الآن', `${fmt(target.totalM3h,0)} م³/ساعة (${fmt(target.requiredM3PerMinute,1)} م³/دقيقة)`, {vClass:'highlight'})}
+                    <details class="micro-disclosure">
+                        <summary>ليه السرعة بتتغيّر كل أسبوع؟</summary>
+                        <div class="micro-disclosure-body">السرعة بتتصاعد أسبوعيًا (١←٠.٢٥، ٢←٠.٥، ٣←١، ٤←١.٥، ٥←٢ م/ث). الأسابيع بعد ٥ بتفضل عند نفس معدل الأسبوع ٥.</div>
+                    </details>
                 </div>`;
             }
-            let eq2 = `<div class="empty p-3">أدخل مساحة العنبر فى بيانات الدفعة لحساب معادلة ذروة الحر.</div>`;
-            if (area > 0) {
-                const hotLow = area * HOT_VENT_M3MIN_PER_M2_LOW * 60;
-                const hotHigh = area * HOT_VENT_M3MIN_PER_M2_HIGH * 60;
-                const sv = computeSummerVentTarget(b, m);
+
+            // ===== 2) خطة التشغيل على شفاطاتك الفعلية =====
+            let eq2 = `<div class="empty p-3">${!target ? 'أدخل بيانات الدفعة أعلاه أولًا.' : (b.ventType === 'natural' ? 'نظامك طبيعي (بدون شفاطات) — افتح الفتحات الجانبية تدريجيًا لتحقيق الرقم المطلوب فوق، وتأكد بجهاز قياس سرعة الهواء.' : 'أدخل مجموعات الشفاطات فى بيانات الدفعة لحساب خطة التشغيل بالظبط.')}</div>`;
+            if (plan) {
                 eq2 = `<div>
-                    <div style="font-size:12.5px;font-weight:900;color:var(--barn-dark);margin-bottom:4px;">معادلة ذروة الحر (تهوية انتقالية/نفقية)</div>
-                    ${statLine('مساحة عنبرك', `${fmt(area,0)} م²`)}
-                    ${statLine('معامل التهوية لكل م²', '1.2 - 1.8 م³/دقيقة')}
-                    ${statLine('= الحد الأدنى وقت ذروة الحر', `${fmt(hotLow,0)} - ${fmt(hotHigh,0)} م³/ساعة`, {vStyle:'color:var(--barn-dark);font-size:14px;'})}
-                    ${totalFanCapacity > 0
-                        ? statLine(`قدرتك الحالية (${fmt(fanCount,0)} شفاط × ${fmt(fanCapacity,0)})`, `${fmt(totalFanCapacity,0)} م³/ساعة ${totalFanCapacity >= hotLow ? '✅' : '⚠️'}`, {vStyle:`color:${totalFanCapacity >= hotLow ? 'var(--green)' : 'var(--red)'};`})
-                        : `<p class="fs-2xs text-muted" style="margin:6px 0 0;">أدخل عدد وقدرة الشفاطات فى بيانات الدفعة لمقارنة قدرتك الفعلية بهذا الرقم.</p>`}
-                </div>
-                ${sv ? `<div style="border-top:1px dashed var(--line);margin-top:10px;padding-top:8px;">
-                    <div style="font-size:12.5px;font-weight:900;color:var(--barn-dark);margin-bottom:4px;">🌀 معادلة عدد الشفاطات الدقيقة (سرعة الهواء — أسبوع ${sv.weekIdx})</div>
-                    ${statLine('سرعة الهواء المطلوبة', `${sv.requiredAirspeedMs} م/ثانية`)}
-                    ${statLine('مساحة مقطع العنبر', `${fmt(b.houseWidthM,1)}×${fmt(b.houseHeightM,1)} = ${fmt(sv.crossSectionAreaM2,1)} م²`)}
-                    ${statLine('= إجمالي الهواء المطلوب', `${fmt(sv.requiredM3PerMinute,0)} م³/دقيقة`)}
-                    ${statLine('÷ قدرة الشفاط الواحد', `${fmt(sv.fanCapacityM3Min,0)} م³/دقيقة`)}
-                    ${statLine('= عدد الشفاطات اللازم تشتغل الآن', `${sv.fansNeeded} شفاط`, {vStyle:'color:var(--barn-dark);font-size:14px;'})}
-                    ${fanCount > 0 ? `<p class="fs-2xs text-muted" style="margin:4px 0 0;">عندك ${fanCount} — ${sv.fansNeeded > fanCount ? `ناقص ${sv.fansNeeded - fanCount}` : '✅ كافي'}</p>` : ''}
-                </div>` : (area > 0 && (b.ventType === 'tunnel' || b.ventType === 'mixed') ? `<p class="u-11">💡 أدخل عرض وارتفاع العنبر وقدرة الشفاط فى بيانات الدفعة لحساب عدد الشفاطات الدقيق اللازم صيفًا حسب سرعة الهواء.</p>` : '')}`;
+                    <div class="subcard-body-title">🌀 خطة التشغيل (${plan.totalUnits} شفاط مسجَّل، إجمالي ${fmt(plan.totalCapacity,0)} م³/ساعة)</div>
+                    ${!plan.coversFully
+                        ? statLine('النتيجة', `⚠️ حتى بتشغيل الكل لسه ناقص ${fmt(target.totalM3h - plan.totalCapacity,0)} م³/ساعة`, {vClass:'danger'})
+                        : plan.dutyPct >= 98
+                            ? statLine('شغّل باستمرار', `${plan.fullFansCount + 1} شفاط`, {vClass:'success'})
+                            : `${plan.fullFansCount > 0 ? statLine('شغّل باستمرار', `${plan.fullFansCount} شفاط`) : ''}
+                               ${statLine('+ شفاط بدورة تشغيل', `${fmt(plan.dutyPct,0)}% (قدرته ${fmt(plan.lastFanCap,0)} م³/ساعة)`, {vClass:'highlight'})}
+                               ${statLine('يعني تقريبًا', `${fmt(plan.dutyPct*5/100,1)} دقيقة تشغيل من كل 5 دقائق`)}`}
+                </div>`;
             }
 
-            // ===== 2) جدول تايمر التهوية الليلية حسب الموسم — نفس مصدر البيانات المستخدم فى توصية "الليلة" الظاهرة تلقائيًا فوق فى بروتوكول اليوم =====
-            let prevMax = 0;
-            const nightRowsHtml = NIGHT_VENT_DUTY_TABLE.map(r => {
-                const isCurrent = age > prevMax && age <= r.maxAge;
-                prevMax = r.maxAge;
-                return `<tr style="border-bottom:1px solid var(--line);${isCurrent ? 'background:rgba(46,110,142,.08);font-weight:800;' : ''}">
-                    <td class="u-03">${r.stageLabel}${isCurrent ? ' 👈' : ''}</td>
-                    <td class="u-05">${r.winter[0]}-${r.winter[1]}%</td>
-                    <td class="u-05">${r.mild[0]}-${r.mild[1]}%</td>
-                    <td class="u-05">${r.summer[0]}-${r.summer[1]}${r.summer[1]===100?'% (شبه مستمر)':'%'}</td>
-                </tr>`;
-            }).join('');
-            const nightTableHtml = `
-                <p style="font-size:10.5px;color:var(--muted);margin:0 0 6px;">💡 مفيش داعي تفتح الجدول ده كل يوم — توصية الليلة النهاردة بالظبط (حسب عمر وموسم دفعتك الحالية، ومُعدَّلة تلقائيًا لو الأمونيا مرتفعة) بتظهر تلقائيًا فوق فى قسم "🌬️ بروتوكول توصيات التهوية اليوم". الجدول ده للرجوع السريع بس لو حابب تشوف الصورة الكاملة لكل الأعمار مرة واحدة.</p>
-                <div class="scroll-x">
-                <table class="u-26">
-                <thead><tr style="background:#faf8f2;">
-                    <th style="padding:6px;text-align:right;border-bottom:1px solid var(--line);">العمر</th>
-                    <th style="padding:6px;text-align:center;border-bottom:1px solid var(--line);">❄️ شتاء</th>
-                    <th style="padding:6px;text-align:center;border-bottom:1px solid var(--line);">🍂 ربيع/خريف</th>
-                    <th style="padding:6px;text-align:center;border-bottom:1px solid var(--line);">☀️ صيف</th>
-                </tr></thead>
-                <tbody>${nightRowsHtml}</tbody></table>
-                </div>
-                <p class="u-11">النسبة = دقائق تشغيل من كل دورة 5 دقائق (مثلاً 20% ≈ دقيقة تشغيل / 4 دقائق وقف). الصف المظلّل 👈 هو مرحلة دفعتك الحالية. دي نقطة انطلاق عملية وليست رقمًا نهائيًا ثابتًا — اضبطها فعليًا حسب قراءات الأمونيا/CO2/الرطوبة الفعلية المسجّلة يوميًا.</p>`;
-
             // ===== 3) سرعة الهواء والضغط الساكن =====
-            let airCalc = `<div class="empty p-3">أدخل عدد وقدرة الشفاطات فى بيانات الدفعة لحساب سرعة الهواء ومساحة الفتحات المطلوبة.</div>`;
+            let airCalc = `<div class="empty p-3">أدخل مجموعات الشفاطات فى بيانات الدفعة لحساب سرعة الهواء ومساحة الفتحات المطلوبة.</div>`;
             if (totalFanCapacity > 0) {
                 const m3s = totalFanCapacity / 3600;
                 const inletAreaHigh = m3s / 5;
                 const inletAreaLow = m3s / 7;
                 airCalc = `<div>
-                    ${statLine('إجمالي سعة الشفط', `${fmt(fanCount,0)} × ${fmt(fanCapacity,0)} = ${fmt(totalFanCapacity,0)} م³/ساعة`)}
+                    ${statLine('إجمالي سعة الشفط', `${fmt(fanCount,0)} شفاط = ${fmt(totalFanCapacity,0)} م³/ساعة`)}
                     ${statLine('بالثانية', `${fmt(m3s,2)} م³/ثانية`)}
-                    <p style="font-size:11px;color:var(--muted);line-height:1.7;margin:8px 0;">سرعة الهواء داخل العنبر = م³/ثانية ÷ (عرض العنبر × ارتفاعه بالمتر) — قِس عرض وارتفاع عنبرك الفعليين واقسم عليهم للحصول على السرعة الفعلية؛ المستهدف وقت التوننل الكامل: 2-3 م/ث.</p>
-                    ${statLine('مساحة فتحات الدخول (Inlets) المطلوبة', `${fmt(inletAreaLow,1)} - ${fmt(inletAreaHigh,1)} م²`, {vStyle:'color:var(--barn-dark);'})}
-                    <p class="fs-2xs text-muted" style="margin:2px 0 8px;">بافتراض سرعة دخول هواء مستهدفة 5-7 م/ث عند البادات/الفتحات.</p>
-                    <p style="font-size:11px;color:var(--muted);line-height:1.7;margin:8px 0 0;"><b>الضغط الساكن (Static Pressure):</b> المعدل الشائع فى عنابر التوننل حوالي 0.05-0.15 بوصة ماء (12-37 باسكال تقريبًا) — يُقاس بمانومتر عند أبعد نقطة عن الشفاطات. لو الضغط أعلى من المعتاد رغم نظافة البادات، غالبًا فيه انسداد بالفتحات أو مساحة دخول غير كافية بالنسبة لقدرة الشفاطات، وده بيقلل الأداء الفعلي عن السعة المكتوبة على المروحة (fan curve derating).</p>
+                    <details class="micro-disclosure">
+                        <summary>إزاي بنحسب سرعة الهواء؟</summary>
+                        <div class="micro-disclosure-body">سرعة الهواء داخل العنبر = م³/ثانية ÷ (عرض العنبر × ارتفاعه بالمتر) — قِس عرض وارتفاع عنبرك الفعليين واقسم عليهم للحصول على السرعة الفعلية؛ المستهدف وقت التوننل الكامل: 2-3 م/ث.</div>
+                    </details>
+                    ${statLine('مساحة فتحات الدخول (Inlets) المطلوبة', `${fmt(inletAreaLow,1)} - ${fmt(inletAreaHigh,1)} م²`, {vClass:'highlight'})}
+                    <p class="fs-2xs text-muted mb-2">بافتراض سرعة دخول هواء مستهدفة 5-7 م/ث عند البادات/الفتحات.</p>
+                    <details class="micro-disclosure">
+                        <summary>الضغط الساكن (Static Pressure)</summary>
+                        <div class="micro-disclosure-body">المعدل الشائع فى عنابر التوننل حوالي 0.05-0.15 بوصة ماء (12-37 باسكال تقريبًا) — يُقاس بمانومتر عند أبعد نقطة عن الشفاطات. لو الضغط أعلى من المعتاد رغم نظافة البادات، غالبًا فيه انسداد بالفتحات أو مساحة دخول غير كافية بالنسبة لقدرة الشفاطات، وده بيقلل الأداء الفعلي عن السعة المكتوبة على المروحة (fan curve derating).</div>
+                    </details>
                 </div>`;
             }
 
@@ -17771,9 +18021,9 @@
                 { icon: '🌫️', title: 'توزيع الأمونيا', text: 'اقيس عند مستوى أنف الطائر (مش وأنت واقف) فى 4-5 نقاط: الزوايا البعيدة، منتصف العنبر، وبالقرب من فتحات الخروج. لو الزوايا البعيدة أعلى بوضوح من المنتصف يبقى عندك مناطق ميتة (dead spots) محتاجة توزيع تهوية أفضل.' },
                 { icon: '🪣', title: 'فحص الفرشة (Grab Test)', text: 'اقبض حفنة فرشة بإيدك واعصرها — لو اتكتلت ومسكت شكلها زي الطين يبقى الرطوبة زايدة، ولو اتفتت وطلعت غبار يبقى جافة زيادة؛ المثالي إنها تتفتت بس تحس إنها متماسكة شوية. راقب كمان أماكن التكتل (caking) تحت النيبل درينكرز خصوصًا — علامة مباشرة على ضعف تهوية أو تصريف مياه فى المنطقة دي تحديدًا.' }
             ];
-            const practicalHtml = practicalItems.map((it, i) => `<div class="subcard subcard-info"${i < practicalItems.length - 1 ? ' style="margin-bottom:8px;"' : ''}>
-                <div class="subcard-title" style="display:flex;align-items:center;gap:6px;font-size:12.5px;"><span>${it.icon}</span><span>${it.title}</span></div>
-                <div style="font-size:12px;line-height:1.7;color:var(--barn-dark);">${it.text}</div>
+            const practicalHtml = practicalItems.map((it, i) => `<div class="subcard subcard-info${i < practicalItems.length - 1 ? ' mb-2' : ''}">
+                <div class="subcard-title" style="display:flex;align-items:center;gap:6px;"><span>${it.icon}</span><span>${it.title}</span></div>
+                <div class="subcard-text">${it.text}</div>
             </div>`).join('');
 
             // ✨ تحسين: ملخص سريع أعلى الكارت (بدل ما تفتح الـ4 أكورديونات كلها عشان تعرف "هل التهوية عندي كافية دلوقتي؟")
@@ -17783,20 +18033,43 @@
                     const ok = totalFanCapacity >= target.totalM3h;
                     const note = ok ? `قدرتك الحالية (${fmt(totalFanCapacity,0)} م³/س) تغطي الحد الأدنى المطلوب الآن (${fmt(target.totalM3h,0)} م³/س)`
                                     : `قدرتك الحالية (${fmt(totalFanCapacity,0)} م³/س) أقل من الحد الأدنى المطلوب الآن (${fmt(target.totalM3h,0)} م³/س)`;
-                    return `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;margin-bottom:10px;background:${ok?'rgba(44,122,75,.08)':'rgba(193,68,60,.08)'};border:1px solid ${ok?'var(--green)':'var(--red)'};">
-                        <span style="font-size:18px;">${ok?'✅':'⚠️'}</span>
-                        <span style="font-size:12px;font-weight:700;color:${ok?'var(--green)':'var(--red)'};">${note}</span>
+                    return `<div class="vent-verdict ${ok ? 'ok' : 'warn'}">
+                        <span class="icon">${ok?'✅':'⚠️'}</span>
+                        <span class="txt">${note}</span>
                     </div>`;
                 }
-                // ============ ✨ تحسين UX: التهوية الطبيعية (بدون شفاطات) كانت بتاخد فراغ كامل هنا من غير أي
-                // ملخص سريع، رغم إن الحد الأدنى المطلوب (target.totalM3h) محسوب فعليًا ومعروض تحت فى المعادلات.
-                // الفرق إننا مش قادرين نجزم "كافي/مش كافي" أوتوماتيكيًا بدون قياس فعلي لمساحة الفتحات المفتوحة
-                // (زي ما بيحصل مع الشفاطات)، فبدل الصمت بنعرض الرقم المطلوب فى ملخص محايد (أزرق) بدل أخضر/أحمر،
-                // ونوجّه المستخدم يقارنه يدويًا. ============
+                // ============ ✨ تحسين UX: التهوية الطبيعية شتاءً (بدون شفاطات) — مفيش سقف عملي واضح
+                // نجزم بيه "كافي/مش كافي" أوتوماتيكيًا بدون قياس فعلي لمساحة الفتحات، فبيفضل ملخص
+                // محايد (أزرق) يوجّه المستخدم يقارن يدويًا. ============
+                if (b.ventType === 'natural' && isWinter) {
+                    return `<div class="vent-verdict info">
+                        <span class="icon">💡</span>
+                        <span class="txt">الحد الأدنى المطلوب الآن ≈ ${fmt(target.totalM3h,0)} م³/ساعة — قارنه يدويًا بمساحة الفتحات المفتوحة فعليًا عندك (التهوية الطبيعية معندهاش رقم "سعة" أوتوماتيكي زي الشفاطات).</span>
+                    </div>`;
+                }
+                // ============ ✨ تحسين UX: التهوية الطبيعية صيفًا كانت بتاخد نفس الصندوق الأزرق المحايد
+                // فوق مهما كانت سرعة الهواء المطلوبة كام — يعني عنبر فى الأسبوع الأول (0.25 م/ث، سهل
+                // جدًا بفتحات عادية) وعنبر فى الأسبوع الخامس (2 م/ث، شبه مستحيل بدون شفاطات) كانوا
+                // بياخدوا نفس الشكل بالظبط، رغم اختلاف الخطورة الفعلية جذريًا. هنا بقى فيه سقف عملي
+                // معروف لسرعة الهواء اللي الفتحات بدون شفاطات تقدر تحققها (~1 م/ث تقريبًا)، ونفس
+                // الـ3 مستويات المستخدمة مع الشفاطات (أخضر/أصفر/أحمر) بقت مطبّقة هنا كمان. ============
                 if (b.ventType === 'natural') {
-                    return `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;margin-bottom:10px;background:var(--info-bg);border:1px solid var(--blue);">
-                        <span style="font-size:18px;">💡</span>
-                        <span style="font-size:12px;font-weight:700;color:var(--info-text);">الحد الأدنى المطلوب الآن ≈ ${fmt(target.totalM3h,0)} م³/ساعة — قارنه يدويًا بمساحة الفتحات المفتوحة فعليًا عندك (التهوية الطبيعية معندهاش رقم "سعة" أوتوماتيكي زي الشفاطات).</span>
+                    const airspeed = target.requiredAirspeedMs;
+                    if (airspeed <= 0.5) {
+                        return `<div class="vent-verdict ok">
+                            <span class="icon">✅</span>
+                            <span class="txt">سرعة الهواء المطلوبة (${airspeed} م/ث) سهل تحقيقها بفتحات جانبية عادية فى المرحلة دي.</span>
+                        </div>`;
+                    }
+                    if (airspeed <= 1.0) {
+                        return `<div class="vent-verdict caution">
+                            <span class="icon">🟡</span>
+                            <span class="txt">قربنا من السقف العملي للتهوية الطبيعية (~1 م/ث) — راقب حرارة العنبر كويس، وجهّز خطة شفاطات/تبريد احتياطية قبل المرحلة الجاية.</span>
+                        </div>`;
+                    }
+                    return `<div class="vent-verdict warn">
+                        <span class="icon">⚠️</span>
+                        <span class="txt">سرعة الهواء المطلوبة (${airspeed} م/ث) غالبًا تتجاوز حد ما تقدر الفتحات وحدها تحققه — فكّر فى شفاطات مساعدة أو تبريد إضافي فورًا.</span>
                     </div>`;
                 }
                 return '';
@@ -17809,9 +18082,10 @@
             // الموحّد المستخدم فى باقي التطبيق (نفس شكل المثلث ▸/▾ ولون الخلفية)، وأُعيد ترتيبها: الأرقام
             // المباشرة (معادلات وسرعة هواء) قبل الجداول المرجعية (تايمر الليل)، والفحص الميداني أخيرًا.
             return `
-            <div class="card" style="margin-top:8px;">
-                <h2 style="margin:0 0 8px;color:var(--barn-dark);font-size:14px;">🧮 حاسبة ومرجع التهوية التفصيلي</h2>
-                <p style="font-size:11px;color:var(--muted);margin-top:0;">معادلات وأرقام استرشادية مبنية على مصادر إرشادية معروفة فى صناعة الدواجن — استخدمها كنقطة انطلاق واضبطها حسب قراءاتك الفعلية.</p>
+            <div class="card mt-2">
+                <h2 class="card-title">🧮 حاسبة ومرجع التهوية التفصيلي</h2>
+                <p class="fs-xs text-muted m-0">معادلات وأرقام استرشادية مبنية على مصادر إرشادية معروفة فى صناعة الدواجن — استخدمها كنقطة انطلاق واضبطها حسب قراءاتك الفعلية.</p>
+                ${mixedMonthNote}
                 ${quickVerdict}
                 <!-- ✨ تحسين UX: الأربعة تفاصيل كانوا كلهم متساوين فى الشكل (subcard-neutral مقفول) رغم
                      إن الأولين "أرقام حية" لازم تتقرأ يوميًا، والتانيين مرجع تعليمي ثابت مش بيتغيّر.
@@ -17826,10 +18100,6 @@
                     <summary>💨 سرعة الهواء والضغط الساكن (Static Pressure)</summary>
                     <div class="subcard-body">${airCalc}</div>
                 </details>
-                <details class="subcard subcard-neutral subcard-details mb-2">
-                    <summary>🌙 جدول تايمر التهوية الليلية حسب الموسم (مرجعي)</summary>
-                    <div class="subcard-body">${nightTableHtml}</div>
-                </details>
                 <details class="subcard subcard-neutral subcard-details">
                     <summary>🔍 مؤشرات عملية لفحص كفاءة التهوية ميدانيًا</summary>
                     <div class="subcard-body">${practicalHtml}</div>
@@ -17837,7 +18107,7 @@
             </div>`;
         }
         // ============ (إعادة تصميم) مسار البيئة والتهوية كتايملاين تفاعلي حسب العمر — بدل معلومات/جداول ثابتة مفصولة ============
-        // كل مرحلة عمرية (من نفس جدول NIGHT_VENT_DUTY_TABLE) بقت "محطة" فى المسار: اللي فات مُعلَّم ✅، الحالية
+        // كل مرحلة عمرية (من VENT_AGE_STAGES) بقت "محطة" فى المسار: اللي فات مُعلَّم ✅، الحالية
         // مفصّلة بالكامل (توصيات اليوم + مؤشرات + معاملات الفرشة المستحقة فيها)، واللي جاي "استعد لها" مختصر.
         function renderEnvironmentTimeline(b, m) {
             m = m || computeMetrics(b);
@@ -17855,21 +18125,20 @@
             </div></div>`;
 
             let prevMax = 0;
-            const stagesHtml = NIGHT_VENT_DUTY_TABLE.map((row, idx) => {
+            const stagesHtml = VENT_AGE_STAGES.map((row, idx) => {
                 const minAge = prevMax + 1;
                 prevMax = row.maxAge;
                 const status = age > row.maxAge ? 'done' : (age >= minAge ? 'current' : 'upcoming');
                 const stageTreatments = b.treatmentLog.filter(t => t.day >= minAge && t.day <= Math.min(row.maxAge, minAge + 30));
                 const treatRowsHtml = stageTreatments.length ? renderTreatmentListCard(b, m, stageTreatments) : '';
-                const dutyLow = row[seasonKey][0], dutyHigh = row[seasonKey][1];
                 const dotColor = status === 'done' ? 'var(--green)' : status === 'current' ? 'var(--wheat)' : 'var(--muted)';
                 const dotIcon = status === 'done' ? '✅' : status === 'current' ? '👉' : '⏳';
 
                 if (status === 'current') {
                     return `
                     <div class="timeline-node current" style="border-inline-end:3px solid ${dotColor};">
-                        <div style="display:flex;align-items:center;gap:8px;font-weight:900;color:var(--barn-dark);font-size:14px;">${dotIcon} ${row.stageLabel} <span class="pill info">المرحلة الحالية — يوم ${age}</span></div>
-                        <div style="font-size:11px;color:var(--muted);margin:4px 0 8px;">${seasonIcon} موسم ${season} · نسبة تشغيل تهوية ليلية مرجعية: ${dutyLow}-${dutyHigh}%</div>
+                        <div class="timeline-node-title">${dotIcon} ${row.stageLabel} <span class="pill info">المرحلة الحالية — يوم ${age}</span></div>
+                        <div class="timeline-node-meta">${seasonIcon} موسم ${season}</div>
                         ${respRiskHtml}
                         ${ventRows || `<div class="empty"><div class="ico">🌬️</div>لا توجد بيانات كافية بعد لبناء توصيات — أدخل مساحة العنبر وسجل يومي بقراءات بيئية.</div>`}
                         ${treatRowsHtml ? `<div class="mt-3"><div style="font-weight:800;font-size:12px;margin-bottom:4px;">🪣 معاملات ${getFloorInfo(b).short} فى هذه المرحلة</div>${treatRowsHtml}</div>` : ''}
@@ -17885,10 +18154,10 @@
                 }
                 // مراحل فاتت أو لسه جاية — سطر مختصر بس
                 const nextNote = status === 'upcoming' && idx > 0 && age >= minAge - 3
-                    ? `<div style="font-size:10.5px;color:var(--wheat);margin-top:2px;">🔔 قربت — ابدأ تضبط الفتحات/الشفاطات تدريجيًا استعدادًا لهذه المرحلة</div>` : '';
+                    ? `<div class="timeline-next-note">🔔 قربت — ابدأ تضبط الفتحات/الشفاطات تدريجيًا استعدادًا لهذه المرحلة</div>` : '';
                 return `
                 <div class="timeline-node ${status}" style="border-inline-end:3px solid ${dotColor};">
-                    <div style="display:flex;align-items:center;gap:8px;font-weight:700;color:var(--barn-dark);font-size:12.5px;">${dotIcon} ${row.stageLabel} <span style="font-size:10.5px;color:var(--muted);font-weight:600;">(${seasonIcon} ${dutyLow}-${dutyHigh}% تشغيل ليلي)</span></div>
+                    <div class="timeline-node-title sm">${dotIcon} ${row.stageLabel} <span class="timeline-node-substage">(${seasonIcon} ${season})</span></div>
                     ${nextNote}
                     ${treatRowsHtml ? `<div class="mt-2">${treatRowsHtml}</div>` : ''}
                 </div>`;
@@ -17916,7 +18185,7 @@
 
             <div class="section"><div class="section-head"><h2>🪣 إضافة معاملة ${getFloorInfo(b).short}</h2>
                 <button class="btn ghost sm owner-only" onclick="openTreatModal()">+ إضافة معاملة</button></div>
-                <p style="font-size:10.5px;color:var(--muted);margin:2px 2px 0;">💡 نظام التربية والأرضية الحالي: <b>${getFloorInfo(b).label}</b> — ${getFloorInfo(b).hint}. المعاملات المجدولة بتظهر تلقائيًا جوه المرحلة العمرية بتاعتها فى المسار فوق.</p>
+                <p class="u-14">💡 نظام التربية والأرضية الحالي: <b>${getFloorInfo(b).label}</b> — ${getFloorInfo(b).hint}. المعاملات المجدولة بتظهر تلقائيًا جوه المرحلة العمرية بتاعتها فى المسار فوق.</p>
             </div>
 
             ${renderOutageSection(b, m)}
@@ -18237,7 +18506,7 @@
             fin = fin || computeFinance(b, m);
             const sec = (id, icon, title, contentHtml, openByDefault) => `
                 <details ${openByDefault ? 'open' : ''} style="border-bottom:1px solid var(--line);">
-                    <summary style="padding:12px 14px;cursor:pointer;background:#faf8f2;font-weight:800;font-size:14px;">${icon} ${title}</summary>
+                    <summary style="padding:12px 14px;cursor:pointer;background:var(--cream);font-weight:800;font-size:14px;">${icon} ${title}</summary>
                     <div style="padding:10px 12px;">${contentHtml}</div>
                 </details>`;
             return `<div class="section" style="margin-top:0;"><div class="card" style="padding:0;overflow:hidden;">
@@ -19550,13 +19819,13 @@
             // المستخدمين فى باقي التطبيق)، وبيفضل مكانه فوق مهما اخترت أي نوع طائر. ============
             html += `
             <div class="section">
-                <div class="card p-2" style="display:flex;gap:6px;overflow-x:auto;">
-                    <a href="#expSecFeasCurrent" class="btn ghost sm" style="white-space:nowrap;text-decoration:none;">🧮 جدوى الدورة الحالية</a>
-                    <a href="#expSecInputs" class="btn ghost sm" style="white-space:nowrap;text-decoration:none;">📥 المدخلات</a>
-                    <a href="#expSecResults" class="btn ghost sm" style="white-space:nowrap;text-decoration:none;">📊 النتائج والصندوق</a>
-                    <a href="#expSecPriority" class="btn ghost sm" style="white-space:nowrap;text-decoration:none;">🎯 أولوية الاستثمار</a>
-                    <a href="#expSecFeasFull" class="btn ghost sm" style="white-space:nowrap;text-decoration:none;">🧮 الجدوى الشاملة</a>
-                    <a href="#expSecRisk" class="btn ghost sm" style="white-space:nowrap;text-decoration:none;">⚠️ المخاطر</a>
+                <div class="card p-2 scroll-row-x">
+                    <a href="#expSecFeasCurrent" class="btn ghost sm jump-link">🧮 جدوى الدورة الحالية</a>
+                    <a href="#expSecInputs" class="btn ghost sm jump-link">📥 المدخلات</a>
+                    <a href="#expSecResults" class="btn ghost sm jump-link">📊 النتائج والصندوق</a>
+                    <a href="#expSecPriority" class="btn ghost sm jump-link">🎯 أولوية الاستثمار</a>
+                    <a href="#expSecFeasFull" class="btn ghost sm jump-link">🧮 الجدوى الشاملة</a>
+                    <a href="#expSecRisk" class="btn ghost sm jump-link">⚠️ المخاطر</a>
                 </div>
             </div>`;
 
@@ -19588,13 +19857,13 @@
                             !!(inputs.plannedSlaughterKgPerDay || inputs.plannedFeedMillTonsPerDay),
                         ];
                         const stepLabels = ['1️⃣ الأساسيات', '2️⃣ الأهداف الكبرى', '3️⃣ بيانات احتياطية', '4️⃣ قطيع الأمهات', '5️⃣ طاقة المصنع/المجزر'];
-                        return `<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;">
+                        return `<div class="scroll-row-x">
                         ${stepLabels.map((label, i) => `<button type="button" class="btn ${expansionInputStep===i?'gold':'ghost'} sm exp-step-dot" data-exp-step-dot="${i}" onclick="goExpansionStep(${i})" style="white-space:nowrap;">${expStepDone[i] ? '<span style="color:var(--green);">✓</span> ' : ''}${label}</button>`).join('')}
                         </div>`;
                     })()}
 
                     <div class="exp-step" data-exp-step="0" style="${expansionInputStep===0?'':'display:none'}">
-                        <div style="display:flex;align-items:center;gap:6px;margin:0 0 4px;">
+                        <div class="step-header-row">
                             <h4 class="u-04" style="margin:0;">📋 الأساسيات</h4><span class="pill bad fs-2xs">إجباري</span>
                         </div>
                         <p class="fs-xs text-muted" style="margin:0 0 8px">أهم خطوة — بدونها مش هينفع نحسب الخطة. الباقي (الخطوات 2-5) اختياري وتقدر تضيفه لاحقًا وقت ما تجهز أرقامه.</p>
@@ -19616,7 +19885,7 @@
                     </div>
 
                     <div class="exp-step" data-exp-step="1" style="${expansionInputStep===1?'':'display:none'}">
-                        <div style="display:flex;align-items:center;gap:6px;margin:0 0 4px;">
+                        <div class="step-header-row">
                             <h4 class="u-04" style="margin:0;">🎯 الأهداف الكبرى (تكامل رأسي)</h4><span class="pill fs-2xs">اختياري</span>
                         </div>
                         <p class="fs-xs text-muted" style="margin:0 0 8px;line-height:1.7">مش رأس مال تقديري — دخّل "تكلفة الوحدة" (سعر سوق حقيقي معروف عندك) والتطبيق بيضربها تلقائيًا فى احتياجك المستهدف الفعلي. قطيع الأمهات بيتحسب من حاسبة الأمهات فى الخطوة الجاية من غير أي مُدخل إضافي هنا.</p>
@@ -19632,7 +19901,7 @@
                     </div>
 
                     <div class="exp-step" data-exp-step="2" style="${expansionInputStep===2?'':'display:none'}">
-                        <div style="display:flex;align-items:center;gap:6px;margin:0 0 4px;">
+                        <div class="step-header-row">
                             <h4 class="u-04" style="margin:0;">📥 بيانات أداء احتياطية</h4><span class="pill fs-2xs">اختياري</span>
                         </div>
                         <p class="fs-2xs text-muted" style="margin:0 0 8px;line-height:1.6">لو عندك دورة مؤرشفة واحدة على الأقل من هذا النوع، التطبيق بيتجاهل الأرقام دي تلقائيًا ويحسب من أدائك الفعلي. (لو لسه معندكش دورة مؤرشفة، الخطوة دي هى اللي هتخلي التطبيق يقدر يحسبلك الخطة من الأول).</p>
@@ -19651,7 +19920,7 @@
                     </div>
 
                     <div class="exp-step" data-exp-step="3" style="${expansionInputStep===3?'':'display:none'}">
-                        <div style="display:flex;align-items:center;gap:6px;margin:0 0 4px;">
+                        <div class="step-header-row">
                             <h4 class="u-04" style="margin:0;">🥚 حاسبة قطيع الأمهات (مدخلات)</h4><span class="pill fs-2xs">اختياري</span>
                         </div>
                         <p class="fs-xs text-muted" style="margin:0 0 8px;line-height:1.6">💡 بيض/خصوبة/فقس اتملوا برقم مرجعي تقريبي شائع لـ${expansionSpeciesLabel(species)} (${getBreederFlockDefaults(species).henEggsPerYear} بيضة، خصوبة ${getBreederFlockDefaults(species).fertilityPct}%، فقس ${getBreederFlockDefaults(species).hatchPct}%) — عدّلها برقم مورّدك الفعلي وقت ما يتوفر.</p>
@@ -19671,7 +19940,7 @@
                     </div>
 
                     <div class="exp-step" data-exp-step="4" style="${expansionInputStep===4?'':'display:none'}">
-                        <div style="display:flex;align-items:center;gap:6px;margin:0 0 4px;">
+                        <div class="step-header-row">
                             <h4 class="u-04" style="margin:0;">🏭🔪 طاقة المجزر ومصنع العلف</h4><span class="pill fs-2xs">اختياري</span>
                         </div>
                         <div class="u-19">
@@ -19799,7 +20068,7 @@
 
                     <div>
                         <h4 class="u-04">📈 أداء ${expansionSpeciesLabel(species)}${hist.n ? ` (من ${hist.n} دورة مؤرشفة)` : ' (بيانات مدخلة يدويًا)'}</h4>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <div class="grid-cols-2">
                             ${hist.isFallback ? `<p class="fs-2xs text-muted" style="grid-column:1/-1;margin:0 0 4px;">💡 بعض الأرقام تحت من بياناتك الاحتياطية اليدوية لحد ما يتوفر أداء فعلي مؤرشف كفاية.</p>` : ''}
                             ${statLine(`متوسط الربح للطائر`, `${money(hist.avgProfitPerBird)}`, {vStyle:`font-weight:900;color:${hist.avgProfitPerBird >= 0 ? 'var(--green)' : 'var(--red)'};`})}
                             ${statLine(`نسبة الدورات الرابحة`, `${hist.successRate != null ? fmt(hist.successRate * 100, 0) + '%' : '—'}`, {vStyle:`font-weight:900;`})}
@@ -25118,8 +25387,9 @@
             onHeatTypeChange();
             document.getElementById('b_heatprice').value = src.heatprice || '';
             document.getElementById('b_venttype').value = src.ventType || 'natural';
-            document.getElementById('b_fancapacity').value = src.fanCapacityM3h || '';
-            document.getElementById('b_fancount').value = src.fanCount || '';
+            tempFanGroups = Array.isArray(src.fans) ? src.fans.map(g => ({ capacityM3h: g.capacityM3h, count: g.count })) :
+                (src.fanCapacityM3h && src.fanCount ? [{ capacityM3h: src.fanCapacityM3h, count: src.fanCount }] : []);
+            renderFanGroupsEditor();
             document.getElementById('b_housewidth').value = src.houseWidthM || '';
             document.getElementById('b_househeight').value = src.houseHeightM || '';
             onVentTypeChange();
