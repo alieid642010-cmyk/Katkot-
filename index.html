@@ -13023,9 +13023,16 @@
             const gainKg = gainKgLiveOnly + cumSoldGainKgFinal;
             const fcr = (gainKg > 0 && cumFeed > 0) ? (cumFeed / gainKg) : null;
 
+            // ============ 🔴 إصلاح (بلاغ مستخدم بالصور — نفس فئة خلل "استهلاك العلف لكل فرخ"): "نسبة النجاة%"
+            // فى معادلة EPEF كانت بتستخدم liveCountPct (نسبة الطيور الموجودة فعليًا فى العنبر دلوقتي)، واللي
+            // بتقل لسببين مختلفين تمامًا: النفوق (فشل حقيقي) والبيع الجزئي أثناء الدورة (قرار تجاري ناجح، مش
+            // فشل). النتيجة: أي دفعة اتباع منها جزء كبير كانت بتطلع بـEPEF كارثي حتى لو أداؤها الصحي ممتاز،
+            // لأن "النجاة" اتقاست غلط بعدد الموجودين فعليًا بدل نسبة اللي وصلوا للسوق فعليًا (سواء لسه فى
+            // العنبر أو اتباعوا بالفعل). المعيار الصناعي الصحيح لـEPEF: نسبة النجاة = 100% − نسبة النفوق. ============
+            const survivalPctForEpef = 100 - mortRate;
             // EPEF = (نسبة النجاة% × وزن الطائر بالكجم) ÷ (FCR × عمر القطيع) × 100
             const epef = (fcr && fcr > 0 && age > 0 && avgWeightKg > 0)
-                ? (liveCountPct * avgWeightKg) / (fcr * age) * 100
+                ? (survivalPctForEpef * avgWeightKg) / (fcr * age) * 100
                 : null;
 
             const adg = age > 0 ? ((avgWeightG - (b.startweight || defW)) / age) : 0;
