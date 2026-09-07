@@ -5340,12 +5340,16 @@
         }
         function _cycleRawFeedPerBirdPoints(x) {
             const recs = [...x.records].sort((a, c) => a.age - c.age);
-            let cumMort = 0, cumCull = 0, cumFeedKg = 0;
+            let cumFeedKg = 0;
             const pts = [{ age: 0, value: 0 }];
+            // ============ 🔴 إصلاح (نفس منطق كارت "استهلاك العلف لكل فرخ"): كانت بتتقسّم على liveCount
+            // المتناقص (البداية - نفوق - استبعاد)، فأي دورة تاريخية فيها نفوق/استبعاد أو بيع جزئي كانت
+            // بتدخل فى منحنى المزرعة المرجعي برقم مضخّم وهميًا لكل الأعمار اللي بعد النقص. القسمة على
+            // x.startCount (ثابت طول الدورة) بتدي المتوسط الحقيقي لاستهلاك الفرخ الواحد من بداية الدورة،
+            // وده أصح كمرجع مستقبلي لأنه مش متأثر بتوقيت أو حجم أي نقص فى القطيع أثناء الدورة القديمة ============
             recs.forEach(r => {
-                cumMort += (r.mort || 0); cumCull += (r.cull || 0); cumFeedKg += (r.feed || 0);
-                const liveCount = Math.max(x.startCount - cumMort - cumCull, 0);
-                if (liveCount > 0) pts.push({ age: r.age, value: (cumFeedKg * 1000) / liveCount }); // جم/طائر تراكمي
+                cumFeedKg += (r.feed || 0);
+                if (x.startCount > 0) pts.push({ age: r.age, value: (cumFeedKg * 1000) / x.startCount }); // جم/طائر تراكمي
             });
             return pts;
         }
@@ -17411,7 +17415,12 @@
                     // المستخدمة أصلاً فى hist.avgFeedKgPerBird (تراكمي=كجم) مقابل feedPerBird فى تحليل
                     // الإجهاد اليومي (يومي=جرام). محايد بدون warn/good لأن مفيش حد مطلق عالمي واحد يصلح
                     // لكل الأعمار — المقارنة الأدق (بمنحنى السلالة) موجودة أصلاً فى FCR وتوقع العلف. ============
-                    const feedPerBirdKg = m.liveCount > 0 ? m.cumFeed / m.liveCount : null;
+                    // ============ 🔴 إصلاح (تجاهل تأثير البيع الجزئي): كانت بتتقسّم على m.liveCount (الأعداد
+                    // الحية الآن فقط)، فأي بيع جزئي أثناء الدورة كان بيضخّم الرقم وهميًا — العلف اللي اتاكله
+                    // الطيور المباعة لسه موجود جوه cumFeed، لكن مقامها اختفى من القسمة. القسمة الصحيحة على
+                    // b.startCount (عدد بداية الدورة) لأنه بيمثّل كل الطيور اللي فعلاً استهلكت من هذا العلف،
+                    // سواء لسه حية أو اتباعت أو نفقت — بنفس المنطق المستخدم أصلاً فى حساب FCR (cumSoldGainKg) ============
+                    const feedPerBirdKg = b.startCount > 0 ? m.cumFeed / b.startCount : null;
                     return `<div class="kpi"><div class="lbl">🐔🌾 استهلاك العلف لكل فرخ${glossHtml('feedPerBird')}</div><div class="val">${feedPerBirdKg != null ? fmt(feedPerBirdKg, 2) : '—'} <small>كجم</small></div></div>`;
                 })()}
                 <div class="kpi ${m.fcr && (m.fcr > 2.2 || m.fcr <= 0) ? 'warn' : 'good'}"><div class="lbl">🧮 معامل التحويل FCR${glossHtml('fcr')}</div><div class="val">${m.fcr ? (m.avgWeightIsEstimated ? '~' : '') + fmt(m.fcr, 2) : '—'}</div></div>
