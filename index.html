@@ -20706,12 +20706,19 @@
                     ${statLine(`EPEF (كفاءة الأداء الأوروبي)`, `${m.epef?(m.avgWeightIsEstimated?'~':'')+fmt(m.epef,0):'—'}`, {lineStyle:`border-top:1.5px solid var(--line);margin-top:4px;padding-top:8px;`, kStyle:`font-weight:900;color:var(--barn-dark);`, vStyle:`font-size:18px;`, vClass: m.epef?(m.epef>350?'v-good':m.epef>280?'v-mid':'v-bad'):''})}
                 </div>
                 ${m.avgWeightIsEstimated ? `<p class="fs-xs text-muted" style="margin:8px 0 0">~ يعنى أن اليوم الحالي غير موزون فعليًا، فتم تقدير الوزن بالاستكمال من آخر وزنة حقيقية (يوم ${m.lastWeighed ? m.lastWeighed.age : 0}) لتفادى انقطاع أو قفزة غير حقيقية فى FCR/EPEF.</p>` : ''}
-                <div class="formula-box mt-3">
-                    FCR = إجمالي العلف (كجم) ÷ إجمالي الزيادة في الكتلة الحيوية (كجم)<br>
-                    EPEF = (نسبة النجاة% × متوسط وزن الطائر كجم) ÷ (FCR × عمر القطيع بالأيام) × 100<br>
-                    FCR ممتاز &lt;1.75 | جيد &lt;2.0 | مقبول &lt;2.2 | ضعيف &gt;2.2
-                    EPEF ممتاز &gt;400 | جيد &gt;320 | مقبول &gt;250
-                </div>
+                <!-- ============ 🔧 تحسين UX (مراجعة تبويب الإدارة والتخطيط): صندوق المعادلات كان ظاهر دايمًا -->
+                <!-- تحت كروت الأرقام، وده نص تقني مفيد بس للمستخدم المتقدم — بالنسبة لمستخدم عادي هو -->
+                <!-- تشويش زيادة وسط شاشة أرقام. استخدمنا details.info-toggle (نفس النمط الجاهز والمستخدم -->
+                <!-- بالفعل فى التطبيق لتوقعات الوزن/FCR جنب الداشبورد) بدل ما نخترع كلاس/سلوك جديد. ============ -->
+                <details class="info-toggle mt-3">
+                    <summary></summary>
+                    <div class="formula-box">
+                        FCR = إجمالي العلف (كجم) ÷ إجمالي الزيادة في الكتلة الحيوية (كجم)<br>
+                        EPEF = (نسبة النجاة% × متوسط وزن الطائر كجم) ÷ (FCR × عمر القطيع بالأيام) × 100<br>
+                        FCR ممتاز &lt;1.75 | جيد &lt;2.0 | مقبول &lt;2.2 | ضعيف &gt;2.2
+                        EPEF ممتاز &gt;400 | جيد &gt;320 | مقبول &gt;250
+                    </div>
+                </details>
             </div></div>
 
             ${renderFinancialCalendarSection()}
